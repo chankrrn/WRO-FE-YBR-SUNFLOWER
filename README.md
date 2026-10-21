@@ -66,7 +66,7 @@ Our vehicle combines a Raspberry Pi computer, range and vision sensors, a geared
 
 | Version | Short description | Status |
 |:---|:---|:---|
-| **[1.0]** | Original completed vehicle design | Completed |
+| **[1.0](history/README.md)** | Original completed vehicle design | Completed |
 | **2.0** | Redesigned vehicle with updated chassis, electronics, sensing, and parking development | In progress |
 
 *Vehicle shown: version 1.0. A version 2.0 photograph will be added after assembly.*
@@ -82,8 +82,8 @@ The technical records explain **why** decisions were made; the source and suppor
 | Engineering records | [`journal/`](journal/) |
 | Program source | [`src/`](src/) |
 | Circuit and wiring diagrams | [`schemes/`](schemes/) |
-| Vehicle photographs | [`robot-photos/`](robot-photos/) |
-| Team photographs | [`team-photos/`](team-photos/) |
+| Vehicle photographs | [`robot-photos/`](v-photos/) |
+| Team photographs | [`team-photos/`](t-photos/) |
 | Demonstration videos | [`video/`](video/) |
 | Supporting resources | [`other/`](other/) |
 | License | [`LICENSE.md`](LICENSE.md) |
