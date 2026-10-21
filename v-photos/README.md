@@ -23,6 +23,6 @@ This gallery will document the current vehicle from all required angles. **[TODO
 - **[TODO]** Add annotated close-ups of the drivetrain, steering mechanism, electronics mounting, connectors, sensor mounts, and cable routing.
 - **[TODO]** Provide a caption for each image: viewpoint, vehicle revision, date, and the design feature illustrated.
 
-See the [mechanical engineering journal](../journal/mech.md) and [electrical engineering journal](../journal/elec.md) for component specifications, construction, and testing evidence.
+See the [Mobility and mechanical design](../journal/mech.md) and [Power and system architecture journal](../journal/elec.md) for component specifications, construction, and testing evidence.
 
 [Back to project overview](../README.md)

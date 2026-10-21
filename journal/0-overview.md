@@ -1,0 +1,204 @@
+# Overview
+
+> **YBR-SUNFLOWER | WRO 2026 Future Engineers**  
+> **Document:** `journal/0-overview.md` · **Status:** Working draft · **Language:** English  
+> **Scope:** High-level engineering system, evaluation evidence, and navigation. Detailed design, calculations, wiring, software, and construction procedures belong in the five linked technical journals.
+
+[← Project README](../README.md)
+
+## On this page
+
+1. [Purpose and project scope](#1-purpose-and-project-scope)
+2. [Engineering journal map](#2-engineering-journal-map)
+3. [Vehicle system at a glance](#3-vehicle-system-at-a-glance)
+4. [Operating challenges and design constraints](#4-operating-challenges-and-design-constraints)
+5. [Modeling, visualization, and verification](#5-modeling-visualization-and-verification)
+6. [Engineering decisions and progress](#6-engineering-decisions-and-progress)
+7. [Evidence and reproducibility](#7-evidence-and-reproducibility)
+8. [Remaining work](#8-remaining-work)
+9. [References](#9-references)
+
+---
+
+## 1. Purpose and project scope
+
+YBR-SUNFLOWER develops an autonomous, car-like vehicle for the **World Robot Olympiad (WRO) 2026 Future Engineers – Self-Driving Cars** challenge. This overview explains how the mechanical, electrical, sensing, and software subsystems fit together and points readers to the team's detailed technical records.
+
+The current vehicle is under development. Its 3D-printed chassis, final integration, and Raspberry Pi parking software are not yet complete. The component list, illustrations, models, and algorithms in this overview **must not be taken as evidence of completed validation**.
+
+**Engineering approach.** The team documents design choices, alternative solutions, observations, and revisions. Calculations, MATLAB/Simulink models, physical measurements, and on-track tests are distinguished explicitly rather than presented as equivalent evidence.
+
+> [TODO — Project status] Add the vehicle's working version identifier, last verified hardware revision, software commit, latest test date, and development status.
+>
+> [TODO — Overview image] Add one photograph or labeled system illustration of the *completed* current vehicle when available. Do not use the old vehicle's image without a version label.
+
+## 2. Engineering journal map
+
+The following **technical journals** combine design explanation and supporting evidence within the same file. We use a single journal per engineering discipline rather than separating an engineering chapter from an evidence chapter.
+
+| Record | What a reader will find | Evidence to be developed |
+|---|---|---|
+| **[Mobility and Mechanical Design](1-mech.md)** | Chassis, drivetrain, steering, physical packaging, fabrication, dimensional tolerances and design trade-offs | CAD, calculations, physical measurements, iteration photos, load/steering tests |
+| **[Power and Sensor Architecture](2-elec.md)** | Supply rails, regulators, components, wiring, camera, LiDAR, encoder, control interfaces and calibration | Verified schematics, power budget, calibration records, voltage/current tests |
+| **[Software Architecture and Obstacle Strategy](3-software.md)** | Perception, localization, trajectory generation, obstacle strategy, speed control and parking states | Architecture, parameter tables, simulation comparisons, logs, validation tests |
+| **[Systems Thinking and Engineering Decisions](4-system.md)** | Interactions, design decisions, constraints, failure analysis, integration testing and revisions | Decision records, requirements matrix, cross-system trade-offs and failure tests |
+| **[Build and Reproduction Guide](5-reproducibility.md)** | Assembly, dependencies, wiring checks, configuration, startup, testing and reproduction | Steps verified from a clean setup, bill of materials, release identification |
+
+**Relation to WRO scoring.** These five records are organized to help judges find evidence for the five 2026 Appendix C criteria: Mobility and Mechanical Design; Power and Sensor Architecture; Software Architecture and Obstacle Strategy; Systems Thinking and Engineering Decisions; and Reproducibility and GitHub Quality. The headings are YBR-SUNFLOWER's own navigation labels, not replacements for the official criteria.
+
+> [TODO — Review] Confirm every journal link is valid after the folder names are finalized.
+
+## 3. Vehicle system at a glance
+
+### 3.1 Functional architecture
+
+The vehicle integrates one mechanical driving and steering platform with an on-board computing system, environment sensors, electrical power distribution, and actuator interfaces. The Raspberry Pi is intended to coordinate sensing, planning, and control; the actual signal routes and power supplies must be verified against the assembled vehicle.
+
+| Subsystem | Current identified hardware or implementation | Current evidence status |
+|---|---|---|
+| Central computing | Raspberry Pi 5 (8 GB) | Identified; installed/configured state [TODO] |
+| Drive | CHP-20GP-180 DC gearmotor, CHP-20GP-180 encoder; DFR0592 motor-driver HAT | Identified; mapping and performance [TODO] |
+| Steering | SURPASS Hobby S0017M metal-gear servo; DFR0604 I/O expansion HAT | Identified; servo supply, PWM and calibration [TODO] |
+| Range sensing | DFR1023 RPLiDAR S2L | Identified; final mounting and calibration [TODO] |
+| Image sensing | OV5647 5 MP fisheye Raspberry Pi camera, stated 222° lens field of view | Lens specification unmeasured; camera calibration [TODO] |
+| Power storage | GAONENG GNB 4S 15.2 V nominal LiHV, 1300 mAh, 120C, XT60 | Specification supplied; battery-load tests [TODO] |
+| Regulation | DFR1202 5 V (6–24 V input, advertised 16 A output); DFR1208 12 V (15–24 V input, advertised 12 A output) | Ratings supplied; input-range and loaded output verification [TODO] |
+| User control/indication | DFR0785 white LED button, rocker power switch, 0–30 V mini OLED voltmeter | Identified; exact circuit functions [TODO] |
+| Electrical distribution | D1-3 1-to-3 connector, PCT-214 four-port connector, USB-C power lead, LiDAR XH2.54-5P connector | Identified; connector pinouts/polarity [TODO] |
+
+The team reports that the DFR0592/DFR0604 I²C conflict has been **resolved**, but its final bus configuration, addresses, and method have not yet been documented. Details belong in [Electrical and Sensor Engineering](2-elec.md).
+
+> [TODO — Architecture figure] Create a labeled, readable block diagram showing **power rails separately from data/control signals**. Indicate Raspberry Pi, drivers, servo, motor/encoder, LiDAR, camera, switches, converters and grounds. Link the verified schematic in `../schemes/`.
+>
+> [TODO — Verification] Confirm servo supply voltage, Pi power-input behavior, converter operation as the battery discharges, motor-driver ratings, wiring protection and common-ground arrangement.
+
+### 3.2 Key integrations
+
+- **Mechanics ↔ Control:** The wheelbase, steering limits, tire geometry and drivetrain transmission affect vehicle motion and achievable paths.
+- **Power ↔ Computing:** Motor and servo transients may interact with the regulated computing supply; robustness requires measurement.
+- **Sensors ↔ Geometry:** Camera/LiDAR position and orientation affect observable walls and pillars, uncertainty and collision clearance.
+- **Perception ↔ Planning:** Estimated boundaries and pillar locations influence the selected driving path and control outputs.
+- **Software ↔ Reproduction:** The documented command, configuration and active hardware interfaces must describe the same release.
+
+> [TODO — Cross-reference] Add exact subsection links after all five journals have stable headings.
+
+## 4. Operating challenges and design constraints
+
+The WRO 2026 Future Engineers rules specify two autonomous tasks:
+
+- **Open Challenge:** Three laps with variable track-wall arrangements.
+- **Obstacle Challenge:** Three laps with red/green traffic signs, followed by parallel parking. Red pillars must be passed on their right; green pillars on their left.
+
+The challenge arrangement, direction and starting configuration can vary. Therefore, the design must prioritize reliable perception, control, safety clearance and recovery from imperfect observations. See the official rules and Q&A for authoritative interpretations.
+
+| Constraint or challenge | Engineering consequence | Documentation location |
+|---|---|---|
+| Limited vehicle envelope | CAD/measured dimensions and component packaging | [Mechanical](1-mech.md) |
+| Varying road geometry | Boundary detection, feasible steering paths, validation scenarios | [Software](3-software.md) |
+| Random pillar layout and side rules | Detection, classification, clearance and strategy evaluation | [Software](3-software.md) |
+| Parking in constrained space | Geometric feasibility, steering range, parking states and tests | [Software](3-software.md) |
+| Sensor field of view and occlusion | Mounting position, camera calibration and sensor limitations | [Electrical](2-elec.md) |
+| Battery sag and transient loads | Converter selection, protection, startup and load measurements | [Electrical](2-elec.md) |
+| Reproducible assembly and startup | Schematics, exact configs, software version and checklists | [Build and Verification](5-reproducibility.md) |
+
+> [TODO — Requirements] Add a short requirements-to-evidence matrix referencing actual test IDs. Avoid declaring a rule requirement satisfied before checking it on the assembled robot.
+
+## 5. Modeling, visualization, and verification
+
+**MathWorks MATLAB and Simulink are planned engineering tools**, not just decorative plotting software. They can be used to investigate model assumptions, compare candidate solutions, reproduce diagnostics, and communicate observations. Only results that answer a design or validation question need to be published.
+
+### 5.1 Evidence labeling
+
+Every published technical figure should specify:
+
+1. **Evidence class:** *simulation*, *calculation*, *measured bench data*, or *physical driving test*.
+2. **Purpose:** the design question it evaluates.
+3. **Inputs:** geometry, model assumptions, key parameters and units.
+4. **Method and tool:** MATLAB/Simulink version, script/model filename where relevant.
+5. **Interpretation:** what the figure supports and what remains uncertain.
+6. **Version:** which hardware/software configuration was studied.
+
+Simulation screenshots **must not be described as measured car performance**. The images shared during drafting are preliminary visualizations; they have not been independently matched to the latest hardware and competition configuration.
+
+### 5.2 Optional visualization catalogue
+
+The team has explored visual examples including an Open Challenge field animation, an Obstacle Challenge layout/parking animation, pillar-clearance heatmaps, steering-response traces, trajectory/clearance dashboards, and camera-like pillar renderings. These are candidate evidence types, **not mandatory content** for this overview.
+
+| Candidate figure | Question it could answer | Publication status |
+|---|---|---|
+| Open Challenge field and simulated route | Does the modeled test environment capture the intended track layout and robot footprint? | [TODO — verify model geometry and source] |
+| Obstacle layout / start and parking positions | Are modeled pillar and parking arrangements consistent with the rules? | [TODO — verify rules and dimensions] |
+| Pillar clearance versus simulation time | Does the model predict low-clearance or overlap events for chosen routes? | [TODO — document collision model, sign convention, and parameter values] |
+| Target versus simulated steering response | What lag, saturation, overshoot or tracking limitations arise under stated assumptions? | [TODO — identify response model; compare with measured servo if possible] |
+| Speed profile and route-tracking error | How do speed requests influence path-tracking in simulation? | [TODO — define metrics and validation] |
+| Electrical rail voltage and current traces | Are computing/actuator rails stable under actual load and transients? | [TODO — bench measurements and optional MATLAB analysis] |
+| Sensor-error versus distance or angle | How do camera/LiDAR calibration uncertainties affect obstacle coordinates? | [TODO — calibration measurements and analysis] |
+
+> [TODO — Curate] Select only **2–4 defensible, well-explained figures** for this overview when sufficient evidence exists; place the detailed analyses in the relevant journal. More plots do not automatically improve the documentation.
+>
+> [TODO — MATLAB assets] For any published simulation, retain an editable `.m` script or `.slx` model in a suitable existing folder (e.g. `../other/`) if available. If the figure is only illustrative, say so. **A CSV directory is not required.**
+>
+> [TODO — Image references] Insert Markdown image links only after final filenames are chosen. Avoid dead or temporary screenshot paths.
+
+### 5.3 Simulation-to-reality checks
+
+The team will compare simulated models with physical observations where possible. Candidate comparisons include steering-command versus measured angle, modeled versus observed turning radius, voltage response under acceleration, camera/LiDAR calibration error, and predicted versus observed pillar clearance.
+
+> [TODO — Define test matrix] Add test date, model revision, track setup, run count, metric, result and link to its technical journal. Do not report improvement percentages without the underlying observations.
+
+## 6. Engineering decisions and progress
+
+The system record should explain **why** choices were made, not only what components were selected. A short decision register is sufficient here; full analyses belong in [System Integration](4-system.md) and the relevant technical journal.
+
+| Decision under review | Alternatives / constraints to document | Result status |
+|---|---|---|
+| Camera and LiDAR integration | Visibility, geometry, processing load, complementary limitations | [TODO] |
+| Raspberry Pi computing and I/O HATs | Interface compatibility, latency, wiring and extensibility | [TODO] |
+| Drive motor, gearing and encoder | Torque/speed trade-off, control resolution, package size | [TODO] |
+| Servo steering mechanism | Range, responsiveness, supply, backlash and geometry | [TODO] |
+| 5 V / 12 V distribution | Source-voltage limits, load transients, efficiency and thermal margin | [TODO] |
+| Path planning and parking development | Feasibility, clearance, tuning and observed failure cases | [TODO] |
+
+> [TODO — Decision evidence] For each significant choice record: **problem → candidate options → criteria → experiment/analysis → observation → choice → remaining risk**.
+>
+> [TODO — Revision status] Describe the present vehicle's development status without presenting unfinished functions as competition-tested.
+
+## 7. Evidence and reproducibility
+
+The full repository will include the relevant source code, configuration, vehicle photographs, engineering drawings, and build instructions. This overview intentionally does **not** duplicate lengthy pin maps, bills of materials, assembly procedures or algorithm descriptions.
+
+| Resource | Where to find it |
+|---|---|
+| Raspberry Pi and other controller source code | [`../src/`](../src/) |
+| Formal electrical schematics and wiring drawings | [`../schemes/`](../schemes/) |
+| MATLAB-related figures and visual material | [TODO — choose and create directory; recommended `../visualizations/`] |
+| Team and vehicle images | [`../t-photos/`](../t-photos/) and [`../v-photos/`](../v-photos/) |
+| Version history / earlier vehicle | [`../history/`](../history/) |
+| Assembly, configuration and end-to-end checks | [Build and Verification](5-reproducibility.md) |
+
+> [TODO — Release traceability] Add release identifier/commit, hardware configuration, firmware, Python dependencies, calibration files, schematic revision, CAD revision and tested startup command.
+>
+> [TODO — Acceptance] Ask another team member to follow the reproduction journal from a clean checkout and record ambiguities.
+
+## 8. Remaining work
+
+- [ ] Confirm hardware configuration and upload verified vehicle photographs.
+- [ ] Finalize safety-reviewed power/wiring drawings and exact HAT/pin mapping.
+- [ ] Complete the 3D-printed mechanical system and record measured geometry.
+- [ ] Complete and verify Raspberry Pi software including the parking implementation.
+- [ ] Validate sensor mounting, camera/LiDAR calibration, encoder and steering calibration.
+- [ ] Test electrical stability under realistic drive/steering loads.
+- [ ] Validate MATLAB models against physical measurements where appropriate.
+- [ ] Publish only clear, correctly labeled figures with reproducible methods.
+- [ ] Link every major engineering claim to its detailed journal and evidence.
+- [ ] Verify all relative Markdown links and release references before submission.
+
+## 9. References
+
+- [WRO International Association — Future Engineers competition and 2026 resources](https://wro-association.org/competition/2026-season/)
+- [WRO official Questions & Answers](https://wro-association.org/competition/questions-answers/)
+- [World Robot Olympiad Association](https://wro-association.org/)
+- [MathWorks MATLAB](https://www.mathworks.com/products/matlab.html)
+- [MathWorks Simulink](https://www.mathworks.com/products/simulink.html)
+
+> **Documentation principle:** The purpose of a figure, calculation, drawing or test is to support an engineering claim. The final journal should distinguish **planned work** from **observed evidence** and identify the vehicle version to which each claim applies.

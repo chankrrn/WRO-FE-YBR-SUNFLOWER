@@ -32,17 +32,17 @@ Each link below leads to **one complete record**, rather than separate overview 
 
 | Engineering record | What it covers |
 |:---|:---|
-| **[Mechanical Design & Construction](journal/mech.md)** | Chassis, drivetrain, steering geometry, mechanical iterations, CAD, fabrication, assembly, and measured mechanical performance |
-| **[Electronics & Perception Hardware](journal/elec.md)** | Power distribution, circuits, wiring, components, electronic interfaces, sensors, calibration, and electrical tests |
-| **[Autonomous Software & Navigation](journal/software.md)** | Software architecture, perception, localization, motion planning, obstacle handling, control, parking, and test results |
-| **[Integrated Engineering & Design Choices](journal/system.md)** | Cross-system trade-offs, engineering decisions, design constraints, failures, alternatives, and evidence-based improvements |
-| **[Build & Reproduction Guide](journal/reproducibility.md)** | Parts and fabrication files, step-by-step physical assembly, electrical checks, dependencies, setup, configuration, launch procedures, and verification |
+| **[Mobility and Mechanical Design](journal/1-mech.md)** | Chassis, drivetrain, steering geometry, mechanical iterations, CAD, fabrication, assembly, and measured mechanical performance |
+| **[Power and Sensor Architecture](journal/2-elec.md)** | Power distribution, circuits, wiring, components, electronic interfaces, sensors, calibration, and electrical tests |
+| **[Software Architecture and Obstacle Strategy](journal/3-software.md)** | Software architecture, perception, localization, motion planning, obstacle handling, control, parking, and test results |
+| **[Systems Thinking and Engineering Decisions](journal/4-system.md)** | Cross-system trade-offs, engineering decisions, design constraints, failures, alternatives, and evidence-based improvements |
+| **[Build and Reproduction Guide](journal/5-reproducibility.md)** | Parts and fabrication files, step-by-step physical assembly, electrical checks, dependencies, setup, configuration, launch procedures, and verification |
 
 These five records cover the documentation areas in the WRO 2026 evaluation rubric. **[TO DO]** Complete and review the linked records as the new vehicle is built and tested. Draft descriptions and planned tests must remain visibly distinguished from verified results.
 
 ## Meet the team
 
-![YBR-SUNFLOWER team photograph](team-photos/t_pic.jpg)
+![YBR-SUNFLOWER team photograph](t-photos/t_pic.jpg)
 
 All photos are in [`t-photos/`](t-photos/)
 
@@ -96,4 +96,4 @@ The technical records explain **why** decisions were made; the source and suppor
 - [WRO official Questions & Answers](https://wro-association.org/competition/questions-answers/) — official clarifications and additions that may affect the international competition.
 - [WRO International Association — main website](https://wro-association.org/) — organizational and competition information.
 
-The applicable official rules and published Q&A take precedence over explanatory statements in this repository. **[TO DO]** Verify all relevant 2026 Q&A updates and the organizer's submission instructions before the final documentation release.
+The applicable official rules and published Q&A take precedence over explanatory statements in this repository.

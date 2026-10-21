@@ -1,4 +1,4 @@
-# Electrical Architecture & Sensing — YBR-SUNFLOWER
+# Power and Sensor Architecture
 
 > **Engineering record · WRO 2026 Future Engineers · Vehicle development version 2.0 (draft)**  
 > **Scope:** all electrical hardware, energy distribution, sensing, control interfaces, wiring, verification, and supporting experiments.  
