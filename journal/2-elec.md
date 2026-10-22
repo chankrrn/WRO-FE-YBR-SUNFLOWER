@@ -473,7 +473,7 @@ The team has already created an initial pictorial wiring diagram. It is a draft 
 
 ---
 
-## 9. Communication buses, pinout and I²C configuration
+## 9. Communication buses, pinout and I2C configuration
 
 ### 9.1 Raspberry Pi communication overview
 
