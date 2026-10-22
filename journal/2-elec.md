@@ -1,8 +1,12 @@
-# Power and Sensor Architecture
+# Electrical Engineering — Power, Interfaces & Perception
+
+**YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 02**
 
 > **Working technical draft — 22 October 2026.** This document combines the electrical design explanation, reference specifications, analytical equations, experiment plans and evidence in one record. The redesigned vehicle is approaching completion, but its electrical wiring, final operating parameters and test measurements are not fully verified.
 >
 > **Evidence policy:** **Team-reported** means supplied by the team; **Datasheet** means a published part specification; **Model / MATLAB** means a calculation or simulation with stated assumptions; **Measured** means an observed value with test conditions, instruments and a repeatable procedure. No simulated value below is presented as a physical measurement. `[TODO]` identifies information or evidence not yet supplied.
+
+[← Engineering overview](0-overview.md) · [System integration](4-system.md) · [Build and verification](5-reproducibility.md) · [Project README](../README.md)
 
 ---
 
@@ -138,11 +142,11 @@ The following list is based on the team's `All_Hardwares_YBR-SUNFLOWER.txt` and 
 
 The battery label states a nominal capacity of **1.30 Ah** at **15.2 V**. Its nominal stored-energy estimate is
 
-\[
+$$
 E_{\mathrm{nom}}=V_{\mathrm{nom}}C_{\mathrm{Ah}}
 =15.2\,\mathrm{V}\times1.30\,\mathrm{Ah}
 =19.76\,\mathrm{Wh}.
-\]
+$$
 
 This is a **nameplate-based calculation**, not delivered usable energy during a competition run. Actual capacity and voltage depend on discharge rate, temperature, battery condition and protection limits. A **120C** label must not be used by itself to justify the robot's connector, wire, switch or motor-driver current rating.
 
@@ -150,11 +154,11 @@ This is a **nameplate-based calculation**, not delivered usable energy during a 
 
 For a simple lumped-resistance model:
 
-\[
+$$
 V_{\mathrm{terminal}}(t)
 =V_{\mathrm{OC}}\bigl(SOC(t)\bigr)
 -I_{\mathrm{battery}}(t)R_{\mathrm{pack}}.
-\]
+$$
 
 Here `V_OC(SOC)` is the assumed open-circuit voltage function and `R_pack` is an equivalent battery-plus-connection resistance. **Neither has yet been measured for YBR-SUNFLOWER.** This is a modeling relation, not the precise behavior of the real LiHV cells.
 
@@ -162,16 +166,16 @@ Here `V_OC(SOC)` is the assumed open-circuit voltage function and `R_pack` is an
 
 The DFR1208 is specified for **15–24 V** input. The LiHV pack is labeled **15.2 V nominal**; its nominal numerical headroom is only
 
-\[
+$$
 M_{12\mathrm{V},\,\mathrm{nom}}
 =15.2-15.0=0.2\,\mathrm{V}.
-\]
+$$
 
 The relevant loaded condition is
 
-\[
+$$
 M_{12\mathrm{V}}(t)=V_{\mathrm{terminal}}(t)-15.0\,\mathrm{V}.
-\]
+$$
 
 If `M_12V < 0`, the source is outside the manufacturer's stated input operating range. This **does not establish the exact 12 V output voltage** or the converter's shutdown point. That requires a physical test under representative current, or a verified circuit model.
 
@@ -235,9 +239,9 @@ The S0017M seller advertises **4.8–6 V DC** operation. DFR0604's PWM connector
 
 ### 6.1 Basic power equation
 
-\[
+$$
 \boxed{P_{\mathrm{load}}=VI}
-\]
+$$
 
 For each subsystem, use the **voltage measured at that subsystem** and its measured or otherwise explicitly specified current. Nameplate current alone is not a run-level average.
 
@@ -245,25 +249,25 @@ For each subsystem, use the **voltage measured at that subsystem** and its measu
 
 For two independent regulated branches:
 
-\[
+$$
 \boxed{P_{\mathrm{battery}}\approx
 \frac{P_{5\mathrm{V}}}{\eta_{5\mathrm{V}}}
 +\frac{P_{12\mathrm{V}}}{\eta_{12\mathrm{V}}}}
-\]
+$$
 
-\[
+$$
 \boxed{I_{\mathrm{battery}}\approx
 \frac{P_{\mathrm{battery}}}{V_{\mathrm{battery}}}}
-\]
+$$
 
 Where `η` denotes a converter's conversion efficiency at a **particular** input voltage, load and temperature. The simplified expression excludes any independently supplied branches and detailed time-dependent transients.
 
 An individual converter's approximate dissipation is
 
-\[
+$$
 P_{\mathrm{loss}}=P_{\mathrm{out}}
 \left(\frac{1}{\eta}-1\right).
-\]
+$$
 
 This is useful for **initial thermal reasoning**; physical converter temperature must still be checked.
 
@@ -289,18 +293,18 @@ Do not add rated peaks to claim a measured operating budget. A final table shoul
 
 A crude average-power estimate is
 
-\[
+$$
 t_{\mathrm{ideal}}\approx\frac{E_{\mathrm{usable}}}{\overline{P}_{\mathrm{battery}}}.
-\]
+$$
 
 `E_usable` is **not** automatically equal to the calculated 19.76 Wh nameplate energy. Actual runtime may be limited earlier by battery voltage, the 12 V converter's operating range, heat or control-system behavior.
 
 ### 6.5 Resistive wiring loss
 
-\[
+$$
 \Delta V_{\mathrm{cable}}=IR_{\mathrm{path}},\qquad
 P_{\mathrm{path}}=I^2R_{\mathrm{path}}.
-\]
+$$
 
 `R_path` includes the full outgoing and return path, including connectors. Keep electrical leads short, secured and correctly rated; verify using **actual measured voltage drop under load**.
 
@@ -336,22 +340,22 @@ YBR-SUNFLOWER has developed **Steps 01–03**, producing **11 candidate electric
 
 The model combines
 
-\[
+$$
 V_{\mathrm{terminal}}=V_{\mathrm{OC}}(SOC)-I_{\mathrm{battery}}R_{\mathrm{pack}},
-\]
+$$
 
-\[
+$$
 SOC(t+\Delta t)=SOC(t)-
 \frac{I_{\mathrm{battery}}(t)\,\Delta t}{3600C_{\mathrm{Ah}}},
-\]
+$$
 
 and the headroom equation in Section 4.3. For constant power in the simplified equivalent-circuit model,
 
-\[
+$$
 I_{\mathrm{battery}}=
 \frac{2P_{\mathrm{battery}}}
 {V_{\mathrm{OC}}+\sqrt{V_{\mathrm{OC}}^2-4R_{\mathrm{pack}}P_{\mathrm{battery}}}},
-\]
+$$
 
 when the square-root discriminant is nonnegative.
 
@@ -371,25 +375,25 @@ when the square-root discriminant is nonnegative.
 
 The illustrative voltage relation is
 
-\[
+$$
 V_{\mathrm{Pi}}(t)
 =V_0-I_{\mathrm{Pi}}R_c-I_fR_{\mathrm{reg}}
 -(I_{\mathrm{Pi}}-I_f)R_{\mathrm{transient}}
 -I_{\mathrm{servo}}R_{\mathrm{common}},
-\]
+$$
 
 where the filtered-current state obeys
 
-\[
+$$
 \tau\frac{dI_f}{dt}+I_f=I_{\mathrm{Pi}}.
-\]
+$$
 
 A possible discrete-time implementation under held input is
 
-\[
+$$
 \alpha=1-e^{-\Delta t/\tau},\qquad
 I_f[k]=I_f[k-1]+\alpha\bigl(I_{\mathrm{Pi}}[k]-I_f[k-1]\bigr).
-\]
+$$
 
 ![MATLAB Step 03 — wiring/load transient sensitivity (SIMULATION)](visualization/09_wiring_scenarios.png)
 
@@ -419,6 +423,8 @@ A chosen **4.80 V** engineering comparison level in the tutorial is not a manufa
 
 A pictorial wiring diagram communicates **physical cable routing and connector locations**. An electrical schematic communicates **electrical nets, supply rails, polarity, protection and connector pin functions**. A photograph communicates **what was actually assembled**. We need all three because a polished drawing can still be wrong.
 
+The team has already created an initial pictorial wiring diagram. It is a draft and **must not be certified as correct solely by appearance**. The current robot also includes the SEN0253 IMU, so any old figure that omits it is incomplete.
+
 **[TODO — Figure E-06]** Add the current pictorial wiring drawing to `schemes/`, with a visible revision and the word **DRAFT** until checked. Reference the actual filename here when finalized.
 
 **[TODO — Figure E-07]** Produce a complete, editable **EasyEDA or KiCad electrical schematic** for the **assembled modular system**, not a fictitious custom PCB. Use module-level symbols with labeled real connector pins. Export a clean PNG/PDF and retain the native project file under `schemes/`.
@@ -437,6 +443,25 @@ A pictorial wiring diagram communicates **physical cable routing and connector l
 8. Show camera CSI ribbon and LiDAR power/data interface as distinct connectors, with pin numbering when the cable is custom.
 9. Add component IDs matching Section 3 so every schematic module can be found in the hardware table.
 10. Perform an independent physical wire trace and electrical continuity/polarity check before changing the diagram to **VERIFIED**.
+
+### 8.3 Wiring verification register
+
+| Connection | Drawing pin/net | Physical terminal verified? | Electrical measurement | Software configuration | Result |
+|---|---|---|---|---|---|
+| Battery → main switch | [TODO] | [TODO] | [TODO] | Not applicable | [TODO] |
+| Switch → 5 V buck VIN | [TODO] | [TODO] | [TODO] | Not applicable | [TODO] |
+| Switch → 12 V buck VIN | [TODO] | [TODO] | [TODO] | Not applicable | [TODO] |
+| 5 V buck → Pi USB-C | [TODO] | [TODO] | [TODO] | Pi power diagnostics [TODO] | [TODO] |
+| 12 V buck → DFR0592 | [TODO] | [TODO] | [TODO] | Motor port [TODO] | [TODO] |
+| DFR0592 → motor +/− | [TODO] | [TODO] | [TODO] | Polarity [TODO] | [TODO] |
+| DFR0592 → encoder | [TODO] | [TODO] | [TODO] | PPR and direction [TODO] | [TODO] |
+| DFR0604 → servo | [TODO] | [TODO] | [TODO] | PWM port and pulse limits [TODO] | [TODO] |
+| I²C devices and pull-ups | [TODO] | [TODO] | [TODO] | Bus/address [TODO] | [TODO] |
+| SEN0253 → host bus | [TODO] | [TODO] | [TODO] | Drivers [TODO] | [TODO] |
+| LiDAR → host | [TODO] | [TODO] | [TODO] | Serial/USB port [TODO] | [TODO] |
+| Camera → CSI port | [TODO] | [TODO] | [TODO] | Camera configuration [TODO] | [TODO] |
+| LED button → input | [TODO] | [TODO] | [TODO] | Waiting/start behavior [TODO] | [TODO] |
+| OLED voltmeter → monitored rail | [TODO] | [TODO] | [TODO] | Not applicable | [TODO] |
 
 ### 8.4 Electrical hardware safety checks
 
@@ -502,10 +527,10 @@ The robot photographs show an elevated top-mounted cylindrical LiDAR unit. The f
 
 A calibration/error experiment should compare known target distance `d_ref` with reported distance `d_LiDAR`:
 
-\[
+$$
 e_d=d_{\mathrm{LiDAR}}-d_{\mathrm{ref}},\qquad
 \mathrm{MAE}_d=\frac{1}{N}\sum_{i=1}^N|e_{d,i}|.
-\]
+$$
 
 These error metrics require **measured readings** to carry an experimental result. Do not infer LiDAR performance from MATLAB vehicle-path geometry plots.
 
@@ -563,9 +588,9 @@ The supplied CHP-20GP-180 motor reference identifies **12 V**, **19:1 internal g
 
 For a measured interval `Δt` and effective counts-per-wheel-revolution `C_w`, the driven-wheel RPM is
 
-\[
+$$
 n_w=\frac{60N}{C_w\Delta t}.
-\]
+$$
 
 `C_w` must reflect encoder mounting point, gear ratio, additional drivetrain reduction and the firmware's x1/x2/x4 counting convention. **[TODO]** Record signal voltage, A/B polarity, missed-count tests and direction reversal behavior. See [Mechanical Engineering](1-mech.md) for drivetrain geometry and calibration.
 
@@ -715,7 +740,7 @@ The complete build sequence and clean-checkout test belong in [Build and Verific
 - [World Robot Olympiad Association — Official competition resources](https://wro-association.org/competition/)
 - [WRO 2026 season](https://wro-association.org/competition/2026-season/)
 - [WRO official Questions & Answers](https://wro-association.org/competition/questions-answers/)
-- *WRO 2026 Future Engineers General Rules*, Section 7 and Appendix C, especially **Criterion 2: Power and Sensor Architecture**. Refer to the official PDF supplied for this project.
+- [WRO 2026 season — official competition resources](https://wro-association.org/competition/2026-season/) — *Future Engineers General Rules*, Section 7 and Appendix C, especially **Criterion 2: Power and Sensor Architecture**. Check the current rules PDF and Q&A linked from the season page.
 
 ### Primary hardware references
 
