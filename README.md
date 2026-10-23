@@ -14,7 +14,7 @@
 
 YBR-SUNFLOWER is developing a self-driving robotic car for the **World Robot Olympiad (WRO) 2026 Future Engineers** category. The vehicle is designed to navigate an unfamiliar track autonomously, interpret its surroundings, steer around traffic signs, and perform the required maneuvers using onboard computation and sensors. Our engineering work brings together mechanical design, electrical integration, perception, planning, control, and practical testing.
 
-This repository shares our vehicle design and source code alongside the reasoning and evidence behind engineering choices. The detailed technical material is organized into **five integrated engineering records** under [`journal/`](journal/). Each record combines design explanations, calculations, development decisions, experiments, results, and reproduction information for its subject. The front page is intentionally an overview rather than a second copy of the technical reports.
+This repository shares our vehicle design and source code alongside the reasoning and evidence behind engineering choices. The detailed technical material is organized into **five integrated engineering records** under [`journal/`](journal/). Each record combines design explanations, calculations, development decisions, experiments, results, and reproduction information for its subject. The front page is intentionally an overview of the technical reports.
 
 | Project detail | Overview |
 |:---|:---|
@@ -46,11 +46,11 @@ These five records cover the documentation areas in the WRO 2026 evaluation rubr
 
 All photos are in [`t-photos/`](t-photos/)
 
-| Member | Main focus |
-|:---|:---|
-| **Peradon Nimsongprasert** | Robot construction and software development |
-| **Chanakarn Yimsakul** | Engineering documentation and technical writing |
-| **Thanphisit Sakulvitulthai** | Hardware integration and electrical systems |
+| Member | Primary responsibility | Supporting responsibilities |
+|---|---|---|
+| **Peradon Nimsongprasert (Tun)** | Robot construction and software development | Testing, debugging, and optimization |
+| **Chanakarn Yimsakul (Indy)** | Engineering documentation and technical writing | Development records and software support |
+| **Thanphisit Sakulvitulthai (Peach)** | Hardware development and electrical systems | Assembly, tests, and documentation |
 
 **Mentor:** Mr. Punnapon Tanasnitikul
 
@@ -61,6 +61,22 @@ All team members contribute to the engineering process through collaborative des
 **[TO DO]** Add representative version 2.0 photographs once the physical car is complete
 
 All sides are in [`v-photos/`](v-photos/)
+
+### Standard views
+
+| Front | Left | Top |
+|---|---|---|
+| **[TODO]** Front-view photo | **[TODO]** Right-side photo | **[TODO]** Rear-view photo |
+
+| Rear | Right | Bottom |
+|---|---|---|
+| **[TODO]** Left-side photo | **[TODO]** Top-view photo | **[TODO]** Bottom-view photo |
+
+### Photoshoot
+
+| Right-front | Right-rear | Left-front | Left-rear |
+|---|---|---|---|
+| **[TODO]** Photo | **[TODO]** Photo | **[TODO]** Photo | **[TODO]** Photo |
 
 Our vehicle combines a Raspberry Pi computer, range and vision sensors, a geared drive motor with encoder feedback, and servo-controlled steering. The computer processes observations and coordinates the car's motion through the onboard software and electrical interfaces. Full component specifications, circuit diagrams, pin assignments, mechanical dimensions, tuning parameters, and validation results belong in the engineering records above.
 
@@ -95,5 +111,3 @@ The technical records explain **why** decisions were made; the source and suppor
 - [WRO International Association — 2026 season rules and resources](https://wro-association.org/competition/2026-season/) — Future Engineers general rules, competition material, and documentation rubric.
 - [WRO official Questions & Answers](https://wro-association.org/competition/questions-answers/) — official clarifications and additions that may affect the international competition.
 - [WRO International Association — main website](https://wro-association.org/) — organizational and competition information.
-
-The applicable official rules and published Q&A take precedence over explanatory statements in this repository.
