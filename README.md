@@ -4,7 +4,7 @@
 
 ### WRO 2026 · Future Engineers · Self-Driving Cars
 
-**Yothinburana School · Science–Mathematics English Program · Thailand**
+**Thailand · Yothinburana School · Science–Mathematics English Program**
 
 *Designing, testing, and documenting an autonomous vehicle as a team.*
 
@@ -14,7 +14,7 @@
 
 YBR-SUNFLOWER is developing a self-driving robotic car for the **World Robot Olympiad (WRO) 2026 Future Engineers** category. The vehicle is designed to navigate an unfamiliar track autonomously, interpret its surroundings, steer around traffic signs, and perform the required maneuvers using onboard computation and sensors. Our engineering work brings together mechanical design, electrical integration, perception, planning, control, and practical testing.
 
-This repository shares our vehicle design and source code alongside the reasoning and evidence behind engineering choices. The detailed technical material is organized into **five integrated engineering records** under [`journal/`](journal/). Each record combines design explanations, calculations, development decisions, experiments, results, and reproduction information for its subject. The front page is intentionally an overview of the technical reports.
+This repository shares our vehicle design and source code alongside the reasoning and evidence behind engineering choices. The detailed technical material is organized into **five integrated engineering records** under [`engineering_journal/`](engineering_journal/). Each record combines design explanations, calculations, development decisions, experiments, results, and reproduction information for its subject.
 
 | Project detail | Overview |
 |:---|:---|
@@ -35,8 +35,7 @@ Each link below leads to **one complete record**, rather than separate overview 
 | **[Mobility and Mechanical Design](journal/1-mech.md)** | Chassis, drivetrain, steering geometry, mechanical iterations, CAD, fabrication, assembly, and measured mechanical performance |
 | **[Power and Sensor Architecture](journal/2-elec.md)** | Power distribution, circuits, wiring, components, electronic interfaces, sensors, calibration, and electrical tests |
 | **[Software Architecture and Obstacle Strategy](journal/3-software.md)** | Software architecture, perception, localization, motion planning, obstacle handling, control, parking, and test results |
-| **[Systems Thinking and Engineering Decisions](journal/4-system.md)** | Cross-system trade-offs, engineering decisions, design constraints, failures, alternatives, and evidence-based improvements |
-| **[Build and Reproduction Guide](journal/5-reproducibility.md)** | Parts and fabrication files, step-by-step physical assembly, electrical checks, dependencies, setup, configuration, launch procedures, and verification |
+| **[Build and Reproduction Guide](journal/4-build.md)** | Parts and fabrication files, step-by-step physical assembly, electrical checks, dependencies, setup, configuration, launch procedures, and verification |
 
 These five records cover the documentation areas in the WRO 2026 evaluation rubric. **[TO DO]** Complete and review the linked records as the new vehicle is built and tested. Draft descriptions and planned tests must remain visibly distinguished from verified results.
 
@@ -87,7 +86,7 @@ Our vehicle combines a Raspberry Pi computer, range and vision sensors, a geared
 
 *Vehicle shown: version 1.0. A version 2.0 photograph will be added after assembly.*
 
-**[TO DO]** Add representative version 2.0 photographs once the physical car is complete, including front, rear, left, right, top, and bottom views. The current wiring layout is a design draft; verified connections and test evidence will be recorded in [`journal/elec.md`](journal/elec.md).
+**[TO DO]** Add representative version 2.0 photographs once the physical car is complete, including front, rear, left, right, top, and bottom views. The current wiring layout is a design draft; verified connections and test evidence will be recorded in [`engineering_journal/elec.md`](engineering_journal/elec.md).
 
 ## Project files
 
@@ -95,7 +94,7 @@ The technical records explain **why** decisions were made; the source and suppor
 
 | Resource | Location |
 |:---|:---|
-| Engineering records | [`journal/`](journal/) |
+| Engineering records | [`engineering_journal/`](engineering_journal/) |
 | Program source | [`src/`](src/) |
 | Circuit and wiring diagrams | [`schemes/`](schemes/) |
 | Vehicle photographs | [`robot-photos/`](v-photos/) |
