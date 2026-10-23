@@ -4,6 +4,4 @@ YBR-SUNFLOWER, representing **Yothinburana School**, placed **1st** in the **WRO
 
 ![YBR-SUNFLOWER — National Final award photograph](national_prize.jpg)
 
-Engineering documentation : **24.7 points**
-
-[Back to project overview](../README.md)
+SUNFLOWER, representing **
