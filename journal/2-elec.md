@@ -6,7 +6,9 @@
 >
 > **Evidence policy:** **Team-reported** means supplied by the team; **Datasheet** means a published part specification; **Model / MATLAB** means a calculation or simulation with stated assumptions; **Measured** means an observed value with test conditions, instruments and a repeatable procedure. No simulated value below is presented as a physical measurement. `[TODO]` identifies information or evidence not yet supplied.
 
-[← Engineering overview](0-overview.md) · [System integration](4-system.md) · [Build and verification](5-reproducibility.md) · [Project README](../README.md)
+[← Project README](../README.md) · [← Engineering overview](0-overview.md)
+
+[← Mobility and Mechanical Design](1-mech.md) · [Software →](3-software.md)
 
 ---
 
@@ -35,9 +37,7 @@
 
 ## 1. The electrical design problem
 
-YBR-SUNFLOWER's electrical system must power an autonomous car from a compact removable battery, deliver stable power to a Raspberry Pi 5 and sensors, provide sufficient power for a drive motor and steering servo, and maintain accurate perception in a noisy electromechanical environment. The engineering challenge is **not** manufacturing a custom printed circuit board; it is selecting and integrating commercially available boards into a reproducible, reliable electrical architecture.
-
-The **WRO 2026 Future Engineers General Rules, Appendix C.3.2, Criterion 2** evaluates power architecture, current distribution, sensor selection and placement, calibration, wiring, failure points and evidence of iteration. At the advanced level, the record should show **why** a component or architecture was chosen and **what experiment or calculation supports it**. The schematic, wiring illustration, MATLAB studies and physical tests are complementary—not interchangeable—forms of evidence.
+YBR-SUNFLOWER's electrical system must power an autonomous car using a compact, removable battery, deliver stable power to the Raspberry Pi 5 and sensors, provide sufficient power for the drive motor and steering servo, and maintain accurate perception under varying lighting conditions.
 
 ### 1.1 Constraints we designed around
 
