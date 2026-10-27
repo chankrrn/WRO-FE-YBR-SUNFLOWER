@@ -8,6 +8,8 @@
 
 </div>
 
+---
+
 ## Project at a glance
 
 YBR-SUNFLOWER is developing a self-driving robotic car for the **World Robot Olympiad (WRO) 2026 Future Engineers** category. The robot is designed to navigate an unfamiliar track autonomously, interpret its surroundings, steer around traffic signs, and perform the required maneuvers using onboard computation and sensors. Our engineering work brings together mechanical design, electrical integration, perception, planning, control, and practical testing.
@@ -24,6 +26,8 @@ This repository shares our robot design and source code alongside the reasoning 
 | Current stage | Revised robot in development; final assembly and validation pending |
 | Main materials | Engineering records, source code, diagrams, photographs, and demonstrations |
 
+---
+
 ## Explore our engineering work
 
 Each link below leads to **one complete record**, rather than separate overview and journal documents. The records are organized by engineering responsibility, with testing evidence and design decisions included where they belong.
@@ -36,6 +40,8 @@ Each link below leads to **one complete record**, rather than separate overview 
 | **[Build and Reproduction Guide](journal/4-build.md)** | Parts and fabrication files, step-by-step physical assembly, electrical checks, dependencies, setup, configuration, launch procedures, and verification |
 
 These five records cover the documentation areas in the WRO 2026 evaluation rubric. **[TO DO]** Complete and review the linked records as the new robot is built and tested. Draft descriptions and planned tests must remain visibly distinguished from verified results.
+
+---
 
 ## Our Team
 
@@ -52,6 +58,8 @@ All photos are in [`t-photos/`](t-photos/)
 **Mentor:** Mr. Punnapon Tanasnitikul
 
 All team members contribute to the engineering process through collaborative design reviews, integration, testing, and documentation. The repository is intended to communicate how the robot is constructed and how technical decisions are evaluated, not simply to display the final result.
+
+---
 
 ## Our Robot
 
@@ -86,6 +94,8 @@ Our robot combines a Raspberry Pi computer, range and vision sensors, a geared d
 
 **[TO DO]** Add representative version 2.0 photographs once the physical car is complete, including front, rear, left, right, top, and bottom views. The current wiring layout is a design draft; verified connections and test evidence will be recorded in [`engineering_journal/elec.md`](engineering_journal/elec.md).
 
+---
+
 ## Project files
 
 The technical records explain **why** decisions were made; the source and supporting materials show **what** was built and implemented. This distinction helps readers follow a design from documentation to an actual component, configuration, or test.
@@ -102,6 +112,8 @@ The technical records explain **why** decisions were made; the source and suppor
 | License | [`LICENSE.md`](LICENSE.md) |
 
 **[TO DO]** Confirm any changed folder names before publishing the revised README. **[TO DO]** Add working links to the required Open Challenge and Obstacle Challenge demonstration videos. The robot's final software configuration, wiring, and CAD must refer to the same build revision; the verification procedure will be described in the [Build & Reproduction Guide](journal/reproducibility.md).
+
+---
 
 ## Official references
 
