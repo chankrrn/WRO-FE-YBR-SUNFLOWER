@@ -30,7 +30,7 @@ This repository shares our robot design and source code alongside the reasoning 
 
 ## Explore our engineering work
 
-Each link below leads to **one complete record**, rather than separate overview and journal documents. The records are organized by engineering responsibility, with testing evidence and design decisions included where they belong.
+Each link below leads to **one complete record**. The records are organized by engineering responsibility, with testing evidence and design decisions included where they belong.
 
 | Engineering record | What it covers |
 |:---|:---|
