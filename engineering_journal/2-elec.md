@@ -6,9 +6,9 @@
 >
 > **Evidence policy:** **Team-reported** means supplied by the team; **Datasheet** means a published part specification; **Model / MATLAB** means a calculation or simulation with stated assumptions; **Measured** means an observed value with test conditions, instruments and a repeatable procedure. No simulated value below is presented as a physical measurement. `[TODO]` identifies information or evidence not yet supplied.
 
-[← Project README](../README.md) · [← Engineering overview](0-overview.md)
+[← Project README](../README.md) · [← Engineering Overview](0-overview.md)
 
-[← Mobility and Mechanical Design](1-mech.md) · [Software →](3-software.md)
+[← Mobility and Mechanical Design](1-mech.md) · [Software Architecture and Obstacle Strategy →](3-software.md)
 
 ---
 
