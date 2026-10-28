@@ -10,7 +10,7 @@
 
 ---
 
-## Project at a glance
+## Project at a Glance
 
 YBR-SUNFLOWER is developing a self-driving robotic car for the **World Robot Olympiad (WRO) 2026 Future Engineers** category. The robot is designed to navigate an unfamiliar track autonomously, interpret its surroundings, steer around traffic signs, and perform the required maneuvers using onboard computation and sensors. Our engineering work brings together mechanical design, electrical integration, perception, planning, control, and practical testing.
 
@@ -28,7 +28,7 @@ This repository shares our robot design and source code alongside the reasoning 
 
 ---
 
-## Explore our engineering work
+## Explore Our Engineering Work
 
 Each link below leads to **one complete record**. The records are organized by engineering responsibility, with testing evidence and design decisions included where they belong.
 
@@ -38,8 +38,6 @@ Each link below leads to **one complete record**. The records are organized by e
 | **[Power and Sensor Architecture](journal/2-elec.md)** | Power distribution, circuits, wiring, components, electronic interfaces, sensors, calibration, and electrical tests |
 | **[Software Architecture and Obstacle Strategy](journal/3-software.md)** | Software architecture, perception, localization, motion planning, obstacle handling, control, parking, and test results |
 | **[Build and Reproduction Guide](journal/4-build.md)** | Parts and fabrication files, step-by-step physical assembly, electrical checks, dependencies, setup, configuration, launch procedures, and verification |
-
-These five records cover the documentation areas in the WRO 2026 evaluation rubric. **[TO DO]** Complete and review the linked records as the new robot is built and tested. Draft descriptions and planned tests must remain visibly distinguished from verified results.
 
 ---
 
@@ -67,7 +65,7 @@ All team members contribute to the engineering process through collaborative des
 
 All sides are in [`v-photos/`](v-photos/)
 
-### Standard views
+### Standard Views
 
 | Front | Left | Top |
 |---|---|---|
@@ -85,6 +83,8 @@ All sides are in [`v-photos/`](v-photos/)
 
 Our robot combines a Raspberry Pi computer, range and vision sensors, a geared drive motor with encoder feedback, and servo-controlled steering. The computer processes observations and coordinates the car's motion through the onboard software and electrical interfaces. Full component specifications, circuit diagrams, pin assignments, mechanical dimensions, tuning parameters, and validation results belong in the engineering records above.
 
+### Versions
+
 | Version | Short description | Status |
 |:---|:---|:---|
 | **[1.0](history/README.md)** | Original completed robot design | Completed |
@@ -92,11 +92,9 @@ Our robot combines a Raspberry Pi computer, range and vision sensors, a geared d
 
 *robot shown: version 1.0. A version 2.0 photograph will be added after assembly.*
 
-**[TO DO]** Add representative version 2.0 photographs once the physical car is complete, including front, rear, left, right, top, and bottom views. The current wiring layout is a design draft; verified connections and test evidence will be recorded in [`engineering_journal/elec.md`](engineering_journal/elec.md).
-
 ---
 
-## Project files
+## Project Files
 
 The technical records explain **why** decisions were made; the source and supporting materials show **what** was built and implemented. This distinction helps readers follow a design from documentation to an actual component, configuration, or test.
 
@@ -111,11 +109,9 @@ The technical records explain **why** decisions were made; the source and suppor
 | Supporting resources | [`other/`](other/) |
 | License | [`LICENSE.md`](LICENSE.md) |
 
-**[TO DO]** Confirm any changed folder names before publishing the revised README. **[TO DO]** Add working links to the required Open Challenge and Obstacle Challenge demonstration videos. The robot's final software configuration, wiring, and CAD must refer to the same build revision; the verification procedure will be described in the [Build & Reproduction Guide](journal/reproducibility.md).
-
 ---
 
-## Official references
+## Official References
 
 - [WRO International Association — 2026 season rules and resources](https://wro-association.org/competition/2026-season/) — Future Engineers general rules, competition material, and documentation rubric.
 - [WRO official Questions & Answers](https://wro-association.org/competition/questions-answers/) — official clarifications and additions that may affect the international competition.

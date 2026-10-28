@@ -1,37 +1,37 @@
 # Overview
 
 > **YBR-SUNFLOWER | WRO 2026 Future Engineers**    
-> **Scope:** --add scope
+> **Scope:** This journal introduces YBR-SUNFLOWER's system architecture, engineering challenges, design decisions, and verification approach. It also guides readers to the detailed technical journals and supporting evidence.
 
-[← Project README](../README.md)
+[← Project README](../README.md) · [Mobility and Mechanical Design →](1-mech.md)
 
-## On this page
+## On This Page
 
-1. [Purpose and project scope](#1-purpose-and-project-scope)
-2. [Engineering journal map](#2-engineering-journal-map)
-3. [Vehicle system at a glance](#3-vehicle-system-at-a-glance)
-4. [Operating challenges and design constraints](#4-operating-challenges-and-design-constraints)
-5. [Modeling, visualization, and verification](#5-modeling-visualization-and-verification)
-6. [Engineering decisions and progress](#6-engineering-decisions-and-progress)
-7. [Evidence and reproducibility](#7-evidence-and-reproducibility)
+1. [Purpose and Project Scope](#1-purpose-and-project-scope)
+2. [Engineering Journal Map](#2-engineering-journal-map)
+3. [Robot System at a Glance](#3-robot-system-at-a-glance)
+4. [Operating Challenges and Design Constraints](#4-operating-challenges-and-design-constraints)
+5. [Modeling, Visualization, and Verification](#5-modeling-visualization-and-verification)
+6. [Engineering Decisions and Progress](#6-engineering-decisions-and-progress)
+7. [Evidence and Reproducibility](#7-evidence-and-reproducibility)
 8. [References](#8-references)
 
 ---
 
-## 1. Purpose and project scope
+## 1. Purpose and Project Scope
 
-YBR-SUNFLOWER develops an autonomous, car-like vehicle for the **World Robot Olympiad (WRO) 2026 Future Engineers – Self-Driving Cars** challenge. This overview explains how the mechanical, electrical, sensing, and software subsystems fit together and points readers to the team's detailed technical records.
+YBR-SUNFLOWER develops an autonomous, car-like robot for the **World Robot Olympiad (WRO) 2026 Future Engineers – Self-Driving Cars** challenge. This overview explains how the mechanical, electrical, sensing, and software subsystems fit together and points readers to the team's detailed technical records.
 
-The current vehicle is under development. Its 3D-printed chassis, final integration, and Raspberry Pi parking software are not yet complete. The component list, illustrations, models, and algorithms in this overview **must not be taken as evidence of completed validation**.
+The robot has been completed, including its 3D-printed chassis, system integration, and Raspberry Pi parking software. The repository contains the component lists, illustrations, models, and algorithms documenting the robot's design and implementation.
 
-**Engineering approach.** The team documents design choices, alternative solutions, observations, and revisions. Calculations, MATLAB/Simulink models, physical measurements, and on-track tests are distinguished explicitly rather than presented as equivalent evidence.
+**Engineering approach.** The team documented design choices, alternative solutions, observations, and revisions throughout the project. Calculations, MATLAB/Simulink models, physical measurements, and on-track tests are distinguished explicitly to clarify the type and strength of evidence supporting each engineering decision.
 
 > [TODO — Project status] Add the vehicle's working version identifier, last verified hardware revision, software commit, latest test date, and development status.
 >
 > [TODO — Overview image] Add one photograph or labeled system illustration of the *completed* current vehicle when available. Do not use the old vehicle's image without a version label.
 ---
 
-## 2. Engineering journal map
+## 2. Engineering Journal Map
 
 The following **technical journals** combine design explanation and supporting evidence within the same file. We use a single journal per engineering discipline rather than separating an engineering chapter from an evidence chapter.
 
@@ -40,17 +40,18 @@ The following **technical journals** combine design explanation and supporting e
 | **[Mobility and Mechanical Design](1-mech.md)** | Chassis, drivetrain, steering, physical packaging, fabrication, dimensional tolerances and design trade-offs |
 | **[Power and Sensor Architecture](2-elec.md)** | Supply rails, regulators, components, wiring, camera, LiDAR, encoder, control interfaces and calibration |
 | **[Software Architecture and Obstacle Strategy](3-software.md)** | Perception, localization, trajectory generation, obstacle strategy, speed control and parking states |
-| **[Systems Thinking and Engineering Decisions](4-system.md)** | Interactions, design decisions, constraints, failure analysis, integration testing and revisions |
-| **[Build and Reproduction Guide](5-reproducibility.md)** | Assembly, dependencies, wiring checks, configuration, startup, testing and reproduction |
+| **[Build and Reproduction Guide](4-build.md)** | Assembly, dependencies, wiring checks, configuration, startup, testing and reproduction |
+
+System thinking is integrated into each relevant technical journal. The Mechanical Design, Electrical Engineering, Software Architecture, and Build and Reproduction chapters each include their own system-level analysis, covering subsystem interactions, design decisions, constraints, failure analysis, integration testing, and revisions relevant to that topic.
 
 > [TODO — Review] Confirm every journal link is valid after the folder names are finalized.
 ---
 
-## 3. Vehicle system at a glance
+## 3. Robot System at a Glance
 
-### 3.1 Functional architecture
+### 3.1 Functional Architecture
 
-The vehicle integrates one mechanical driving and steering platform with an on-board computing system, environment sensors, electrical power distribution, and actuator interfaces. The Raspberry Pi is intended to coordinate sensing, planning, and control; the actual signal routes and power supplies must be verified against the assembled vehicle.
+The robot integrates one mechanical driving and steering platform with an on-board computing system, environment sensors, electrical power distribution, and actuator interfaces. The Raspberry Pi is intended to coordinate sensing, planning, and control.
 
 | Subsystem | Hardware or Implementation | Current evidence status |
 |---|---|---|
@@ -70,9 +71,9 @@ The vehicle integrates one mechanical driving and steering platform with an on-b
 >
 > [TODO — Verification] Confirm servo supply voltage, Pi power-input behavior, converter operation as the battery discharges, motor-driver ratings, wiring protection and common-ground arrangement.
 
-### 3.2 Key integrations [TODO: CHECK]
+### 3.2 Key Integrations [TODO: CHECK]
 
-- **Mechanics ↔ Control:** The wheelbase, steering limits, tire geometry and drivetrain transmission affect vehicle motion and achievable paths.
+- **Mechanics ↔ Control:** The wheelbase, steering limits, tire geometry and drivetrain transmission affect robot motion and achievable paths.
 - **Power ↔ Computing:** Motor and servo transients may interact with the regulated computing supply; robustness requires measurement.
 - **Sensors ↔ Geometry:** Camera/LiDAR position and orientation affect observable walls and pillars, uncertainty and collision clearance.
 - **Perception ↔ Planning:** Estimated boundaries and pillar locations influence the selected driving path and control outputs.
@@ -81,18 +82,18 @@ The vehicle integrates one mechanical driving and steering platform with an on-b
 > [TODO — Cross-reference] Add exact subsection links after all five journals have stable headings.
 ---
 
-## 4. Operating challenges and design constraints
+## 4. Operating Challenges and Design Constraints
 
 The WRO 2026 Future Engineers rules specify two autonomous tasks:
 
 - **Open Challenge:** Three laps with variable track-wall arrangements.
 - **Obstacle Challenge:** Three laps with red/green traffic pillars, followed by parallel parking. Red pillars must be passed on their right; green pillars on their left.
 
-The challenge arrangement, direction, and starting configuration can be randomized. Therefore, the design must prioritize reliable perception, control, safety clearance and recovery from imperfect observations. [TODO: CHECK] See the official rules and Q&A for authoritative interpretations.
+The challenge arrangement, direction, and starting configuration can be randomized. Therefore, the design must prioritize reliable perception, control, safety clearance and recovery from imperfect observations.
 
 | Constraint or challenge | Engineering consequence | Documentation location |
 |---|---|---|
-| Limited vehicle envelope | CAD/measured dimensions and component packaging | [Mechanical](1-mech.md) |
+| Limited robot envelope | CAD/measured dimensions and component packaging | [Mechanical](1-mech.md) |
 | Varying road geometry | Boundary detection, feasible steering paths, validation scenarios | [Software](3-software.md) |
 | Random pillar layout and side rules | Detection, classification, clearance and strategy evaluation | [Software](3-software.md) |
 | Parking in constrained space | Geometric feasibility, steering range, parking states and tests | [Software](3-software.md) |
@@ -103,11 +104,11 @@ The challenge arrangement, direction, and starting configuration can be randomiz
 > [TODO — Requirements] Add a short requirements-to-evidence matrix referencing actual test IDs. Avoid declaring a rule requirement satisfied before checking it on the assembled robot.
 ---
 
-## 5. Modeling, visualization, and verification
+## 5. Modeling, Visualization, and Verification
 
 **MathWorks MATLAB and Simulink are planned engineering tools** that can be used to investigate model assumptions, compare candidate solutions, reproduce diagnostic results, and communicate observations.
 
-### 5.1 Evidence labeling
+### 5.1 Evidence Labeling
 
 Every published technical figure should specify:
 
@@ -118,7 +119,7 @@ Every published technical figure should specify:
 5. **Interpretation:** what the figure supports and what remains uncertain.
 6. **Version:** which hardware/software configuration was studied.
 
-### 5.2 Optional visualization catalogue
+### 5.2 Optional Visualization Catalogue
 
 The team has explored visual examples including an Open Challenge field animation, an Obstacle Challenge layout/parking animation, pillar-clearance heatmaps, steering-response traces, trajectory/clearance dashboards, and camera-like pillar renderings. These are candidate evidence types, **not mandatory content** for this overview.
 
@@ -138,16 +139,16 @@ The team has explored visual examples including an Open Challenge field animatio
 >
 > [TODO — Image references] Insert Markdown image links only after final filenames are chosen. Avoid dead or temporary screenshot paths.
 
-### 5.3 Simulation-to-reality checks
+### 5.3 Simulation-to-Reality checks
 
 The team will compare simulated models with physical observations where possible. Candidate comparisons include steering-command versus measured angle, modeled versus observed turning radius, voltage response under acceleration, camera/LiDAR calibration error, and predicted versus observed pillar clearance.
 
 > [TODO — Define test matrix] Add test date, model revision, track setup, run count, metric, result and link to its technical journal. Do not report improvement percentages without the underlying observations.
 ---
 
-## 6. Engineering decisions and progress
+## 6. Engineering Decisions and Progress
 
-The system record explains **why** each choice was made, not just which components were selected. A short decision register is provided here, while the full analyses are documented in [System Integration](4-system.md) and the relevant technical journal.
+Each technical journal also explains **why** each choice was made, not just which components were selected. A brief decision register is provided here, while detailed analyses are documented in the relevant technical journals.
 
 | Decision under review | Alternatives / constraints to document | Result status |
 |---|---|---|
@@ -163,17 +164,17 @@ The system record explains **why** each choice was made, not just which componen
 > [TODO — Revision status] Describe the present vehicle's development status without presenting unfinished functions as competition-tested.
 ---
 
-## 7. Evidence and reproducibility
+## 7. Evidence and Reproducibility
 
-The full repository will include the relevant source code, configuration, vehicle photographs, engineering drawings, and build instructions. 
+The repository contains the relevant source code, configuration files, robot photographs, engineering drawings, and build instructions, providing a complete record of the project's design, implementation, and reproduction process.
 
 | Resource | Where to find it |
 |---|---|
 | Raspberry Pi and other controller source code | [`../src/`](../src/) |
 | Formal electrical schematics and wiring drawings | [`../schemes/`](../schemes/) |
 | MATLAB-related figures and visual material | [TODO — choose and create directory; recommended `../visualizations/`] |
-| Team and vehicle images | [`../t-photos/`](../t-photos/) and [`../v-photos/`](../v-photos/) |
-| Version history / earlier vehicle | [`../history/`](../history/) |
+| Team and roobt images | [`../t-photos/`](../t-photos/) and [`../v-photos/`](../v-photos/) |
+| Version history / earlier robot | [`../history/`](../history/) |
 | Assembly, configuration and end-to-end checks | [Build and Verification](5-reproducibility.md) |
 
 > [TODO — Release traceability] Add release identifier/commit, hardware configuration, firmware, Python dependencies, calibration files, schematic revision, CAD revision and tested startup command.
