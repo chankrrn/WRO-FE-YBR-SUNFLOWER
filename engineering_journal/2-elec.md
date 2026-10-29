@@ -1,6 +1,7 @@
 # Power and Sensor Architecture
 
 > **YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 02**
+>
 > **Scope:**
 
 > **Evidence policy:** **Team-reported** means supplied by the team; **Datasheet** means a published part specification; **Model / MATLAB** means a calculation or simulation with stated assumptions; **Measured** means an observed value with test conditions, instruments and a repeatable procedure. No simulated value below is presented as a physical measurement. `[TODO]` identifies information or evidence not yet supplied.
