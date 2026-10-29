@@ -34,10 +34,10 @@ Each link below leads to **one complete record**. The records are organized by e
 
 | Engineering record | What it covers |
 |:---|:---|
-| **[Mobility and Mechanical Design](engineering_journal/1-mech.md)** | Chassis, drivetrain, steering geometry, mechanical iterations, CAD, fabrication, assembly, and measured mechanical performance |
-| **[Power and Sensor Architecture](engineering_journal/2-elec.md)** | Power distribution, circuits, wiring, components, electronic interfaces, sensors, calibration, and electrical tests |
-| **[Software Architecture and Obstacle Strategy](engineering_journal/3-software.md)** | Software architecture, perception, localization, motion planning, obstacle handling, control, parking, and test results |
-| **[Build and Reproduction Guide](engineering_journal/4-build.md)** | Parts and fabrication files, step-by-step physical assembly, electrical checks, dependencies, setup, configuration, launch procedures, and verification |
+| **[1-Mobility and Mechanical Design](engineering_journal/1-mech.md)** | Chassis, drivetrain, steering geometry, mechanical iterations, CAD, fabrication, assembly, and measured mechanical performance |
+| **[2-Power and Sensor Architecture](engineering_journal/2-elec.md)** | Power distribution, circuits, wiring, components, electronic interfaces, sensors, calibration, and electrical tests |
+| **[3-Software Architecture and Obstacle Strategy](engineering_journal/3-software.md)** | Software architecture, perception, localization, motion planning, obstacle handling, control, parking, and test results |
+| **[4-Build and Reproduction Guide](engineering_journal/4-build.md)** | Parts and fabrication files, step-by-step physical assembly, electrical checks, dependencies, setup, configuration, launch procedures, and verification |
 
 ---
 

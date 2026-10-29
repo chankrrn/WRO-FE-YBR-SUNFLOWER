@@ -1,4 +1,4 @@
-# Power and Sensor Architecture
+# 2-Power and Sensor Architecture
 
 > **YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 02**
 >
