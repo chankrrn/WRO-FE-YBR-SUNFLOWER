@@ -4,9 +4,17 @@
 
 YBR-SUNFLOWER, representing **Yothinburana School**, placed **1st** in the **WRO Thailand 2026 Future Engineers National Final**, held on **3–4 September 2026**.
 
-<p align="center">
-  <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/32deda38582131d35e26f1482590f194d5bbfa52/history/national_prize.jpg" width="500"/>
-</p>
+
+<table border="1">
+  <tr>
+    <td>
+      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/32deda38582131d35e26f1482590f194d5bbfa52/history/national_prize.jpg" width="500">
+    </td>
+    <td>
+      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/8dd486efac223b7d656d39b2666fa2929a788862/history/ver01.jpg" width="500">
+    </td>
+  </tr>
+</table>
 
 ## Senior Team
 
