@@ -87,8 +87,8 @@ Our robot combines a Raspberry Pi computer, range and vision sensors, a geared d
 
 | Version | Short description | Status |
 |:---|:---|:---|
-| **[1.0](history/README.md)** | Original completed robot design | Completed |
-| **2.0** | Redesigned robot with updated chassis, electronics, sensing, and parking development | In progress |
+| **[1.0](history/README.md)** | The completed robot used in the **WRO Thailand 2026 Future Engineers National Final**. | Completed |
+| **2.0** | The redesigned robot for the **WRO 2026 Future Engineers International Final**. | In progress |
 
 *robot shown: version 1.0. A version 2.0 photograph will be added after assembly.*
 

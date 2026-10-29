@@ -1,14 +1,15 @@
-# Electrical Engineering — Power, Interfaces & Perception
+# Power and Sensor Architecture
 
-**YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 02**
+> **YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 02**
+> **Scope:**
 
-> **Working technical draft — 22 October 2026.** This document combines the electrical design explanation, reference specifications, analytical equations, experiment plans and evidence in one record. The redesigned vehicle is approaching completion, but its electrical wiring, final operating parameters and test measurements are not fully verified.
->
 > **Evidence policy:** **Team-reported** means supplied by the team; **Datasheet** means a published part specification; **Model / MATLAB** means a calculation or simulation with stated assumptions; **Measured** means an observed value with test conditions, instruments and a repeatable procedure. No simulated value below is presented as a physical measurement. `[TODO]` identifies information or evidence not yet supplied.
 
 [← Project README](../README.md) · [← Engineering Overview](0-overview.md)
 
 [← Mobility and Mechanical Design](1-mech.md) · [Software Architecture and Obstacle Strategy →](3-software.md)
+
+# บนนี้อย่าแก้นะพีท แก้แค่ล่างจากนี้นะ!!!
 
 ---
 
