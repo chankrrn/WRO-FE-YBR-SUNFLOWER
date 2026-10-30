@@ -1,7 +1,5 @@
 # Power and Sensor Architecture
 
-> **YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 02**
->
 > **Scope:** Electrical design, power distribution, computing hardware, interfaces, wiring, component selection, engineering calculations and MATLAB modeling.
 >
 > **Evidence policy:** **Team-reported** means supplied by the team; **Datasheet** means a published part specification; **Model / MATLAB** means a calculation or simulation with stated assumptions; **Measured** means an observed value with test conditions, instruments and a repeatable procedure. No simulated value below is presented as a physical measurement. `[TODO]` identifies information or evidence not yet supplied.
@@ -70,9 +68,11 @@ A published **maximum** current is not a measured operating current. An assumed 
 
 **Figure E-01.** Functional power distribution. Battery positive passes through the rocker switch to the **D1-3 positive splitter**; battery negative passes **directly** to the **PCT-214 ground splitter**. Both converters share the switched input supply and return but provide separate 5 V and 12 V outputs. The Pi receives regulated 5 V through USB-C, while the motor driver receives regulated 12 V. The signal connections and breakout power details are described in Figure E-02 and the schematic; the block diagram is not a connector-level wiring instruction.
 
+Figure E-01 keeps battery-positive wiring and the ground-return path visually separate; its common-ground trunk is a functional abstraction, not a separate physical ground connector. The actual negative connector is the single PCT-214.
+
 The rail names from the EasyEDA schematic are `VBAT_RAW` (battery positive before SW1), `VBAT_SW` (switched positive), `+5V_REG` (DFR1202 output), `+12V_REG` (DFR1208 output), `PI_5V`, `PI_3V3` and `GND`. `PI_5V` denotes the Pi/header side of the 5 V power path; it is not a second independent buck converter.
 
-### 2.2 Controller and signal architecture — Figure E-02
+### 2.2 Controller and signal architectuare — Figure E-02
 
 ![Figure E-02 — Control and sensor interfaces](../schemes/control_sensor_interfaces.svg)
 
@@ -93,7 +93,7 @@ Values in the following tables are **datasheet or supplier ratings**, unless exp
 | **DFR0592 motor-driver HAT V1.0 — 1** | STM32 + TB6612FNG; 7–12 V external motor input; 5 V HAT logic; I²C; default `0x10`; two drive channels | Propulsion drive through **M2** and feedback through **E2** [R5] |
 | **DFR0604 I/O-expansion HAT — 1** | STM32F030, 5 V board supply, nominal 3.3 V sensor breakout supply; GPIO, I²C, UART and PWM; default `0x10`; optional external PWM/servo rail **6–12 V** | Interface to servo, IMU, button and LiDAR UART [R6] |
 | **CHP-20GP-180 geared DC motor with encoder — 1** | 12 V; *internal gearbox* ratio **19:1**; no-load output speed 780 rpm; rated output speed 680 rpm; ≤280 mA no-load, ≤550 mA rated, ≤2.7 A stall; 0.40 kgf·cm rated torque, ≥2.0 kgf·cm stall torque | Rear propulsion and quadrature encoder [R7] |
-| **SURPASS Hobby S0017M servo — 1** | 4.8–6.0 V operating supply; 0.23 s/60° at 4.8 V and 0.20 s/60° at 6 V; advertised stall torque 1.5 and 1.8 kgf·cm respectively | Steering via PWM3 [R8] |
+| **SURPASS Hobby S0017M servo — 1** | 4.8–6.0 V operating supply; 0.23 s/60° at 4.8 V and 0.20 s/60° at 6 V; seller-advertised stall torque 1.5 and 1.8 kgf·cm respectively. **0.10–0.20 A no-load and 0.8–1.2 A stall are team-supplied generic planning ranges, not authenticated S0017M ratings** | Steering via PWM3 [R8] |
 | **Raspberry Pi 5 Active Cooler — 1** | 5 V via dedicated 4-pin fan header; PWM/tachometer support; published maximum fan speed 8000 rpm ±15% | Computing thermal management [R9] |
 
 **DFR0592 current-rating caution:** DFRobot's specification table lists **2 A continuous**, while its descriptive driver documentation states **1.2 A continuous and 2 A peak** per TB6612FNG channel. The CHP motor supplier states **up to 2.7 A stall current**. This documentation inconsistency and potential stall mismatch remain an engineering design risk; the advertised **12 A converter output** does not remove the driver's channel limit. [R5, R7]
@@ -206,135 +206,135 @@ The drawing therefore records `SERVO_V+` as a separate functional servo supply, 
 | `SERVO_V+` | **5 V conditional** | DFR0604 PWM3+ → S0017M | Manufacturer VP-unpowered mode; team state in Section 18 |
 | `GND` | 0 V reference | PCT-214, converter returns, Pi and other peripherals | Team-reported common return |
 
-## 7. Electrical calculations and example load budget
+## 7. Electrical calculations and evidence-labeled load budget
 
-### 7.1 Basic load equations
-
-```math
-P = VI, \qquad P_{\mathrm{load}} = \sum_{k=1}^{n} V_k I_k.
-```
-
-For separate buck converters, with efficiency inputs `eta_5` and `eta_12`:
+The load model was revised to match the selected [Figure 01 MATLAB source](../other/matlab/electrical_figures/Figure01/figure01_electrical_load_budget.m). It uses **published operating points where available** and identifies every other current as a **scenario assumption**, not an instrument reading. Component input power is calculated from each supply domain using:
 
 ```math
-P_{\mathrm{battery}} \approx \frac{P_{5}}{\eta_{5}} + \frac{P_{12}}{\eta_{12}}, \qquad
-I_{\mathrm{battery}} \approx \frac{P_{\mathrm{battery}}}{V_{\mathrm{terminal}}}.
+P_k=V_k I_k,\qquad P_{\mathrm{branch}}=\sum_k P_k.
 ```
 
-Efficiencies depend on input voltage, load and temperature. The estimates below do **not** claim measured efficiency.
+### 7.1 Component-by-component current allocation
 
-### 7.2 Example current allocation used in MATLAB Step 01
-
-The [published Step 01 script](../other/matlab/power_architecture.m) uses the following **synthetic** current scenario. It was chosen for **design screening**, not to claim instrument-measured currents:
-
-| Load group | Assumed rail | Script current | Calculated load power | Evidence classification |
+| Electrical load | Nominal modeled voltage | Current used | Calculated load power | Evidence class |
 |---|---:|---:|---:|---|
-| Raspberry Pi 5 + camera | 5 V | 2.00 A | 10.00 W | Assumption, **not** Raspberry Pi manufacturer consumption |
-| RPLIDAR S2L | 5 V | 0.50 A | 2.50 W | Example budget assumption; S2L datasheet lists **0.40 A working** |
-| HATs + button | 5 V | 0.15 A | 0.75 W | Assumption; no installed-current claim |
-| Steering servo (modeled 5 V) | 5 V | 0.70 A | 3.50 W | Assumption; supply depends on the DFR0604 VP state |
-| Motor load | 12 V | 1.00 A | 12.00 W | Assumption; motor supplier rates **≤0.55 A** at its specified rated point |
-| **Total 5 V example** | | **3.35 A** | **16.75 W** | Sum of script assumptions |
-| **Total 12 V example** | | **1.00 A** | **12.00 W** | Sum of script assumptions |
+| Raspberry Pi 5 + OV5647 + active cooler | 5.0 V | 2.00 A | **10.00 W** | **Assumed** aggregate operating demand; not the Pi 5 PSU's 5 A capacity |
+| RPLIDAR S2L | 5.0 V | 0.400 A | **2.00 W** | DFRobot published **working** current |
+| DFR0592 + DFR0604 HAT logic | 5.0 V | 0.120 A | **0.600 W** | **Assumed** electronic-logic demand |
+| S0017M steering servo (normal scenario) | 5.0 V | 0.150 A | **0.750 W** | **Assumed** representative no-load point; valid as a 5 V rail allocation **only if external VP is unpowered** |
+| DFR0785-W button | 3.3 V | 0.020 A | **0.066 W** | **Assumed** illuminated-button consumption |
+| SEN0253 IMU | 3.3 V | 0.005 A | **0.0165 W** | DFRobot published operating current |
+| CHP-20GP-180 motor (rated-current upper bound) | 12.0 V | ≤0.550 A | **≤6.60 W** | Supplier upper bound at rated condition, **not a measured running demand** |
+| Mini voltmeter | 15.2 V switched battery | 0.015 A | **0.228 W** | **Assumed** consumption; direct pack branch |
 
-The approximately **5 mA SEN0253** manufacturer operating current is not a separately enumerated branch in Step 01, so no additional 0.005 A is secretly included in that script's 3.35 A total.
-
-With the script's **assumed 90% efficiency** on both converters:
+The 3.3 V subloads draw from the Pi/logic supply, which itself is ultimately fed by the 5 V buck. Their **output-load** powers are included once in a lossless first-order upstream budget; the model does not characterize the Pi's 3.3 V internal-conversion loss. The motor rated current is an upper bound and therefore **not** a guaranteed operational point.
 
 ```math
-P_{\mathrm{battery,example}} = \frac{16.75}{0.90}+\frac{12.00}{0.90} \approx 31.94\ \mathrm{W}.
+P_{5,\mathrm{model}}=(5)(2.00+0.400+0.120+0.150)+(3.3)(0.020+0.005)=13.4325\ \mathrm{W}.
 ```
 
 ```math
-I_{\mathrm{battery,example}} = \frac{31.94}{15.2} \approx 2.10\ \mathrm{A}.
+P_{12,\mathrm{model}}=(12)(0.550)=6.60\ \mathrm{W}.
 ```
 
-These calculations establish an order-of-magnitude planning case, **not** the vehicle's actual current during a WRO run. In particular, neither converter's maximum advertised output current is the current drawn by the installed load.
-
-### 7.3 Wiring drop and resistive dissipation
-
-For current through a combined conductor-and-contact resistance:
+Both buck converters are modeled at **90% constant efficiency as a planning assumption**; DFR1208's higher published efficiency at a specified **24 V test input** must not be substituted as its efficiency on this 15.2 V battery.
 
 ```math
-\Delta V_{\mathrm{cable}} = IR_{\mathrm{path}}, \qquad P_{\mathrm{loss}} = I^{2}R_{\mathrm{path}}.
+P_{\mathrm{battery,model}}=\frac{13.4325}{0.90}+\frac{6.60}{0.90}+0.228
+\approx22.49\ \mathrm{W}.
 ```
-
-For example, if the **assumed** current is 2 A and the **assumed** complete supply-path resistance is 0.05 Ω:
 
 ```math
-\Delta V_{\mathrm{example}} = (2)(0.05) = 0.10\ \mathrm{V},\qquad
-P_{\mathrm{loss,example}} = (2)^2(0.05) = 0.20\ \mathrm{W}.
+I_{\mathrm{battery,nom\ scenario}}=\frac{22.4863}{15.2}\approx1.48\ \mathrm{A}.
 ```
 
-This is a numerical illustration, not a measurement of the team's USB-C cable or connectors.
+The user-provided **generic S0017M servo planning envelope** is approximately 0.10–0.20 A no-load and 0.8–1.2 A stall; these are **not verified model-specific specifications or robot measurements**. Substituting **1.20 A** for the modeled **0.15 A** servo normal current increases the 5 V branch by 5.25 W, and increases estimated battery power to approximately **28.32 W** (1.86 A at 15.2 V) if all other assumptions and converter efficiencies remain unchanged. The servo-current upper scenario is not a continuous-duty recommendation.
 
-### 7.4 Runtime calculations must not imply regulated output longevity
-
-A purely hypothetical energy-over-power division would be:
+### 7.2 Wiring voltage drop and resistive dissipation
 
 ```math
-t_{\mathrm{ideal}} = \frac{E_{\mathrm{nom}}}{P_{\mathrm{battery,example}}}.
+\Delta V=I R_{\mathrm{path}},\qquad P_{\mathrm{loss}}=I^2 R_{\mathrm{path}}.
 ```
 
-Because usable battery energy, load profile and the DFR1208's input-headroom behavior are not established, **we do not report a predicted competition runtime** from this equation. It is particularly inappropriate to use the full 19.76 Wh label value to claim guaranteed 12 V motor performance until the pack is exhausted.
-
-## 8. MATLAB modeling and simulation evidence
-
-MATLAB scripts were used to investigate electrical allocation, battery-headroom sensitivity, and the consequences of cable/contact resistance. **All plots in this section are assumption-based models. They are not motor-current logs, battery discharge measurements or oscilloscope traces.** The original source files are retained under [`other/matlab/`](../other/matlab/).
-
-### 8.1 Step 01 — Power distribution and battery demand
-
-![Figure E-03 — MATLAB power budget (simulation)](visualization/01_assumed_load_budget.png)
-
-**Figure E-03.** Hypothetical component-group power budget. The current assumptions are listed in Section 7 and in [`power_architecture.m`](../other/matlab/power_architecture.m). The script also produces a [converter input-range screen](visualization/02_input_range_screen.png) and an [assumed constant-load battery-current plot](visualization/03_estimated_input_current.png).
-
-**Method:** assign each load an assumed rail and operating current; calculate `P = VI`, add the two output-domain powers and divide by assumed efficiencies. **Finding:** it provides a transparent starting power budget, but cannot establish the assembled robot's real 5 V load, servo peak current or regulator efficiency.
-
-### 8.2 Step 02 — Battery state, loaded voltage and 12 V headroom
-
-A simplified equivalent-circuit model combines a hypothetical open-circuit voltage-versus-state-of-charge function with an equivalent resistance:
+In Figure 08's separate **USB-C branch** model, the RPLIDAR is **not** counted in the Pi power cable current: it receives a distinct branch from the DFR1202. The modeled USB-C current is:
 
 ```math
-V_{\mathrm{terminal}} = V_{\mathrm{OC}}(SOC) - I_{\mathrm{battery}}R_{\mathrm{pack}}.
+I_{\mathrm{USB,normal}}=2.00+0.120+\frac{3.3}{5.0}(0.005+0.020)+0.150=2.2865\ \mathrm{A}.
 ```
 
-For a constant required battery-side power `P` and positive discriminant, the lower-current solution is:
+A simultaneous additional **1.00 A assumed Pi processing load** and increase of the servo from **0.15 A to 1.20 A** gives a peak modeled USB-C path current of **4.3365 A**. This is an *illustrative coincidence of independent assumed load events*, not a measured Pi 5 current.
+
+### 7.3 Why nameplate energy is not competition runtime
+
+For the 4S LiHV pack, nominal label energy is:
 
 ```math
-I_{\mathrm{battery}} = \frac{2P}{V_{\mathrm{OC}} + \sqrt{V_{\mathrm{OC}}^{2}-4R_{\mathrm{pack}}P}}.
+E_{\mathrm{nom}}=15.2\ \mathrm{V}\times 1.30\ \mathrm{Ah}=19.76\ \mathrm{Wh}.
 ```
 
-The discrete coulomb-counting update for a pack with capacity `C_Ah` is:
+An energy-over-average-power quotient is only an idealized arithmetic comparison. It does **not** establish usable energy, battery voltage trajectory, output regulation or the duration of a WRO run. In particular, DFR1208 may leave its specified **15–24 V input window** while the pack still has charge; Figure 07 explicitly analyzes that design constraint.
+
+## 8. MATLAB evidence selected for the electrical chapter
+
+The journal intentionally displays **four decision-relevant figures**, not every exploratory visualization. The selected figures support a traceable power budget, component compatibility, 12 V input headroom, and 5 V wiring risk. No plots are represented as measured voltage, current or battery-run records. **The models are reproducible from their individual MATLAB `.m` files and step-specific README files** under [`other/matlab/electrical_figures/`](../other/matlab/electrical_figures/).
+
+### 8.1 Figure E-03 — electrical load budget (MATLAB Figure 01)
+
+![E-03 — Electrical load budget; datasheet/supplier operating points and explicitly assumed scenario values](visualization/01_assumed_load_budget.png)
+
+**Figure E-03.** Per-component calculated demand at a stated supplier current or planning point. Supplier-labeled motor current is a **rated upper bound**, while the assumed Pi/servo/HAT currents are **not published consumption values**. The summary is **13.4325 W on the modeled 5 V branch including downstream 3.3 V loads**, **6.60 W at the motor's supplier rated-current bound**, and approximately **22.49 W / 1.48 A on the nominal battery side** with 90% assumed efficiencies. [Source and method](../other/matlab/electrical_figures/Figure01/README.md).
+
+### 8.2 Figure E-04 — converter input compatibility (MATLAB Figure 02)
+
+![E-04 — DFR1202 and DFR1208 published input voltage windows](visualization/02_input_range_screen.png)
+
+**Figure E-04.** Manufacturer input ranges: DFR1202 **6–24 V**; DFR1208 **15–24 V**. The GNB battery is **15.2 V nominal** and **17.4 V** is an illustrative LiHV full-charge chemistry reference. The DFR1208 has only **+0.20 V nominal margin above the minimum input**; this is an input-compatibility check, not evidence of output regulation. The illustrative 13 V x-axis lower bound is **not a recommended battery cutoff**. [Source and method](../other/matlab/electrical_figures/Figure02/README.md).
+
+### 8.3 Figure E-05 — simulated DFR1208 input headroom (MATLAB Figure 07)
+
+The battery screening model uses an assumed LiHV voltage-versus-state-of-charge function, assumed **0.12 Ω** pack resistance, constant converter efficiency and 0.5×/1.0×/1.5× load multipliers. Its battery terminal voltage is computed from an equivalent-circuit model, **not measured** on the vehicle:
 
 ```math
-SOC(t+\Delta t) = SOC(t) - \frac{I_{\mathrm{battery}}(t)\Delta t}{3600 C_{\mathrm{Ah}}}.
+V_{\mathrm{terminal}}=V_{\mathrm{OC}}(SOC)-I_{\mathrm{battery}}R_{\mathrm{pack}},\qquad
+M_{12}(t)=V_{\mathrm{terminal}}(t)-15\ \mathrm{V}.
 ```
 
-`SOC` here ranges from 0 to 1; capacity is in Ah and time is in seconds. The code's voltage–SOC curve, equivalent resistance, termination bound, load powers and efficiency are **illustrative model inputs** rather than certified cell-discharge data.
+![E-05 — Illustrative DFR1208 input voltage headroom versus time](visualization/07_12v_input_headroom.png)
 
-![Figure E-04 — MATLAB simulated DFR1208 headroom](visualization/07_12v_input_headroom.png)
+**Figure E-05.** Model crossings of the **15 V input threshold** occur at approximately **61.5 min (light)**, **28.0 min (planning)** and **16.6 min (heavy)**. These **are not usable vehicle runtimes**. Dotted portions below the threshold are invalid-region extrapolations that cannot establish a regulated 12 V output. The first negative margin indicates only that the model has left the DFR1208's stated operating-input region. [Source and method](../other/matlab/electrical_figures/Figure07/README.md).
 
-**Figure E-04.** Modeled input margin against the DFR1208's **specified minimum 15 V input**. Negative values mean the model's battery voltage has fallen below the stated converter input range, not that the output's actual voltage has been measured to collapse. Other Step 02 figures: [assumed voltage–SOC relation](visualization/04_assumed_voltage_vs_soc.png), [hypothetical voltage-over-time loads](visualization/05_voltage_vs_time_scenarios.png), and [SOC/current example](visualization/06_soc_and_current.png). Script: [`battery_headroom.m`](../other/matlab/battery_headroom.m).
+### 8.4 Figure E-05B — 5 V USB-C wiring and load-step sensitivity (MATLAB Figure 08)
 
-### 8.3 Step 03 — Raspberry Pi 5 V rail and transient sensitivity
+![E-05B — Illustrative Raspberry Pi USB-C voltage drop under assumed resistance and load events](visualization/08_transient_timeline.png)
 
-The model applies synthetic processor-load and steering-load events through assumed common impedance, Pi cable/contact resistance and simplified regulator dynamics. It is **not** a circuit simulation of the DFR1202 switch-mode regulator, and it does not prove a real undervoltage incident.
+**Figure E-05B.** A deliberately simplified **resistive** model, not an oscilloscope trace or detailed DFR1202 switching-regulator transient simulation. It uses an assumed 5.00 V supply, the Figure 01 current inventory, synthetic compute/servo events and four hypothetical end-to-end path-resistance cases. It screens:
 
-![Figure E-05 — MATLAB simulated 5 V wiring cases](visualization/09_wiring_scenarios.png)
+```math
+V_{\mathrm{Pi}}(t)=5.00\ \mathrm{V}-I_{\mathrm{USB}}(t)
+\left(R_{\mathrm{USB}}+R_{\mathrm{shared}}\right).
+```
 
-**Figure E-05.** Illustrative Raspberry Pi input-voltage response under different cable and shared-impedance scenarios. Additional views: [synthetic transient timeline](visualization/08_transient_timeline.png), [modeled voltage headroom](visualization/10_voltage_headroom.png), and [load/cable-resistance sensitivity](visualization/11_resistance_load_sweep.png). Script: [`transients_5v.m`](../other/matlab/transients_5v.m).
+| Assumed path condition | Total assumed path resistance | Modeled minimum Pi voltage |
+|---|---:|---:|
+| Low-resistance reference | 0.025 Ω | **4.892 V** |
+| Planning cable and contacts | 0.055 Ω | **4.761 V** |
+| Higher shared resistance | 0.080 Ω | **4.653 V** |
+| Higher USB-C path resistance | 0.110 Ω | **4.523 V** |
 
-**Engineering interpretation:** higher resistance and larger load steps can increase voltage drop. This explains the design rationale for short, secure power connections and avoiding unintended shared high-current return paths; it does **not** provide measured cable resistance or demonstrate supply failure on the actual vehicle.
+The **4.80 V** design reference and **4.63 V** nominal undervoltage-warning reference are comparisons, not inferred exact trip voltages. As the converter voltage regulation, supply identification, actual wiring resistance and Pi response are not modeled, these results demonstrate **sensitivity**, not a proven malfunction. The model's servo path is applicable **only if the DFR0604 VP input is unpowered**. [Source and method](../other/matlab/electrical_figures/Figure08/README.md).
 
-### 8.4 Electrical MATLAB figure ledger
+### 8.5 Figure provenance and reproducibility
 
-| Investigation | Main figure | Supplemental files | GitHub script |
-|---|---|---|---|
-| Step 01 — power allocation | [01](visualization/01_assumed_load_budget.png) | [02](visualization/02_input_range_screen.png), [03](visualization/03_estimated_input_current.png) | [`power_architecture.m`](../other/matlab/power_architecture.m) |
-| Step 02 — battery/headroom | [07](visualization/07_12v_input_headroom.png) | [04](visualization/04_assumed_voltage_vs_soc.png), [05](visualization/05_voltage_vs_time_scenarios.png), [06](visualization/06_soc_and_current.png) | [`battery_headroom.m`](../other/matlab/battery_headroom.m) |
-| Step 03 — 5 V sensitivity | [09](visualization/09_wiring_scenarios.png) | [08](visualization/08_transient_timeline.png), [10](visualization/10_voltage_headroom.png), [11](visualization/11_resistance_load_sweep.png) | [`transients_5v.m`](../other/matlab/transients_5v.m) |
+| Embedded figure | Source code | Purpose and evidence class |
+|---|---|---|
+| E-03 / MATLAB 01 | [`Figure01/figure01_electrical_load_budget.m`](../other/matlab/electrical_figures/Figure01/figure01_electrical_load_budget.m) | Supplier operating points + assumed allocation |
+| E-04 / MATLAB 02 | [`Figure02/figure02_converter_input_range.m`](../other/matlab/electrical_figures/Figure02/figure02_converter_input_range.m) | Published converter input windows + voltage arithmetic |
+| E-05 / MATLAB 07 | [`Figure07/figure07_12v_input_headroom.m`](../other/matlab/electrical_figures/Figure07/figure07_12v_input_headroom.m) | Synthetic battery equivalent-circuit model |
+| E-05B / MATLAB 08 | [`Figure08/figure08_5v_wiring_sensitivity.m`](../other/matlab/electrical_figures/Figure08/figure08_5v_wiring_sensitivity.m) | Synthetic Pi power-path resistance model |
 
-Plots 12–29 in [`engineering_journal/visualization/`](visualization/) concern steering geometry, drivetrain mechanics, control, vehicle stability, encoder demonstration and path tracking. They are not mislabeled here as additional electrical experiments, and the electrical journal does not take ownership of the software/mechanical teams' chapters.
+**Render provenance:** The uploaded public repository contained only Figure 01 and 02 PNGs at the time of the D4 audit. This D4 package includes **four locally reproduced reference renders** generated in Python from the matching MATLAB equations and figure inputs; the PNGs are **not claimed to have been rendered in MATLAB**. Before final competition submission, run the supplied `.m` files in MATLAB and replace the reference PNGs with the actual exports. Existing public Figure 01–02 images are not assumed to match the corrected white-background style until replaced. No physical measurement is substituted or invented.
+
+Figures 03–06 were useful exploratory calculations but are intentionally **not embedded or required** for the final electrical discussion. The older Figures 09–11 are likewise not used; non-electrical plots 12–29 belong to their respective other engineering disciplines.
 
 ## 9. Schematic and pictorial wiring documentation
 
@@ -504,6 +504,18 @@ The DFR0785-W is a **digital-output, illuminated pushbutton** using a three-pin 
 
 The button is part of the human/start interface; its software debounce, start-state logic and competition behavior belong to the software journal.
 
+
+### 14.3 Sensor selection, placement geometry and calibration method — rubric evidence boundary
+
+The LiDAR provides planar 360° range observations, the camera supplies a wide-angle visual view for colored objects/parking, and the IMU provides short-term orientation estimates. These **functional selection reasons** complement the interconnect schematic but do not determine physical sensor pose or calibration from a product listing. The wide-angle fisheye vendor claim and S2L's target-dependent ranging limits are discussed in Sections 12 and 13.
+
+For reproducibility and the **2026 WRO Power & Sensor Architecture rubric**, sensor-frame locations and calibration methods should be documented with the same evidence discipline as wiring. In particular, a camera's 222° seller claim is not usable angle-per-pixel calibration; the 360° LiDAR coverage does not by itself establish unoccluded coverage after mounting. The motor/metal hardware may also bias the IMU magnetometer.
+
+- **Sensor placement — see Section 18, TODO 6:** Supply measured or CAD-defined LiDAR origin/height/yaw and camera optical-center/height/tilt relative to the robot's chassis frame, plus one concise note explaining the intended front/side/parking field coverage. If available, include mounting obstruction/occlusion considerations. These details are **not safely recoverable from component datasheets**.
+- **Calibration method — see Section 18, TODO 7:** Describe which calibration was actually used: camera intrinsics/fisheye mapping, camera-to-robot transform, LiDAR-to-robot transform, IMU bias/heading orientation, and any resulting files/settings, with a reference to the software/mechanical chapter as appropriate. If a method was not completed, state that explicitly instead of claiming successful calibration.
+
+No placement, accuracy or calibration-validation measurements are invented in this chapter. These two specific records are important for rubric completeness and interface reproducibility.
+
 ## 15. Motor driver, geared motor and encoder
 
 ### 15.1 Why the DFR0592 M2/E2 channels are used
@@ -545,7 +557,7 @@ The S0017M is driven by the DFR0604 onboard STM32-generated PWM channel **3**, n
 - `PWM3 +` → servo supply, red.
 - `PWM3 −` → servo return, black.
 
-The supplier's **4.8–6 V** rating and advertised 0.20 s/60° at **6 V** are referenced values, not a measured steering-wheel response. The DFR0604's VP-unpowered supply configuration makes PWM+ **5 V nominal**; externally powering VP at 6–12 V would instead pass that voltage to PWM+, potentially exceeding the servo rating. The servo's output-shaft angle is not automatically equal to the road-wheel angle because of the steering linkage. These are electrical/mechanical interface facts, not a claimed servo calibration. [R6, R8]
+The supplier's **4.8–6 V** rating and advertised 0.20 s/60° at **6 V** are referenced values, not a measured steering-wheel response. The DFR0604's VP-unpowered supply configuration makes PWM+ **5 V nominal**; externally powering VP at 6–12 V would instead pass that voltage to PWM+, potentially exceeding the servo rating. The servo's output-shaft angle is not automatically equal to the road-wheel angle because of the steering linkage. For planning plots only, the team supplied approximately **0.10–0.20 A no-load current** and **0.8–1.2 A possible stall current** as generic 17 g digital-servo ranges. Their precision and applicability to this exact S0017M revision are **not authenticated by the cited seller specification**; Figure E-03 assumes 0.15 A and Figure E-05B assumes a transient 1.20 A scenario. These are electrical/mechanical interface facts, not a claimed servo calibration. [R6, R8]
 
 ## 17. Electrical reliability and design trade-offs
 
@@ -585,8 +597,8 @@ The chapter provides an as-described **module-level architecture**, its actual p
 | Controller/HAT EasyEDA sheet | [`schemes/main_controller_hat_interfaces.svg`](../schemes/main_controller_hat_interfaces.svg) |
 | Sensors/Motor/Steering EasyEDA sheet | [`schemes/sensors_motor_steering.svg`](../schemes/sensors_motor_steering.svg) |
 | Three-sheet EasyEDA PDF | [`schemes/schematic_diagram.pdf`](../schemes/schematic_diagram.pdf) |
-| MATLAB electrical scripts | [`power_architecture.m`](../other/matlab/power_architecture.m), [`battery_headroom.m`](../other/matlab/battery_headroom.m), [`transients_5v.m`](../other/matlab/transients_5v.m) |
-| MATLAB electrical visualizations | [`engineering_journal/visualization/`](visualization/) — Figures 01–11 |
+| **Selected MATLAB electrical scripts and individual READMEs** | [`other/matlab/electrical_figures/`](../other/matlab/electrical_figures/) — Figures **01, 02, 07, 08**; original Step 01–03 screening scripts remain separately available |
+| **MATLAB figures actually displayed in this journal** | [`01`](visualization/01_assumed_load_budget.png), [`02`](visualization/02_input_range_screen.png), [`07`](visualization/07_12v_input_headroom.png), [`08`](visualization/08_transient_timeline.png) |
 
 For full native EasyEDA editing, retain/export the original `.json`/project source separately from the PDF/SVG visuals. The exported figures alone are publication-ready descriptions but do not encode every native editor setting.
 
@@ -599,6 +611,8 @@ Only the following **team-specific facts** are marked for completion. They are n
 3. **[TODO — custom LiDAR cable mapping]** State what the **green and yellow conductors mean at the RPLIDAR connector itself** (scanner TX or scanner RX) and clarify the two ground conductors joined at the XH2.54 breakout. The HAT-side R/T destinations are already recorded.
 4. **[TODO — upstream protection status]** Record whether there is an actual battery-side fuse/protection device and, if present, its type and current rating. Do not add a fictional device to the schematic.
 5. **[TODO — encoder counts definition, only if numerical speed calibration is reported]** State the actual effective counts per output revolution and the decoding convention. Leave `C_w` symbolic until that information comes from the installed encoder/software configuration.
+6. **[TODO — sensor pose and field coverage]** Record the installed LiDAR/camera placements and field-geometry justification described in Section 14.3; do not infer mounting coordinates from component dimensions.
+7. **[TODO — calibration method actually used]** Record the performed/unfinished camera, LiDAR and IMU calibration processes, linking software or mechanical documentation as appropriate, as described in Section 14.3.
 
 No other generic part rating should be labeled “to verify” simply because the team has not personally measured it. Estimates stay labeled **assumed** or **calculated**. Future measured voltages and currents may be appended if available, but no such values have been fabricated for this revision.
 
@@ -635,3 +649,5 @@ No other generic part rating should be labeled “to verify” simply because th
 - **[R17]** [PCT-214 terminal connector supplier listing](https://evelta.com/pct-214-splicing-connector-terminal-1-in-3-out-lever-splicing-connector/).
 
 ---
+
+*Documentation status: Manufacturer ratings and team-reported connections are included; MATLAB figures are synthetic engineering analyses. No unrecorded physical test or custom PCB is claimed. Remaining `[TODO]` items concern only actual installed-robot configuration, sensor pose/calibration and encoder decoding, not manufacturer datasheet specifications.*

@@ -1,4 +1,4 @@
-%% Electrical Figure 02/11
+%% Electrical Figure 02
 % CONVERTER INPUT-RANGE SCREENING -- published equipment limits
 % WRO 2026 Future Engineers | Engineering Journal 02: Power & Sensor Architecture
 %

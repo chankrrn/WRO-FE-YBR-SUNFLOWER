@@ -1,7 +1,5 @@
 # Overview
 
-> **YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 00**
->
 > **Scope:** This journal introduces YBR-SUNFLOWER's system architecture, engineering challenges, design decisions, and verification approach. It also guides readers to the detailed technical journals and supporting evidence.
 
 [← Project README](../README.md) · [Mobility and Mechanical Design →](1-mech.md)

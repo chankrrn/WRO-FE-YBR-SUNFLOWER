@@ -1,4 +1,4 @@
-%% Electrical figure 01/11
+%% Electrical figure 01
 % ELECTRICAL LOAD BUDGET - supplier ratings + explicit design scenarios
 % WRO 2026 Future Engineers | Engineering Journal 02: Power & Sensor Architecture
 %
