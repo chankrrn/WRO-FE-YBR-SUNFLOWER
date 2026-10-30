@@ -1,12 +1,10 @@
 # Power and Sensor Architecture
 
-> **Scope:** Electrical design, power distribution, computing hardware, interfaces, wiring, component selection, engineering calculations and MATLAB modeling.
+> **Scope:** Electrical design, power distribution, computing hardware, interfaces, wiring, component selection, engineering calculations and MATLAB modeling. The team uses commercially assembled modules; **no custom PCB or power-distribution PCB was designed**.
 >
 > **Evidence policy:** **Team-reported** means supplied by the team; **Datasheet** means a published part specification; **Model / MATLAB** means a calculation or simulation with stated assumptions; **Measured** means an observed value with test conditions, instruments and a repeatable procedure. No simulated value below is presented as a physical measurement. `[TODO]` identifies information or evidence not yet supplied.
 
-[← Project README](../README.md) · [← Engineering Overview](0-overview.md)
-
-[← Mobility and Mechanical Design](1-mech.md) · [Software Architecture and Obstacle Strategy →](3-software.md)
+[← Project README](../README.md) · [← Engineering overview](0-overview.md) · [Mechanical design](1-mech.md) · [Software](3-software.md)
 
 ---
 
@@ -18,8 +16,8 @@
 4. [Battery selection and nominal energy](#4-battery-selection-and-nominal-energy)
 5. [Physical power distribution](#5-physical-power-distribution)
 6. [Regulated rails, input headroom and servo power](#6-regulated-rails-input-headroom-and-servo-power)
-7. [Electrical calculations and example load budget](#7-electrical-calculations-and-example-load-budget)
-8. [MATLAB modeling and simulation evidence](#8-matlab-modeling-and-simulation-evidence)
+7. [Electrical calculations and evidence-labeled load budget](#7-electrical-calculations-and-evidence-labeled-load-budget)
+8. [MATLAB evidence selected for the electrical chapter](#8-matlab-evidence-selected-for-the-electrical-chapter)
 9. [Schematic and pictorial wiring documentation](#9-schematic-and-pictorial-wiring-documentation)
 10. [Complete team-reported electrical connections](#10-complete-team-reported-electrical-connections)
 11. [Raspberry Pi, HATs and communication buses](#11-raspberry-pi-hats-and-communication-buses)
@@ -72,7 +70,7 @@ Figure E-01 keeps battery-positive wiring and the ground-return path visually se
 
 The rail names from the EasyEDA schematic are `VBAT_RAW` (battery positive before SW1), `VBAT_SW` (switched positive), `+5V_REG` (DFR1202 output), `+12V_REG` (DFR1208 output), `PI_5V`, `PI_3V3` and `GND`. `PI_5V` denotes the Pi/header side of the 5 V power path; it is not a second independent buck converter.
 
-### 2.2 Controller and signal architectuare — Figure E-02
+### 2.2 Controller and signal architecture — Figure E-02
 
 ![Figure E-02 — Control and sensor interfaces](../schemes/control_sensor_interfaces.svg)
 
@@ -140,7 +138,7 @@ Battery voltage changes as the pack discharges and under load. A useful illustra
 V_{\mathrm{terminal}}(t) = V_{\mathrm{OC}}\!\left(SOC(t)\right) - I_{\mathrm{battery}}(t)R_{\mathrm{pack}}.
 ```
 
-Here `V_OC(SOC)` and `R_pack` are **model inputs**, not measured battery data. The model explains why the battery's nominal voltage must not be substituted for its guaranteed terminal voltage at every instant. See Section 8 and [MATLAB Step 02](../other/matlab/battery_headroom.m).
+Here `V_OC(SOC)` and `R_pack` are **model inputs**, not measured battery data. The model explains why the battery's nominal voltage must not be substituted for its guaranteed terminal voltage at every instant. See Section 8 and the currently published [headroom-model script (Figure 07)](../other/matlab/figure07_12v_input_headroom.m).
 
 ## 5. Physical power distribution
 
@@ -208,7 +206,7 @@ The drawing therefore records `SERVO_V+` as a separate functional servo supply, 
 
 ## 7. Electrical calculations and evidence-labeled load budget
 
-The load model was revised to match the selected [Figure 01 MATLAB source](../other/matlab/electrical_figures/Figure01/figure01_electrical_load_budget.m). It uses **published operating points where available** and identifies every other current as a **scenario assumption**, not an instrument reading. Component input power is calculated from each supply domain using:
+The load model was revised to match the selected [Figure 01 MATLAB source](../other/matlab/figure01_electrical_load_budget.m). It uses **published operating points where available** and identifies every other current as a **scenario assumption**, not an instrument reading. Component input power is calculated from each supply domain using:
 
 ```math
 P_k=V_k I_k,\qquad P_{\mathrm{branch}}=\sum_k P_k.
@@ -276,19 +274,19 @@ An energy-over-average-power quotient is only an idealized arithmetic comparison
 
 ## 8. MATLAB evidence selected for the electrical chapter
 
-The journal intentionally displays **four decision-relevant figures**, not every exploratory visualization. The selected figures support a traceable power budget, component compatibility, 12 V input headroom, and 5 V wiring risk. No plots are represented as measured voltage, current or battery-run records. **The models are reproducible from their individual MATLAB `.m` files and step-specific README files** under [`other/matlab/electrical_figures/`](../other/matlab/electrical_figures/).
+The journal intentionally displays **four decision-relevant figures**, not every exploratory visualization. The selected figures support a traceable power budget, component compatibility, 12 V input headroom, and 5 V wiring risk. No plots are represented as measured voltage, current or battery-run records. **The actual public scripts are the standalone `.m` files in [`other/matlab/`](../other/matlab/)**; the previous `electrical_figures/FigureXX/` subdirectories and per-figure READMEs are **not present on the current public branch**.
 
 ### 8.1 Figure E-03 — electrical load budget (MATLAB Figure 01)
 
 ![E-03 — Electrical load budget; datasheet/supplier operating points and explicitly assumed scenario values](visualization/01_assumed_load_budget.png)
 
-**Figure E-03.** Per-component calculated demand at a stated supplier current or planning point. Supplier-labeled motor current is a **rated upper bound**, while the assumed Pi/servo/HAT currents are **not published consumption values**. The summary is **13.4325 W on the modeled 5 V branch including downstream 3.3 V loads**, **6.60 W at the motor's supplier rated-current bound**, and approximately **22.49 W / 1.48 A on the nominal battery side** with 90% assumed efficiencies. [Source and method](../other/matlab/electrical_figures/Figure01/README.md).
+**Figure E-03.** Per-component calculated demand at a stated supplier current or planning point. Supplier-labeled motor current is a **rated upper bound**, while the assumed Pi/servo/HAT currents are **not published consumption values**. The summary is **13.4325 W on the modeled 5 V branch including downstream 3.3 V loads**, **6.60 W at the motor's supplier rated-current bound**, and approximately **22.49 W / 1.48 A on the nominal battery side** with 90% assumed efficiencies. [MATLAB source and documented assumptions](../other/matlab/figure01_electrical_load_budget.m).
 
 ### 8.2 Figure E-04 — converter input compatibility (MATLAB Figure 02)
 
 ![E-04 — DFR1202 and DFR1208 published input voltage windows](visualization/02_input_range_screen.png)
 
-**Figure E-04.** Manufacturer input ranges: DFR1202 **6–24 V**; DFR1208 **15–24 V**. The GNB battery is **15.2 V nominal** and **17.4 V** is an illustrative LiHV full-charge chemistry reference. The DFR1208 has only **+0.20 V nominal margin above the minimum input**; this is an input-compatibility check, not evidence of output regulation. The illustrative 13 V x-axis lower bound is **not a recommended battery cutoff**. [Source and method](../other/matlab/electrical_figures/Figure02/README.md).
+**Figure E-04.** Manufacturer input ranges: DFR1202 **6–24 V**; DFR1208 **15–24 V**. The GNB battery is **15.2 V nominal** and **17.4 V** is an illustrative LiHV full-charge chemistry reference. The DFR1208 has only **+0.20 V nominal margin above the minimum input**; this is an input-compatibility check, not evidence of output regulation. The illustrative 13 V x-axis lower bound is **not a recommended battery cutoff**. [MATLAB source and documented assumptions](../other/matlab/figure02_converter_input_range.m).
 
 ### 8.3 Figure E-05 — simulated DFR1208 input headroom (MATLAB Figure 07)
 
@@ -301,7 +299,7 @@ M_{12}(t)=V_{\mathrm{terminal}}(t)-15\ \mathrm{V}.
 
 ![E-05 — Illustrative DFR1208 input voltage headroom versus time](visualization/07_12v_input_headroom.png)
 
-**Figure E-05.** Model crossings of the **15 V input threshold** occur at approximately **61.5 min (light)**, **28.0 min (planning)** and **16.6 min (heavy)**. These **are not usable vehicle runtimes**. Dotted portions below the threshold are invalid-region extrapolations that cannot establish a regulated 12 V output. The first negative margin indicates only that the model has left the DFR1208's stated operating-input region. [Source and method](../other/matlab/electrical_figures/Figure07/README.md).
+**Figure E-05.** Model crossings of the **15 V input threshold** occur at approximately **61.5 min (light)**, **28.0 min (planning)** and **16.6 min (heavy)**. These **are not usable vehicle runtimes**. Dotted portions below the threshold are invalid-region extrapolations that cannot establish a regulated 12 V output. The first negative margin indicates only that the model has left the DFR1208's stated operating-input region. [MATLAB source and documented assumptions](../other/matlab/figure07_12v_input_headroom.m).
 
 ### 8.4 Figure E-05B — 5 V USB-C wiring and load-step sensitivity (MATLAB Figure 08)
 
@@ -321,18 +319,18 @@ V_{\mathrm{Pi}}(t)=5.00\ \mathrm{V}-I_{\mathrm{USB}}(t)
 | Higher shared resistance | 0.080 Ω | **4.653 V** |
 | Higher USB-C path resistance | 0.110 Ω | **4.523 V** |
 
-The **4.80 V** design reference and **4.63 V** nominal undervoltage-warning reference are comparisons, not inferred exact trip voltages. As the converter voltage regulation, supply identification, actual wiring resistance and Pi response are not modeled, these results demonstrate **sensitivity**, not a proven malfunction. The model's servo path is applicable **only if the DFR0604 VP input is unpowered**. [Source and method](../other/matlab/electrical_figures/Figure08/README.md).
+The **4.80 V** design reference and **4.63 V** nominal undervoltage-warning reference are comparisons, not inferred exact trip voltages. As the converter voltage regulation, supply identification, actual wiring resistance and Pi response are not modeled, these results demonstrate **sensitivity**, not a proven malfunction. The model's servo path is applicable **only if the DFR0604 VP input is unpowered**. [MATLAB source and documented assumptions](../other/matlab/figure08_5v_wiring_sensitivity.m).
 
 ### 8.5 Figure provenance and reproducibility
 
 | Embedded figure | Source code | Purpose and evidence class |
 |---|---|---|
-| E-03 / MATLAB 01 | [`Figure01/figure01_electrical_load_budget.m`](../other/matlab/electrical_figures/Figure01/figure01_electrical_load_budget.m) | Supplier operating points + assumed allocation |
-| E-04 / MATLAB 02 | [`Figure02/figure02_converter_input_range.m`](../other/matlab/electrical_figures/Figure02/figure02_converter_input_range.m) | Published converter input windows + voltage arithmetic |
-| E-05 / MATLAB 07 | [`Figure07/figure07_12v_input_headroom.m`](../other/matlab/electrical_figures/Figure07/figure07_12v_input_headroom.m) | Synthetic battery equivalent-circuit model |
-| E-05B / MATLAB 08 | [`Figure08/figure08_5v_wiring_sensitivity.m`](../other/matlab/electrical_figures/Figure08/figure08_5v_wiring_sensitivity.m) | Synthetic Pi power-path resistance model |
+| E-03 / MATLAB 01 | [`figure01_electrical_load_budget.m`](../other/matlab/figure01_electrical_load_budget.m) | Supplier operating points + assumed allocation |
+| E-04 / MATLAB 02 | [`figure02_converter_input_range.m`](../other/matlab/figure02_converter_input_range.m) | Published converter input windows + voltage arithmetic |
+| E-05 / MATLAB 07 | [`figure07_12v_input_headroom.m`](../other/matlab/figure07_12v_input_headroom.m) | Synthetic battery equivalent-circuit model |
+| E-05B / MATLAB 08 | [`figure08_5v_wiring_sensitivity.m`](../other/matlab/figure08_5v_wiring_sensitivity.m) | Synthetic Pi power-path resistance model |
 
-**Render provenance:** The uploaded public repository contained only Figure 01 and 02 PNGs at the time of the D4 audit. This D4 package includes **four locally reproduced reference renders** generated in Python from the matching MATLAB equations and figure inputs; the PNGs are **not claimed to have been rendered in MATLAB**. Before final competition submission, run the supplied `.m` files in MATLAB and replace the reference PNGs with the actual exports. Existing public Figure 01–02 images are not assumed to match the corrected white-background style until replaced. No physical measurement is substituted or invented.
+**Figure provenance and reproduction procedure:** The public `main` branch checked for D5 contains all four displayed figure PNGs **and** their respective MATLAB scripts. A PNG alone does not establish which application exported it, so MATLAB origin is not asserted solely from the image. The underlying calculations are reproducible from the standalone `.m` files, and **none of the plotted results represents measured telemetry**. In MATLAB R2020a or later, open one `figureXX_*.m` script, run the **entire script**, then take the resulting `results/XX_*.png` and replace the same-named repository image under `engineering_journal/visualization/`. The local scripts also export `simulation_inputs.mat` alongside the PNG; they do not require CSV data files. If the team edits any assumed input, update the PNG, script and journal table/caption together.
 
 Figures 03–06 were useful exploratory calculations but are intentionally **not embedded or required** for the final electrical discussion. The older Figures 09–11 are likewise not used; non-electrical plots 12–29 belong to their respective other engineering disciplines.
 
@@ -509,6 +507,20 @@ The button is part of the human/start interface; its software debounce, start-st
 
 The LiDAR provides planar 360° range observations, the camera supplies a wide-angle visual view for colored objects/parking, and the IMU provides short-term orientation estimates. These **functional selection reasons** complement the interconnect schematic but do not determine physical sensor pose or calibration from a product listing. The wide-angle fisheye vendor claim and S2L's target-dependent ranging limits are discussed in Sections 12 and 13.
 
+#### Sensor choice rationale and geometric constraints
+
+The three sensors are **complementary, not interchangeable**. The following matrix states defensible engineering reasons for the selected sensor types; it is a functional analysis, **not** an invented record of alternatives that the team physically tested.
+
+| Installed sensor | Reason it contributes | Important limitation / design trade-off |
+|---|---|---|
+| RPLIDAR S2L (planar 360° dToF) | Range returns can support wall proximity and planar obstacle geometry, including directions outside a forward-facing camera image | Only one scanning plane; chassis/servo mounting can occlude beams; reported range/accuracy depend on target material and environment |
+| OV5647 fisheye camera | Image color and texture can distinguish red/green markers and provide visual context for parking | Seller-stated 222° does **not** establish calibrated usable FoV; lens distortion, lighting and image exposure affect detection |
+| SEN0253 BNO055/BMP280 | Short-term angular/orientation information complements range and image observations | Magnetometer disturbance and orientation biases require placement-aware calibration; orientation alone cannot locate field walls |
+
+The **WRO 2026 General Rules** specify track-border spacing that may vary between approximately **600 mm and 1000 mm in the Open Challenge**, with a nominal **1000 mm** spacing in the Obstacle Challenge; the parking-space width is **200 mm**. These field dimensions motivate checking side coverage, near-wall blind spots, and camera visibility near the parking area. They **do not** prove coverage without the team's actual sensor coordinates, yaw/pitch and occlusion geometry.
+
+A valid calibration record would include the camera lens model and its frame transform, LiDAR scan-plane origin/heading relative to the chassis, and IMU mounting-frame orientation/heading treatment. These are **documentation requirements, not claims that such calibration has been completed**.
+
 For reproducibility and the **2026 WRO Power & Sensor Architecture rubric**, sensor-frame locations and calibration methods should be documented with the same evidence discipline as wiring. In particular, a camera's 222° seller claim is not usable angle-per-pixel calibration; the 360° LiDAR coverage does not by itself establish unoccluded coverage after mounting. The motor/metal hardware may also bias the IMU magnetometer.
 
 - **Sensor placement — see Section 18, TODO 6:** Supply measured or CAD-defined LiDAR origin/height/yaw and camera optical-center/height/tilt relative to the robot's chassis frame, plus one concise note explaining the intended front/side/parking field coverage. If available, include mounting obstruction/occlusion considerations. These details are **not safely recoverable from component datasheets**.
@@ -547,7 +559,7 @@ n_{\mathrm{wheel}} = \frac{60N}{C_{w}\,\Delta t},\qquad
 v_{\mathrm{wheel}} = \frac{2\pi r\,N}{C_{w}\,\Delta t}.
 ```
 
-No numeric encoder **counts-per-revolution** is invented: it depends on the particular encoder pulse definition, quadrature decoding (×1, ×2 or ×4), gearbox and sensor configuration. The dedicated [`encoder_calibration.m`](../other/matlab/encoder_calibration.m) study is available for the drivetrain/software team; its synthetic calibration is **not** misrepresented as a measured electrical encoder constant.
+No numeric encoder **counts-per-revolution** is invented: it depends on the encoder pulse definition, quadrature decoding (×1, ×2 or ×4), gearbox and software configuration. **No `encoder_calibration.m` script exists in the current public `other/matlab/` directory**; consequently the electrical journal does not link to an obsolete path or present an unrelated battery-current script as an encoder study. Keep `C_w` symbolic until the installed motor/encoder configuration supplies a defensible value.
 
 ## 16. Steering-servo interface
 
@@ -580,9 +592,27 @@ The 5 V and 12 V supplies are separated to avoid applying the motor-driver suppl
 
 Electrical power quality and thermals are related. The DFR1202 and DFR1208 have published short-circuit and over-temperature protections, but those features do not establish protection of an upstream XT60 lead, switch or terminal block. Do not claim an installed inline fuse unless it actually exists. Connector integrity, wire strain relief, thermal airflow and correct supply polarity are still appropriate engineering practices even in a schematic-focused chapter.
 
-### 17.3 Why this evidence is sufficient for the present chapter
+### 17.3 Scope and evidence limitations
 
-The chapter provides an as-described **module-level architecture**, its actual pin/terminal naming and cable colors, **manufacturer specifications**, **reproducible MATLAB screening models**, and candid limitations. It does not claim custom PCB development, measured transient stability, calibrated sensor accuracies or battery endurance. These additional measurements would improve later validation, but are **not prerequisites for publishing an evidence-labeled electrical design record**.
+The chapter provides an as-described **module-level architecture**, its actual pin/terminal naming and cable colors, **manufacturer specifications**, **reproducible MATLAB screening models**, and candid limitations. It does not claim custom PCB development, measured transient stability, calibrated sensor accuracies or battery endurance. Measured observations and iteration records would strengthen the WRO rubric evidence but must only be added when performed by the team. The present documentation remains reproducible as a design/model record, without claiming final validation.
+
+### 17.4 WRO 2026 rubric evidence map and iteration status
+
+The uploaded WRO 2026 documentation rubric scores **Power & Sensor Architecture** on power/current reasoning, justified sensor selection and **field-geometry-based placement**, a calibration method, wiring diagrams, failure considerations, and **evidence of iteration**. Electrical evidence also contributes to the cross-cutting **Systems Thinking** and **Reproducibility** criteria.
+
+| Rubric expectation | Evidence in this chapter | Honest status |
+|---|---|---|
+| Regulated power architecture and current budget | E-01, Sections 3–7, MATLAB Figures 01 and 02 | Documented using named rails, published limits and clearly marked assumptions |
+| Wiring and reproducible circuit description | E-02, E-06, three EasyEDA E-07 sheets, Sections 9–11 | Documented as team-reported connections; actual connector-level unknowns retained in Section 18 |
+| Sensor selection and operating trade-offs | Sections 12–14, including sensing modality comparison | Reasoned from equipment characteristics; no fictitious comparative field trials |
+| Physical sensor pose and track coverage | Section 14.3; WRO field geometry | **Team evidence still required (TODO 6)** |
+| Calibration procedure actually applied | Section 14.3 | **Team evidence still required (TODO 7)** |
+| Failure mechanisms and mitigation choices | Section 17.1 and figures on 12 V headroom and 5 V voltage drop | Model-backed risk identification; mitigation proposals are not presented as completed tests |
+| Design evolution and iteration evidence | National-final architecture distinguished from current modular rebuild, I²C conflict reported resolved | The revision itself is documented; outcomes, dates and observations of on-robot iteration are not invented |
+
+**Documented design trade-offs:** separate 5 V and 12 V buck modules improve supply-domain separation but leave the DFR1208's 15 V minimum-input conflict with a 15.2 V nominal battery; modular commercial HATs simplify replacement but introduce shared I²C address planning and an externally controlled servo VP domain. A *possible future* alternative is a motor supply regulator with a manufacturer-rated input range spanning the intended 4S battery voltage window. **This is a design option, not a claim that a different regulator has been installed**. Similarly, shortening USB-C power wiring and verifying proper power-source signaling are mitigations to consider, not verified existing test results.
+
+For an evidence-supported **6-point Criterion 2** case, the team should supply actual sensor-placement justification, the performed calibration method, and one concise real iteration record (change, reason, observation). This chapter cannot legitimately manufacture those observations. Remaining mechanical/software criteria are documented in their own journals.
 
 ## 18. Reproducibility and remaining team-specific records
 
@@ -597,7 +627,7 @@ The chapter provides an as-described **module-level architecture**, its actual p
 | Controller/HAT EasyEDA sheet | [`schemes/main_controller_hat_interfaces.svg`](../schemes/main_controller_hat_interfaces.svg) |
 | Sensors/Motor/Steering EasyEDA sheet | [`schemes/sensors_motor_steering.svg`](../schemes/sensors_motor_steering.svg) |
 | Three-sheet EasyEDA PDF | [`schemes/schematic_diagram.pdf`](../schemes/schematic_diagram.pdf) |
-| **Selected MATLAB electrical scripts and individual READMEs** | [`other/matlab/electrical_figures/`](../other/matlab/electrical_figures/) — Figures **01, 02, 07, 08**; original Step 01–03 screening scripts remain separately available |
+| **Selected MATLAB electrical scripts** | [`Figure 01`](../other/matlab/figure01_electrical_load_budget.m), [`Figure 02`](../other/matlab/figure02_converter_input_range.m), [`Figure 07`](../other/matlab/figure07_12v_input_headroom.m), [`Figure 08`](../other/matlab/figure08_5v_wiring_sensitivity.m) — all directly in `other/matlab/` |
 | **MATLAB figures actually displayed in this journal** | [`01`](visualization/01_assumed_load_budget.png), [`02`](visualization/02_input_range_screen.png), [`07`](visualization/07_12v_input_headroom.png), [`08`](visualization/08_transient_timeline.png) |
 
 For full native EasyEDA editing, retain/export the original `.json`/project source separately from the PDF/SVG visuals. The exported figures alone are publication-ready descriptions but do not encode every native editor setting.
@@ -620,9 +650,9 @@ No other generic part rating should be labeled “to verify” simply because th
 
 ### 19.1 WRO documentation and engineering methods
 
-- [WRO Association — 2026 season rules](https://wro-association.org/competition/2026-season/)
+- [WRO Association — 2026 season rules](https://wro-association.org/competition/2026-season/) — use the **Future Engineers General Rules**, especially **Appendix C** (documentation rubric) and the game-field geometry
 - [WRO Association — official questions and answers](https://wro-association.org/competition/questions-answers/)
-- [WRO Robot Profile Guide](https://www.wro.events/docs/WRO-Robot-Profile-Guide.html) — the team's national organizer submits the profile together with the documentation according to the 2026 International Final communication.
+- **Robot Profile submission:** The team should follow its National Organizer's current international-final instructions for the required Robot Profile and GitHub repository URL. The previously cited `wro.events` guide URL could not be verified, so no potentially broken guide link is retained here.
 - [GitHub documentation — mathematical expressions](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions) — this chapter uses fenced `math` blocks to render equations on GitHub.
 
 ### 19.2 Computing, power and actuation
@@ -650,4 +680,4 @@ No other generic part rating should be labeled “to verify” simply because th
 
 ---
 
-*Documentation status: Manufacturer ratings and team-reported connections are included; MATLAB figures are synthetic engineering analyses. No unrecorded physical test or custom PCB is claimed. Remaining `[TODO]` items concern only actual installed-robot configuration, sensor pose/calibration and encoder decoding, not manufacturer datasheet specifications.*
+*Documentation status (D5): Manufacturer/supplier ratings, team-reported connections and four existing public MATLAB figures are documented with links matching the live GitHub `main` layout. The simulation plots remain non-measured evidence. Sensor placement, performed calibration, physical configuration and iteration outcomes are not invented; outstanding team-specific records are listed in Section 18.*
