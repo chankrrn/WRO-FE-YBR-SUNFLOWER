@@ -24,7 +24,6 @@ This repository shares our robot design and source code alongside the reasoning 
 | Main controller | Raspberry Pi 5 (8 GB) |
 | Perception | LiDAR and fisheye camera |
 | Current stage | Revised robot in development; final assembly and validation pending |
-| Main materials | Engineering records, source code, diagrams, photographs, and demonstrations |
 
 ---
 
@@ -61,6 +60,8 @@ All team members contribute to the engineering process through collaborative des
 
 ## Our Robot
 
+Our robot combines a Raspberry Pi computer, range and vision sensors, a geared drive motor with encoder feedback, and servo-controlled steering. The computer processes observations and coordinates the car's motion through the onboard software and electrical interfaces. Full component specifications, circuit diagrams, pin assignments, mechanical dimensions, tuning parameters, and validation results belong in the engineering records above.
+
 **[TO DO]** Add representative version 2.0 photographs once the physical car is complete
 
 All sides are in [`v-photos/`](v-photos/)
@@ -81,8 +82,6 @@ All sides are in [`v-photos/`](v-photos/)
 |---|---|---|---|
 | **[TODO]** Photo | **[TODO]** Photo | **[TODO]** Photo | **[TODO]** Photo |
 
-Our robot combines a Raspberry Pi computer, range and vision sensors, a geared drive motor with encoder feedback, and servo-controlled steering. The computer processes observations and coordinates the car's motion through the onboard software and electrical interfaces. Full component specifications, circuit diagrams, pin assignments, mechanical dimensions, tuning parameters, and validation results belong in the engineering records above.
-
 ### Versions
 
 | Version | Short description | Status |
@@ -101,13 +100,16 @@ The technical records explain **why** decisions were made; the source and suppor
 | Resource | Location |
 |:---|:---|
 | Engineering records | [`engineering_journal/`](engineering_journal/) |
-| Program source | [`src/`](src/) |
-| Circuit and wiring diagrams | [`schemes/`](schemes/) |
-| robot photographs | [`robot-photos/`](v-photos/) |
-| Team photographs | [`team-photos/`](t-photos/) |
-| Demonstration videos | [`video/`](video/) |
+| Competition records | [`history/`](history/) |
+| Robot CAD models and PNG model images | [`models/`](models/) |
 | Supporting resources | [`other/`](other/) |
+| Circuit and wiring diagrams | [`schemes/`](schemes/) |
+| Program source | [`src/`](src/) |
+| Team photographs | [`team-photos/`](t-photos/) |
+| Robot photographs | [`robot-photos/`](v-photos/) |
+| Demonstration videos | [`video/`](video/) |
 | License | [`LICENSE.md`](LICENSE.md) |
+| Project overview and repository guide| [`README.md`](README.md) |
 
 ---
 

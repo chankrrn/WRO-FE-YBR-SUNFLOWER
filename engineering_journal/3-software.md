@@ -1,4 +1,4 @@
-# 3-Software Architecture and Obstacle Strategy
+# Software Architecture and Obstacle Strategy
 
 > **YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 03**
 >

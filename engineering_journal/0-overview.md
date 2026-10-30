@@ -1,4 +1,4 @@
-# 0-Overview
+# Overview
 
 > **YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 00**
 >
@@ -23,7 +23,7 @@
 
 ## 1. Purpose and Project Scope
 
-YBR-SUNFLOWER develops an autonomous, car-like robot for the **World Robot Olympiad (WRO) 2026 Future Engineers – Self-Driving Cars** challenge. This overview explains how the mechanical, electrical, sensing, and software subsystems fit together and points readers to the team's detailed technical records.
+YBR-SUNFLOWER develops an autonomous, car-like robot for the **World Robot Olympiad (WRO) 2026 Future Engineers** challenge. This overview explains how the mechanical, electrical, sensing, and software subsystems fit together and points readers to the team's detailed technical records.
 
 The robot has been completed, including its 3D-printed chassis, system integration, and Raspberry Pi parking software. The repository contains the component lists, illustrations, models, and algorithms documenting the robot's design and implementation.
 
@@ -36,7 +36,7 @@ The robot has been completed, including its 3D-printed chassis, system integrati
 
 ## 2. Engineering Journal Map
 
-The following **technical journals** combine design explanation and supporting evidence within the same file. We use a single journal per engineering discipline rather than separating an engineering chapter from an evidence chapter.
+The following **technical journals** combine design explanation and supporting evidence within the same file. Each engineering discipline has its own journal, integrating technical analysis and supporting evidence in one place.
 
 | Record | What a reader will find |
 |---|---|

@@ -1,4 +1,4 @@
-# 1-Mobility and Mechanical Design
+# Mobility and Mechanical Design
 
 > **YBR-SUNFLOWER · WRO 2026 Future Engineers · Engineering Journal 01**
 >
