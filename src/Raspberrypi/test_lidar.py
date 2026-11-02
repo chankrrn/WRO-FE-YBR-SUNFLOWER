@@ -1,15 +1,15 @@
 """
-Manual test script for classes/lidar_manager.py (RPLidar C1 over USB).
+Manual test script for classes/lidar_manager.py (RPLidar S2L on the Pi's UART).
 
 Modes:
     python test_lidar.py                 top-down OpenCV visualizer, ESC to quit
     python test_lidar.py --ascii         text radar in the terminal, no display
                                           needed (use this over plain SSH)
-    python test_lidar.py --ports         list candidate serial ports and exit
+    python test_lidar.py --ports         list the UARTs and the port it would use
 
 Useful flags:
-    --port /dev/ttyUSB0   skip autodetect (autodetect matches the C1's CP2102N
-                           USB bridge, so it won't grab the Arduino on ttyACM0)
+    --port /dev/ttyAMA0   override the port (default: lidar_manager.DEFAULT_PORT;
+                           NOT /dev/serial0, which is the debug UART on a Pi 5)
     --offset 90           rotate the sensor's zero onto the robot's forward axis
     --mirror              sensor mounted upside down (angles run the other way)
     --duration 10         stop after N seconds instead of running until ESC
@@ -25,17 +25,15 @@ import time
 
 import cv2
 
-from classes.lidar_manager import LidarManager
+from classes.lidar_manager import DEFAULT_PORT, LidarManager
 
 
 def list_ports():
-    print("Serial devices by id:")
-    candidates = sorted(glob.glob("/dev/serial/by-id/*"))
-    if not candidates:
-        print("  (none - is the lidar plugged in?)")
-    for path in candidates:
-        print(f"  {os.path.basename(path)}\n      -> {os.path.realpath(path)}")
-    print(f"\nLidarManager would use: {LidarManager.autodetect_port()}")
+    print("UARTs:")
+    for path in sorted(glob.glob("/dev/ttyAMA*") + glob.glob("/dev/serial[0-9]")):
+        target = f" -> {os.path.realpath(path)}" if os.path.islink(path) else ""
+        print(f"  {path}{target}")
+    print(f"\nLidarManager would use: {DEFAULT_PORT}")
 
 
 def build_lidar(args):
@@ -104,8 +102,8 @@ def report(lidar):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Test the RPLidar C1 LidarManager")
-    parser.add_argument("--port", default=None, help="serial port (default: autodetect)")
+    parser = argparse.ArgumentParser(description="Test the RPLidar S2L LidarManager")
+    parser.add_argument("--port", default=None, help=f"serial port (default: {DEFAULT_PORT})")
     parser.add_argument("--offset", type=float, default=0.0,
                         help="degrees to rotate the sensor's zero onto robot forward")
     parser.add_argument("--mirror", action="store_true",

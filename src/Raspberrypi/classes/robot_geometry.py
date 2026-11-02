@@ -19,15 +19,17 @@ MEASURE THESE with a ruler on the real car, from the rear axle's centreline.
 """
 import numpy as np
 
-# The lidar beam's origin, forward of the rear axle. 15cm: the mast stands
-# almost on top of the front wheels and the wheelbase is 165mm.
-LIDAR_AHEAD_MM = 120.0
+# The lidar beam's origin, forward of the rear axle. Keep in step with
+# lidar_ahead_mm in tasks/*/config.toml (the round uses that one).
+LIDAR_AHEAD_MM = 65.0
 DEFAULT_LIDAR_OFFSET_MM = (LIDAR_AHEAD_MM, 0.0)
 
 # The lens sits this far straight back from the lidar on the same mast, so the
 # camera's offset is derived from the lidar's rather than typed in twice and
 # left to drift apart - move the mast and both sensors follow.
-CAMERA_BEHIND_LIDAR_MM = 170.0
+# NEGATIVE if the lens is IN FRONT of the lidar: -50.0 = 50mm ahead of it.
+# Measured along the robot's forward axis, lens to the lidar's centre.
+CAMERA_BEHIND_LIDAR_MM = -150.0
 
 
 def to_field(x, y, heading_deg, offset_mm):

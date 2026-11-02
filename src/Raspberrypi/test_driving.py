@@ -48,12 +48,13 @@ from classes.block_map import (BLOCK_SIZE_MM, MAX_MAPPING_RANGE_MM,
                                camera_offset_behind_lidar)
 from classes.field_map import FieldMap
 from classes.navigation_manager import NavigationManager, Pose
-from classes.object_solver import CAPTURED_HORIZONTAL_FOV_DEG, DetectedObject
+from classes.object_solver import WORKING_HORIZONTAL_FOV_DEG, DetectedObject
 from classes.parking import (NOMINAL_BAY_MM, WALL_THICKNESS_MM, along_axis_of,
                              bay_interior, section_of, wall_heading_of,
                              wall_rects)
 from classes.racing_line import RacingLine
 from tasks.cli import load_config
+from tasks.final.task import SEATS_MM
 from utils.angle_utils import angle_difference
 from utils.enums import Color
 from test_navigation import SimCompass, SimLidar
@@ -434,7 +435,7 @@ class SimObjectSolver:
         self.map = field_map
         self.rng = rng
         self.max_range_mm = float(max_range_mm)
-        self.fov_deg = float(fov_deg or CAPTURED_HORIZONTAL_FOV_DEG)
+        self.fov_deg = float(fov_deg or WORKING_HORIZONTAL_FOV_DEG)
         self.camera_offset_mm = camera_offset_behind_lidar()
         self.frames = 0
         self.reported = 0
@@ -518,6 +519,13 @@ def place_pillars(path, direction, count, rng):
         progress = (index + 0.5) * spacing + rng.uniform(-spacing / 6.0, spacing / 6.0)
         lateral = rng.uniform(-PILLAR_LATERAL_MM, PILLAR_LATERAL_MM)
         x, y = path.point_at(progress, direction, lateral)
+        # On the mat a pillar can only stand on a traffic-sign seat, and the
+        # round plans around the seat rather than the camera's estimate (see
+        # FinalTask._snap_to_seat) - so a pillar dropped anywhere else would
+        # be snapped onto a seat it is not on. Moved to the seat nearest the
+        # spot picked, which keeps the spacing above.
+        x, y = min(SEATS_MM, key=lambda seat: math.hypot(x - seat[0], y - seat[1]))
+        progress, _ = path.project(x, y, direction)
         color = Color.GREEN if rng.random() < 0.5 else Color.RED
         pillars.append(SimPillar(x, y, color, progress))
     return pillars

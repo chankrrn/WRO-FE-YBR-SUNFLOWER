@@ -1,36 +1,48 @@
-import asyncio
-import glob
 import math
-import os
 import threading
 import time
 
 import cv2
 import numpy as np
-
-from rplidarc1 import RPLidar
+import serial
 
 from utils.image_drawing_utils import ImageDrawingUtils
 
 # ============================================================================
 # Device configuration
 # ============================================================================
-DEFAULT_BAUDRATE = 460800        # fixed for the C1
-DEFAULT_PORT = "/dev/ttyUSB0"
+DEFAULT_BAUDRATE = 1000000       # fixed for the S2L (3.3V UART, 8N1)
 
-# The C1's USB adapter is a Silicon Labs CP2102N. Matching on that keeps the
-# autodetect from grabbing the Arduino, which enumerates as /dev/ttyACM*.
-USB_ID_HINTS = ("CP2102", "Silicon_Labs")
+# The S2L is wired to the Pi's own UART (GPIO14/15, broken out on the
+# DFR0604 HAT). On a Pi 5 the GPIO UART is /dev/ttyAMA0 (needs
+# dtparam=uart0=on in /boot/firmware/config.txt). /dev/serial0 points at the
+# debug UART on a Pi 5, so do not use it here.
+# The lidar's VCC must come from a real 5V supply (>= 600mA), NOT from the
+# HAT's 3.3V sensor pins. Only TX/RX/GND go through the HAT's UART port.
+DEFAULT_PORT = "/dev/ttyAMA0"
 
-# Datasheet range of the C1. Readings outside this are noise/garbled packets.
+# Slamtec serial protocol commands (all start with 0xA5)
+STOP_CMD = b"\xA5\x25"
+RESET_CMD = b"\xA5\x40"
+GET_HEALTH_CMD = b"\xA5\x52"
+SCAN_CMD = b"\xA5\x20"
+SCAN_DESCRIPTOR = bytes.fromhex("a5 5a 05 00 00 40 81")
+
+# Datasheet range of the S2L (18 m class). Readings outside this are
+# noise/garbled packets.
 MIN_RANGE_MM = 50.0
-MAX_RANGE_MM = 12000.0
+MAX_RANGE_MM = 18000.0
 
-# A reading older than this is dropped from the scan. The C1 spins at ~10Hz,
+# A reading older than this is dropped from the scan. The S2L spins at ~10Hz,
 # so every angle should refresh ~10x/second - anything a half second old means
 # that direction is currently returning nothing (too far, too dark, or the
 # beam is hitting glass).
 DEFAULT_STALE_AFTER_S = 0.5
+
+# If the lidar sends nothing for this long while scanning, assume it went into
+# Protection Stop (power dip, stalled motor) and kill the scan thread with a
+# clear error instead of silently showing an empty map.
+NO_DATA_TIMEOUT_S = 2.0
 
 # ============================================================================
 # Debug visualizer configuration
@@ -52,20 +64,20 @@ SUMMARY_SECTORS = (
 
 class LidarManager:
     """
-    Wraps the async rplidarc1 driver in a plain synchronous API so the main
-    control loop can just poll it.
+    Reads an RPLIDAR S2L over the Pi's UART with plain pyserial and exposes a
+    synchronous API so the main control loop can just poll it.
 
-    The driver is async-only, so the scan runs on its own asyncio loop in a
-    background thread. That thread folds every incoming point into a
+    The scan is read on its own background thread. That thread decodes the
+    lidar's 5-byte standard-scan packets and folds every point into a
     360-element array indexed by whole degrees - one slot per degree, holding
     the most recent distance seen for that direction. Reading the "scan" is
     therefore always instant and never blocks on a rotation completing.
 
     Note this is a rolling snapshot, NOT a single synchronized sweep: with the
-    C1 spinning at ~10Hz, the oldest slots in a returned scan are up to ~100ms
-    older than the newest ones. That is fine for obstacle distances on a slow
-    robot, but do not treat the array as one instantaneous picture of the room
-    if the robot is moving fast.
+    S2L spinning at ~10Hz, the oldest slots in a returned scan are up to
+    ~100ms older than the newest ones. That is fine for obstacle distances on
+    a slow robot, but do not treat the array as one instantaneous picture of
+    the room if the robot is moving fast.
 
     Angle convention (matches ObjectSolver's bearing):
         0    = straight ahead
@@ -73,7 +85,7 @@ class LidarManager:
         -90 / 270 = robot's left
         180  = behind
     Accessors accept negative angles. `angle_offset_deg` rotates the sensor's
-    own zero (the mark on the C1's housing) onto the robot's forward axis, and
+    own zero (the mark on the S2L's housing) onto the robot's forward axis, and
     `mirror` flips the direction of rotation for an upside-down mount.
     """
 
@@ -82,7 +94,7 @@ class LidarManager:
                  min_distance_mm=MIN_RANGE_MM, max_distance_mm=MAX_RANGE_MM,
                  stale_after_s=DEFAULT_STALE_AFTER_S,
                  render_range_mm=RENDER_RANGE_MM):
-        self.port = port or self.autodetect_port()
+        self.port = port or DEFAULT_PORT
         self.baudrate = baudrate
         self.debug = debug
         self.angle_offset_deg = angle_offset_deg
@@ -92,7 +104,7 @@ class LidarManager:
         self.stale_after_s = stale_after_s
         self.render_range_mm = render_range_mm   # distance at the canvas edge
 
-        self._lidar = None
+        self._serial = None
         self._thread = None
         self._stop_event = threading.Event()
         self._error = None            # exception raised inside the scan thread
@@ -110,23 +122,12 @@ class LidarManager:
     # LIFECYCLE
     # ========================================================================
 
-    @staticmethod
-    def autodetect_port():
-        """
-        Finds the C1's serial port by USB descriptor, falling back to
-        DEFAULT_PORT. Needed because /dev/ttyUSB0 is only stable while the C1
-        is the sole USB-serial device plugged in.
-        """
-        for path in sorted(glob.glob("/dev/serial/by-id/*")):
-            if any(hint in os.path.basename(path) for hint in USB_ID_HINTS):
-                return os.path.realpath(path)
-        return DEFAULT_PORT
-
     def start(self):
         """
-        Opens the serial port, healthchecks the device and starts scanning in
-        the background. Raises (ConnectionError etc.) on the calling thread if
-        the device does not come up, so a failure is visible immediately.
+        Resets the lidar (clearing any Protection Stop), starts the scan and
+        begins reading it in the background. Raises (ConnectionError etc.) on
+        the calling thread if the device does not come up, so a failure is
+        visible immediately. Takes ~3 seconds because of the reset.
         """
         if self.is_running:
             return
@@ -136,9 +137,21 @@ class LidarManager:
         if self.debug:
             print(f"[lidar] connecting to {self.port} @ {self.baudrate}")
 
-        # Constructing RPLidar connects + healthchecks synchronously, so any
-        # wiring problem surfaces here rather than inside the thread.
-        self._lidar = RPLidar(self.port, self.baudrate)
+        self._reset_device()
+
+        self._serial = serial.Serial(self.port, self.baudrate, timeout=1)
+        try:
+            self._serial.reset_input_buffer()
+            self._serial.write(SCAN_CMD)
+            descriptor = self._serial.read(len(SCAN_DESCRIPTOR))
+            if descriptor != SCAN_DESCRIPTOR:
+                raise ConnectionError(
+                    f"unexpected scan reply: {descriptor.hex(' ') or '(nothing)'}")
+        except Exception:
+            self._serial.close()
+            self._serial = None
+            raise
+        self._serial.timeout = 0.1   # short reads so the thread can see stop()
 
         self._thread = threading.Thread(target=self._run, name="lidar", daemon=True)
         self._thread.start()
@@ -146,15 +159,12 @@ class LidarManager:
             print("[lidar] scanning")
 
     def stop(self):
-        """Stops the scan, sends the motor stop command and closes the port."""
+        """Stops the scan, sends the stop command and closes the port."""
         self._stop_event.set()
-        if self._lidar is not None:
-            # The driver's coroutine polls this same flag to exit its read loop.
-            self._lidar.stop_event.set()
         if self._thread is not None:
             self._thread.join(timeout=3.0)
             self._thread = None
-        self._lidar = None
+        self._serial = None
         if self.debug:
             print(f"[lidar] stopped after {self._points_received} points")
 
@@ -190,43 +200,86 @@ class LidarManager:
         self.stop()
         return False
 
+    def _reset_device(self):
+        """Clears a Protection Stop and checks the device reports healthy."""
+        with serial.Serial(self.port, self.baudrate, timeout=1) as s:
+            s.write(STOP_CMD)
+            time.sleep(0.1)
+            s.write(RESET_CMD)
+            time.sleep(2.5)                  # lidar reboots and prints a banner
+            s.reset_input_buffer()
+            s.write(GET_HEALTH_CMD)
+            time.sleep(0.3)
+            reply = s.read(10)
+        # reply = a5 5a 03 00 00 00 06 | status | error code (2 bytes)
+        # status: 0 = good, 1 = warning, 2 = error (Protection Stop)
+        if len(reply) < 10 or reply[7] != 0:
+            raise ConnectionError(
+                f"lidar not healthy: {reply.hex(' ') or '(nothing)'} "
+                "- check 5V power (>= 600mA), TX/RX wiring and that the head spins freely")
+
     # ========================================================================
     # SCAN THREAD
     # ========================================================================
 
     def _run(self):
-        lidar = self._lidar   # stop() clears self._lidar once we are done
+        ser = self._serial
+        buf = bytearray()
+        last_data = time.monotonic()
         try:
-            asyncio.run(self._scan_loop())
+            while not self._stop_event.is_set():
+                chunk = ser.read(max(1, ser.in_waiting))
+                if chunk:
+                    last_data = time.monotonic()
+                    buf += chunk
+                    batch, used = self._parse(buf)
+                    del buf[:used]
+                    if batch:
+                        self._apply(batch)
+                elif time.monotonic() - last_data > NO_DATA_TIMEOUT_S:
+                    raise TimeoutError(
+                        f"no data from lidar for {NO_DATA_TIMEOUT_S:.0f}s "
+                        "(Protection Stop? check power and that the head is spinning)")
         except Exception as e:      # noqa: BLE001 - surfaced via self.error
             self._error = e
             if self.debug:
                 print(f"[lidar] scan thread died: {e!r}")
         finally:
             try:
-                lidar.shutdown()
+                ser.write(STOP_CMD)
+                ser.close()
             except Exception:
                 pass
 
-    async def _scan_loop(self):
-        # simple_scan() sends the SCAN command and returns the driver's reader
-        # coroutine; it feeds lidar.output_queue, which _consume() drains.
-        scan = self._lidar.simple_scan()
-        consumer = self._consume()
-        await asyncio.gather(scan, consumer)
+    @staticmethod
+    def _parse(buf):
+        """
+        Decodes 5-byte standard-scan packets.
 
-    async def _consume(self):
-        queue = self._lidar.output_queue
-        while not self._stop_event.is_set():
-            try:
-                batch = [await asyncio.wait_for(queue.get(), timeout=0.2)]
-            except asyncio.TimeoutError:
-                continue
-            # Drain whatever else has piled up in one go - taking the lock
-            # 5000 times a second (the C1's sample rate) would not be free.
-            while not queue.empty() and len(batch) < 1024:
-                batch.append(queue.get_nowait())
-            self._apply(batch)
+        Packet layout:
+            b0: quality(6) | not-S(1) | S(1)    S = 1 on the first point of a rotation
+            b1: angle low 7 bits | check bit (always 1)
+            b2: angle high 8 bits          angle = ((b2 << 7) | (b1 >> 1)) / 64  degrees
+            b3, b4: distance, little-endian    distance = ((b4 << 8) | b3) / 4  mm
+
+        I/O:
+            buf: bytearray of raw bytes read so far
+            return: (list of {"a_deg", "d_mm"} dicts, number of bytes consumed)
+                    d_mm is None where the lidar reported no return (distance 0)
+        """
+        points = []
+        i = 0
+        while i + 5 <= len(buf):
+            b0, b1, b2, b3, b4 = buf[i:i + 5]
+            # S and not-S must differ and the check bit must be 1
+            if ((b0 ^ (b0 >> 1)) & 1) and (b1 & 1):
+                angle = ((b2 << 7) | (b1 >> 1)) / 64.0
+                dist = ((b4 << 8) | b3) / 4.0
+                points.append({"a_deg": angle, "d_mm": dist if dist > 0 else None})
+                i += 5
+            else:
+                i += 1          # out of sync, slide forward one byte
+        return points, i
 
     def _apply(self, batch):
         now = time.monotonic()
@@ -234,7 +287,7 @@ class LidarManager:
         with self._lock:
             for point in batch:
                 distance = point["d_mm"]
-                # The driver reports an out-of-range/no-return sample as None.
+                # No-return samples are reported as None.
                 if distance is None:
                     continue
                 if not (self.min_distance_mm <= distance <= self.max_distance_mm):

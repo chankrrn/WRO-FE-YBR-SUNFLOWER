@@ -67,6 +67,7 @@ import time
 import numpy as np
 
 from classes.pure_pursuit import PurePursuit
+from classes.robot_geometry import to_field
 from classes.task_context import TaskContext
 from utils.angle_utils import angle_difference
 from utils.task_config import TaskConfig
@@ -74,6 +75,29 @@ from utils.task_config import TaskConfig
 SAMPLE_S = 0.02          # 50Hz, the rate the real control loop runs at
 ABORT_SECTOR_DEG = 25.0
 ABORT_CLEARANCE_MM = 250.0
+# The room check before the run looks down the line, not across the whole
+# abort cone: from a corner cell the centre block's corner sits at ~25deg and
+# 1.1m, inside +/-25 but never on the path, and it refused every run there.
+ROOM_SECTOR_DEG = 5.0
+# Starting the step off a pose that only JUST crossed the reliable line is
+# starting it off a guess. Confidence alone cannot tell a right pose from a
+# wrong one - measured, a correct lock in a corner wobbles between 0.71 and
+# 0.81, and a global search that settled 2m off reported 0.70 - so the start
+# also checks the scan against the map FROM that pose: a correct lock fits to
+# ~20mm, a wrong one does not fit at all. A pose has to pass both, and keep
+# passing for START_HOLD_S.
+START_CONFIDENCE = 0.5
+START_FIT_MM = 60.0
+START_HOLD_S = 1.0
+START_TIMEOUT_S = 30.0
+# A global search that has settled somewhere wrong stays there, so after this
+# long without a good fit the particles are scattered again.
+RESEARCH_AFTER_S = 6.0
+FIT_BEAMS_DEG = np.arange(-120, 121, 5)
+FIT_MAX_RANGE_MM = 2900.0
+# And one bad update mid-run is not a lost pose. The round itself rides out
+# safety.lost_timeout_s of it; this only gives up once it has lasted this long.
+UNRELIABLE_GRACE_S = 0.5
 SETTLE_FRACTION = 0.1    # "settled" = inside this fraction of the step
 
 
@@ -129,11 +153,12 @@ class StepLine:
 # DRIVING IT
 # ============================================================================
 
-def clearance_mm(context):
-    """Closest lidar return ahead, or None if the lidar is not answering."""
+def clearance_mm(context, sector_deg=ABORT_SECTOR_DEG):
+    """Closest lidar return within +/- sector_deg of the nose, or None if the
+    lidar is not answering."""
     if context.lidar is None:
         return None
-    distance, _ = context.lidar.get_min_distance(-ABORT_SECTOR_DEG, ABORT_SECTOR_DEG)
+    distance, _ = context.lidar.get_min_distance(-sector_deg, sector_deg)
     return None if math.isnan(distance) else distance
 
 
@@ -173,6 +198,7 @@ def drive_step(context, config, speed, step_mm, pre_mm, after_mm):
     context.motor.drive(0, speed)
     last = time.monotonic()
     aborted = None
+    unreliable_since = None
     while True:
         now = time.monotonic()
         dt = now - last
@@ -199,8 +225,13 @@ def drive_step(context, config, speed, step_mm, pre_mm, after_mm):
         if abs(error) > max(500.0, 4.0 * abs(step_mm)):
             aborted = f"{error:+.0f}mm off the line - lost it"
             break
-        if not pose.is_reliable:
-            aborted = "pose went unreliable"
+        if pose.is_reliable:
+            unreliable_since = None
+        elif unreliable_since is None:
+            unreliable_since = now
+        elif now - unreliable_since > UNRELIABLE_GRACE_S:
+            aborted = (f"pose unreliable for over {UNRELIABLE_GRACE_S:.1f}s "
+                       f"(conf={pose.confidence:.2f})")
             break
 
         # Steer off where the robot WILL be when the wheels arrive, exactly as
@@ -364,18 +395,24 @@ def one_run(context, config, args, sign):
     print(f"\nStep {step:+.0f}mm at speed {args.speed} "
           f"(lookahead {build_pursuit(config).lookahead_distance(args.speed):.0f}mm, "
           f"servo_lag {config.get('pursuit.servo_lag_s', 0.0)}s, "
-          f"lag_comp {config.get('pursuit.lag_compensation_s', 0.0)}s)")
+          f"lag_comp {config.get('pursuit.lag_compensation_s', 0.0)}s, "
+          f"full lock {config.get('pursuit.max_road_wheel_deg', 0.0)}deg)")
     samples, aborted = drive_step(context, config, args.speed, step,
                                   args.pre, args.after)
     if aborted:
-        # And nothing else. A step test that stopped early stopped part way
-        # through the response, so "settled NEVER" and the residual are facts
-        # about where it was cut off, not about the robot - and a void number
-        # that looks like a measurement is worse than no number, because it is
-        # the one that gets tuned against.
+        # A step test that stopped early stopped part way through the
+        # response, so "settled" and the residual are facts about where it was
+        # cut off, not about the robot. Overshoot and swings up to the stop
+        # are still real, so they are shown - labelled as partial.
         print(f"  ABORTED: {aborted}")
-        print("  no numbers from this run - the response was cut off part way "
-              "through.\n  Fix the abort and run it again.")
+        result = analyse(samples, step, args.pre)
+        if result is None:
+            print("  stopped before enough of the run after the step to measure")
+            return None
+        print("  PARTIAL - only overshoot and swings mean anything here:")
+        report(result, build_pursuit(config).lookahead_distance(args.speed))
+        if args.plot:
+            plot(result)
         return None
     result = analyse(samples, step, args.pre)
     if result is None:
@@ -387,6 +424,61 @@ def one_run(context, config, args, sign):
     return result
 
 
+def scan_fit_mm(context, pose):
+    """
+    How well the live scan matches the map seen from `pose`: the median gap
+    between each measured range and the range the map predicts, in mm. About
+    20mm when the pose is right; hundreds when it is somewhere else.
+    """
+    nav = context.nav
+    scan = np.asarray(context.lidar.get_scan(), dtype=float)
+    measured = scan[FIT_BEAMS_DEG % 360]
+    usable = np.isfinite(measured) & (measured < FIT_MAX_RANGE_MM)
+    if np.count_nonzero(usable) < 10:
+        return float("inf")
+    lidar_x, lidar_y = to_field(pose.x, pose.y, pose.heading, nav.lidar_offset_mm)
+    predicted = nav.map.raycast(lidar_x, lidar_y,
+                                np.radians(pose.heading + FIT_BEAMS_DEG[usable]))
+    return float(np.median(np.abs(predicted - measured[usable])))
+
+
+def wait_for_settled_pose(context, heading_deg=None):
+    """
+    Updates the filter until the pose has, for START_HOLD_S straight, both
+    confidence >= START_CONFIDENCE and a scan that fits the map from it to
+    within START_FIT_MM. Re-scatters the search if it settles somewhere wrong.
+    Returns False, having said why, if that never happens.
+    """
+    started = time.monotonic()
+    deadline = started + START_TIMEOUT_S
+    searched_at = started
+    held_since = None
+    pose, fit = context.nav.update(), float("inf")
+    while time.monotonic() < deadline:
+        pose = context.nav.update()
+        fit = scan_fit_mm(context, pose)
+        now = time.monotonic()
+        if pose.confidence >= START_CONFIDENCE and fit <= START_FIT_MM:
+            held_since = held_since or now
+            if now - held_since >= START_HOLD_S:
+                print(f"  {pose}  scan fits the map to {fit:.0f}mm")
+                return True
+        else:
+            held_since = None
+            if now - searched_at > RESEARCH_AFTER_S:
+                print(f"  settled at {pose} but the scan is {fit:.0f}mm off the "
+                      f"map from there - searching again")
+                context.nav.start(heading_deg=heading_deg)
+                searched_at = now
+        time.sleep(0.05)
+    print(f"  {pose}  scan {fit:.0f}mm off the map")
+    print(f"  No pose held conf >= {START_CONFIDENCE} with the scan within "
+          f"{START_FIT_MM:.0f}mm of the map for {START_HOLD_S:.0f}s in "
+          f"{START_TIMEOUT_S:.0f}s. Check nothing is lying on the mat inside "
+          f"the walls (pillars, bay walls, a bag) - the map only knows the walls.")
+    return False
+
+
 def main(args):
     config = load(args.round, args.set or [])
     if args.sweep:
@@ -395,30 +487,37 @@ def main(args):
     else:
         key, values = None, [None]
 
-    context = TaskContext(debug=False, use_lidar=True, lidar_port=args.lidar_port,
-                          motor_port=args.motor_port)
+    context = TaskContext(debug=False, use_lidar=True, lidar_port=args.lidar_port)
     with context:
+        # The field is 90-degree symmetric, so the lidar alone can lock onto
+        # the wrong quadrant - and a line followed from a pose in the wrong
+        # quadrant drives straight into a wall. The compass settles it, but
+        # only once told which way the robot is really facing.
+        if args.heading is not None:
+            context.nav.start(heading_deg=args.heading)
+        else:
+            print("WARNING: no --heading given, so the compass is unanchored and "
+                  "the pose may land in the wrong quadrant of the field")
+        # The checks before the run only warn: the run itself still stops on
+        # anything in front, on losing the line, and on an unreliable pose.
         print("Waiting for the localizer...")
-        for _ in range(80):
-            if context.nav.update().is_reliable:
-                break
-            time.sleep(0.05)
-        pose = context.nav.get_pose()
-        print(f"  {pose}")
-        if not pose.is_reliable:
-            print("  WARNING: pose is not reliable - a step test off an unreliable")
-            print("  pose measures the FILTER, not the steering. Fix that first.")
+        if not wait_for_settled_pose(context, args.heading):
+            print("  WARNING: pose not settled - running anyway")
 
-        front = clearance_mm(context)
+        front = clearance_mm(context, ROOM_SECTOR_DEG)
         need = args.pre + args.after
         print(f"  {front:.0f}mm clear ahead" if front else "  no lidar reading ahead")
         if front is not None and front < need:
-            print(f"  Not enough room - the run is {need:.0f}mm long. "
-                  f"Point it down the mat.")
-            return 1
+            print(f"  WARNING: the run is {need:.0f}mm long - it will stop "
+                  f"early at the wall")
 
         if not args.no_wait:
             context.wait_for_start()
+            # The filter is not updated while the button is waited on, and the
+            # robot gets touched to press it - so settle again before moving.
+            print("Re-checking the pose before driving...")
+            if not wait_for_settled_pose(context):
+                print("  WARNING: pose not settled - running anyway")
 
         try:
             for value in values:
@@ -433,6 +532,8 @@ def main(args):
                     context.motor.drive(0, 0)
                     if index + 1 < args.repeat or value is not values[-1]:
                         input("  reposition the robot down the mat, then Enter: ")
+                        if not wait_for_settled_pose(context):
+                            print("  WARNING: pose not settled - running anyway")
         finally:
             context.motor.drive(0, 0)
     return 0
@@ -449,6 +550,9 @@ if __name__ == "__main__":
     parser.add_argument("--after", type=float, default=1500.0,
                         help="run after the step, mm - this is the measurement")
     parser.add_argument("--speed", type=int, default=60)
+    parser.add_argument("--heading", type=float, default=None,
+                        help="which way the robot is placed, field degrees: "
+                             "0=+Y, 90=+X, 180=-Y, 270=-X (anchors the compass)")
     parser.add_argument("--repeat", type=int, default=1,
                         help="steps per setting, alternating side")
     parser.add_argument("--sweep", nargs=2, metavar=("KEY", "VALUES"),
@@ -458,6 +562,5 @@ if __name__ == "__main__":
     parser.add_argument("--plot", action="store_true", help="text plot of the response")
     parser.add_argument("--no-wait", action="store_true",
                         help="skip the start button (it will not move without it)")
-    parser.add_argument("--motor-port", default=None)
     parser.add_argument("--lidar-port", default=None)
     sys.exit(main(parser.parse_args()))

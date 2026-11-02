@@ -22,6 +22,12 @@ from utils.video.video_counter import VideoCounter
 from classes.image_algoriths import ImageAlgorithms
 from classes.context_manager import ContextManager
 
+# Auto-exposure stays ON; this only shifts the brightness it aims for, in
+# stops (-8.0 .. 8.0, 0.0 = libcamera's default, +1.0 = twice as bright).
+# Brighter frames move every colour's HSV value up, so re-check the
+# thresholds in utils/image_color_utils.py after changing it.
+EXPOSURE_EV = 1.3
+
 class CameraManager:
 
     def __init__(self, record_video=False, record_fps=15.0):
@@ -96,6 +102,7 @@ class CameraManager:
         config = (self.picam2.create_video_configuration(
         raw={"size":(sensor_width,sensor_height)},
         main={"format":'RGB888',"size": (ImageTransformUtils.CAMERA_PIC_WIDTH, ImageTransformUtils.CAMERA_PIC_HEIGHT)},
+        controls={"ExposureValue": EXPOSURE_EV},
         buffer_count=4))
         self.picam2.configure(config)
         
@@ -172,9 +179,10 @@ class CameraManager:
         # display copy is taken explicitly, so nothing here aliases the next
         # frame's buffer.
         self.cropped_image = ImageTransformUtils.crop_image(
-            self.raw_image, 0, ImageTransformUtils.PIC_WIDTH,
-            ImageTransformUtils.CAMERA_PIC_HEIGHT - ImageTransformUtils.PIC_HEIGHT,
-            ImageTransformUtils.CAMERA_PIC_HEIGHT)
+            self.raw_image, ImageTransformUtils.PIC_X_START,
+            ImageTransformUtils.PIC_X_START + ImageTransformUtils.PIC_WIDTH,
+            ImageTransformUtils.PIC_Y_START,
+            ImageTransformUtils.PIC_Y_START + ImageTransformUtils.PIC_HEIGHT)
         self.display_image = self.cropped_image.copy() if with_display else None
         self.hsv_image = ImageTransformUtils.bgr_to_hsv(self.cropped_image)
         return self.hsv_image
@@ -204,7 +212,7 @@ class CameraManager:
 
     def transform_image(self):
         if self.raw_image is not None:
-            self.cropped_image = ImageTransformUtils.crop_image(self.raw_image, 0, ImageTransformUtils.PIC_WIDTH, ImageTransformUtils.CAMERA_PIC_HEIGHT - ImageTransformUtils.PIC_HEIGHT, ImageTransformUtils.CAMERA_PIC_HEIGHT)
+            self.cropped_image = ImageTransformUtils.crop_image(self.raw_image, ImageTransformUtils.PIC_X_START, ImageTransformUtils.PIC_X_START + ImageTransformUtils.PIC_WIDTH, ImageTransformUtils.PIC_Y_START, ImageTransformUtils.PIC_Y_START + ImageTransformUtils.PIC_HEIGHT)
             self.display_image = self.cropped_image.copy()
             
             self.hsv_image = ImageTransformUtils.bgr_to_hsv(self.cropped_image.copy())
@@ -237,7 +245,9 @@ class CameraManager:
             #self.obstacle_image = ImageUtils.make_binary(self.grayscale_image)
             ##self.obstacle_image = ImageUtils.dilate(self.obstacle_image)
             ImageDrawingUtils.find_rect(self.pink_mask.copy(), self.polygon_image.copy(), self.display_image)
-            ImageDrawingUtils.find_rect(self.obstacle_image.copy(), self.polygon_image.copy(), self.display_image)
+            # Pillars (red OR green - this mask doesn't know which) in yellow,
+            # so they can't be mistaken for the pink box drawn just above.
+            ImageDrawingUtils.find_rect(self.obstacle_image.copy(), self.polygon_image.copy(), self.display_image, box_color=(0, 255, 255))
     
     def draw_arc(self, image, servo_angle):# Define arc parameters
  

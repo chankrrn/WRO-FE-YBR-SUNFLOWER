@@ -34,7 +34,7 @@ from dataclasses import dataclass, field
 import cv2
 
 from classes.field_map import FieldMap
-from classes.object_solver import CAPTURED_HORIZONTAL_FOV_DEG
+from classes.object_solver import WORKING_HORIZONTAL_FOV_DEG
 from classes.robot_geometry import (CAMERA_BEHIND_LIDAR_MM,  # noqa: F401 - re-exported
                                     camera_offset_behind_lidar, to_field)
 from utils.angle_utils import angle_difference, normalize_angle
@@ -102,7 +102,9 @@ BLOCK_EDGE_MARGIN_MM = 20.0
 # Taken from ObjectSolver rather than repeated here: it is a measured property
 # of the lens + sensor mode, it has already been re-measured once, and a stale
 # copy of it would silently break the "should I have seen that block?" test.
-DEFAULT_CAMERA_FOV_DEG = CAPTURED_HORIZONTAL_FOV_DEG
+# The CROPPED frame's angle, not the full sensor's: a block outside the zoom
+# window is never seen, and must not be dropped for it.
+DEFAULT_CAMERA_FOV_DEG = WORKING_HORIZONTAL_FOV_DEG
 
 # Where the lens is relative to the rear axle (the point the pose describes)
 # lives in classes/robot_geometry.py with the rest of the robot's dimensions;

@@ -36,6 +36,11 @@ from classes.racing_line import RacingLine
 from tasks.base_task import Task
 from utils.angle_utils import clamp
 
+# Top of the speed scale: PWM 0-255, as MotorManager.SPEED_FULL_SCALE. Kept
+# here rather than imported so the simulators can load this without the I2C
+# driver.
+SPEED_FULL_SCALE = 255
+
 # ============================================================================
 # Defaults. Anything here can be overridden per round in its config.toml -
 # these are the values used when a key is missing from the file.
@@ -176,9 +181,9 @@ DEFAULTS = {
     #     mm/s = speed / 100 * mm_per_s_at_full
     #
     # Read that "100" carefully, because the name does not describe it. The
-    # speed field of the serial message is handed to the Arduino unchanged and
-    # used as a raw PWM duty, which analogWrite constrains to 0-255 (see
-    # src/Arduino/Main.ino, motor_dc) - so a speed command is NOT a percentage,
+    # speed command is a raw PWM duty on a 0-255 scale (what the Arduino's
+    # analogWrite took; MotorManager now scales it onto the DFR0592's 0-100%,
+    # see SPEED_FULL_SCALE) - so a speed command is NOT a percentage,
     # and the two rounds bear that out: qualification asks for 255 and the
     # final round for 60. The divisor here is therefore an arbitrary constant
     # rather than a top-speed reading, and mm_per_s_at_full is whatever makes
@@ -229,12 +234,29 @@ DEFAULTS = {
     # not be cancelled by a dropped frame - that is a collision - so it is
     # held, and this bounds how long a wrong detection can hold it.
     "blocks.memory_s": 1.5,
+    # Remember every pillar for the whole round, so laps 2 and 3 plan around
+    # it before the camera sees it again. See FinalTask._learn_pillars.
+    "blocks.remember": True,
+    # Plan around the traffic-sign seat a pillar must be standing on rather
+    # than where the camera put it. See FinalTask._obstacles / _snap_to_seat.
+    "blocks.snap_to_seats": True,
+    "blocks.snap_along_mm": 200.0,
+    "blocks.snap_row_mm": 70.0,
+    "blocks.remember_within_mm": 1200.0,
+    "blocks.remember_min_hits": 5,
+    "blocks.forget_after_misses": 2,
     # Real gap from the robot's BODY to the outer wall or the centre block.
     "blocks.wall_clearance_mm": 80.0,
     # How much of the robot's own turning circle to keep in hand when drawing
     # a plan. A path at exactly full lock is one the follower can only just
     # hold, with nothing left to correct tracking error with.
     "blocks.turn_radius_margin": 1.15,
+    # Keep the plan off the parking bay the round started in. The gap kept
+    # from the bay walls' tips is parking.wall_margin_mm; this is how much
+    # further ALONG the wall the no-go box reaches past each wall, to cover
+    # the error in a bay placed from the in-bay start pose.
+    "blocks.avoid_bay": True,
+    "blocks.bay_slack_mm": 100.0,
 
     # Final round only - the parking bay. See classes/parking.py for the
     # geometry these describe and why the manoeuvre is shaped the way it is.
@@ -320,6 +342,44 @@ DEFAULTS = {
     "parking.wall_distance_mm": 450.0,
     "parking.wall_gain": 0.08,
     "parking.wall_max_steer": 20.0,
+    # BayPark's own knobs (classes/bay_park.py), which replaced the six-state
+    # ParkingSequence above. road_middle_mm is what SETTLE targets - the
+    # MIDDLE of the 1000mm road, not wall_distance_mm's 450mm off the wall -
+    # because the 90deg turn-in spends a whole turn radius of the road, and
+    # settling at the middle is what leaves that radius in hand rather than
+    # running out partway round. bay_mm is the field's own known gap between
+    # the blades (see classes/parking.py's NOMINAL_BAY_MM, repeated rather
+    # than imported so bay_park.py has no dependency on the file it
+    # replaces) - a rule, not a measurement, and both blades merging into one
+    # was a real failure mode of measuring it fresh off one side beam. See
+    # bay_park.py's module docstring for the scripted test that found it.
+    "parking.road_middle_mm": 500.0,
+    "parking.bay_mm": 340.0,
+    "parking.blade_step_mm": 110.0,
+    # How far the wide side sector reports the near blade EARLY - see
+    # classes/bay_park.py's _place_bay. 0 is unbiased; a run parking SHORT
+    # of the bay's middle wants this raised, a run overshooting wants it
+    # lowered. There is no formula for the right number - it depends on the
+    # sector width and the actual wall distance on the day - so start from
+    # 0 and read the mat.
+    "parking.blade_lead_mm": 0.0,
+    # WIGGLE - an optional pass after DRIVE_IN stops: a fully custom list of
+    # legs, each its own steer angle and distance, driven in order with one
+    # shared speed - see classes/bay_park.py's module docstring and
+    # tasks/final/config.toml for how to write the list out in TOML. Empty
+    # = off; nothing runs and DRIVE_IN goes straight to DONE, same as before
+    # this existed.
+    "parking.wiggle_steps": [],
+    "parking.wiggle_speed": 55,
+    # How fast SETTLE's wall-follow may move the wheels, in command units per
+    # second. The manoeuvre owns the wheels outright and its command goes
+    # straight to the motor - it does not pass through steer.max_rate_units_s
+    # below, which only wraps the pure-pursuit path - so this is the same
+    # guard, local to the manoeuvre. Catches a single noisy side reading
+    # before it snaps the servo to near full lock in one tick.
+    "parking.steer_slew_deg_s": 150.0,
+    # How far FIND may drive looking for the near blade before giving up.
+    "parking.find_max_mm": 4000.0,
     # Which lidar sector watches the wall, measured from straight ahead. The
     # sign is applied for you - it looks at whichever side the wall is on.
     "parking.side_bearing_deg": 90.0,
@@ -523,6 +583,16 @@ DEFAULTS = {
     "unpark.in_bay_mm": 250.0,
     "unpark.default_side": 1,
     "unpark.timeout_s": 15.0,
+    "parking.sector_tolerance_deg": 45.0,
+    "unpark.relocalise_enabled": True,
+    "unpark.relocalise_mm": 400.0,
+    "unpark.relocalise_steer": 15.0,
+    "unpark.relocalise_speed": 30,
+    "unpark.relocalise_settle_s": 1.0,
+    "unpark.relocalise_min_confidence": 0.6,
+    "unpark.relocalise_max_settle_s": 4.0,
+    "unpark.reread_map": True,
+    "unpark.restart_here": True,
 }
 
 
@@ -1188,7 +1258,9 @@ class PathDrivingTask(Task):
 
         if self._stop_reason:
             return 0
-        return int(round(clamp(speed, minimum, 100.0)))
+        # Capped at the top of the 0-255 scale. It used to be capped at 100 -
+        # so speed.base = 255 drove at 100/255, and no lap ever went faster.
+        return int(round(clamp(speed, minimum, SPEED_FULL_SCALE)))
 
     def _corner_speed(self, base, corner):
         """
@@ -1239,7 +1311,8 @@ class PathDrivingTask(Task):
         if self._stop_reason:
             print(f"Stopping: {self._stop_reason}")
             return True
-        return self.laps_done >= self.laps_goal
+        early = float(self.setting("laps.stop_early_mm") or 0.0)
+        return self.distance_driven >= self.laps_goal * self.path.length - early
 
     def finish(self):
         super().finish()

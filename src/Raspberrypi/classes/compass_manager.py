@@ -8,6 +8,13 @@ from utils.angle_utils import angle_difference, clamp, normalize_angle
 HEADING_KP = 0.5
 MAX_HEADING_CORRECTION = 80
 BOOT_SETTLE_S = 1.0
+# False runs the BNO055 in IMUPLUS (gyro + accel only). The default NDOF mode
+# also steers its heading by the magnetometer, which the drive motor, the
+# board and any steel in the room pull around, and which keeps re-calibrating
+# during a run - so the offset anchored at the start stops being right part
+# way through. The gyro alone only drifts slowly, and the lidar fixes the
+# angle inside the quadrant anyway; the compass is only there to pick it.
+USE_MAGNETOMETER = False
 
 # The BNO055 fuses gyro + accel + mag, so a fresh reading can be wild for the
 # first second. Nothing here blocks on full calibration - the robot only needs
@@ -49,6 +56,8 @@ class CompassManager:
 
             i2c = busio.I2C(board_pins.SCL, board_pins.SDA)
             self.sensor = adafruit_bno055.BNO055_I2C(i2c)
+            if not USE_MAGNETOMETER:
+                self.sensor.mode = adafruit_bno055.IMUPLUS_MODE
             time.sleep(BOOT_SETTLE_S)
             if self.debug:
                 print(f"[compass] BNO055 up, heading {self.heading()}")

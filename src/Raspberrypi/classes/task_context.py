@@ -6,6 +6,7 @@ from classes.light_sensor_manager import LightSensorManager
 from classes.motor_manager import MotorManager
 from classes.navigation_manager import NavigationManager
 from classes.navigator import Navigator
+from classes.start_button import StartButton
 from classes.ultra_servo_manager import UltraServoManager
 
 
@@ -21,7 +22,7 @@ class TaskContext:
 
     Optional subsystems are opt-in because they cost time and are not needed by
     every round:
-        use_lidar   - LidarManager (RPLidar C1 on USB)
+        use_lidar   - LidarManager (RPLidar S2L on the Pi's UART)
         use_camera  - CameraManager + ObjectSolver (final round pillars)
 
     `no_drive` keeps every subsystem exactly as it is but stops the drive
@@ -39,7 +40,7 @@ class TaskContext:
     """
 
     def __init__(self, debug=False, ascii_debug=False, use_lidar=False, use_camera=False,
-                 laps_goal=3, motor_port=None, lidar_port=None,
+                 laps_goal=3, lidar_port=None,
                  start_pose=None, no_drive=False, lidar_ahead_mm=None,
                  record_video=False):
         """
@@ -59,8 +60,9 @@ class TaskContext:
         self.no_drive = no_drive
 
         self.board = BoardManager(debug=debug)
-        self.motor = MotorManager(port=motor_port, debug=debug,
+        self.motor = MotorManager(self.board, debug=debug,
                                   drive_enabled=not no_drive)
+        self.start_button = StartButton(debug=debug)
         self.compass = CompassManager(debug=debug)
         self.ultra = UltraServoManager(self.board, debug=debug)
         self.lights = LightSensorManager(self.board, debug=debug)
@@ -90,15 +92,16 @@ class TaskContext:
 
     def startup(self):
         """
-        Brings every subsystem up in dependency order (the board first - the
-        servo, ultrasonic and light sensors all hang off it). Anything that
-        fails here raises, except the compass and the optional subsystems,
-        which warn and carry on degraded.
+        Brings every subsystem up in dependency order (the expansion board
+        first - the steering servo, ultrasonic and light sensors all hang off
+        it). Anything that fails here raises, except the compass and the
+        optional subsystems, which warn and carry on degraded.
         """
         if self.started:
             return self
 
         steps = [("GPIO", self._init_gpio),
+                 ("Start button", self.start_button.start),
                  ("Expansion board", self.board.start),
                  ("Motor", self.motor.start),
                 #  ("Ultrasonic servo", self.ultra.start),
@@ -145,6 +148,7 @@ class TaskContext:
             self.camera = None
         self.compass.stop()
         self.board.stop()
+        self.start_button.stop()
         self._cleanup_gpio()
         self.started = False
         print("Done\n")
@@ -256,8 +260,8 @@ class TaskContext:
     # ========================================================================
 
     def wait_for_start(self):
-        """Blocks on the physical start button, wired to the Arduino."""
-        self.motor.wait_for_start()
+        """Blocks on the physical start button."""
+        self.start_button.wait()
 
     def emergency_stop(self):
         try:

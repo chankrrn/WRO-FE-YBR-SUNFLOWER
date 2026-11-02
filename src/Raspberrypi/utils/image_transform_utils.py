@@ -18,9 +18,15 @@ class ImageTransformUtils:
     """
 
     CAMERA_PIC_WIDTH = 640                 # reduced image width
-    CAMERA_PIC_HEIGHT = 360                # reduced image height
-    PIC_WIDTH = 640
-    PIC_HEIGHT = 280        
+    CAMERA_PIC_HEIGHT = 580                # reduced image height
+    # Digital zoom: keep a centred window 1/ZOOM the size (1.0 = no zoom).
+    # Cropped only, never resized, so each pixel still covers the same angle
+    # and ObjectSolver's DEG_PER_PX stays valid.
+    ZOOM = 1.25
+    PIC_WIDTH = int(CAMERA_PIC_WIDTH / ZOOM)
+    PIC_HEIGHT = int(CAMERA_PIC_HEIGHT / 2 / ZOOM)             # middle half of the frame, zoomed
+    PIC_X_START = (CAMERA_PIC_WIDTH - PIC_WIDTH) // 2          # first column kept
+    PIC_Y_START = (CAMERA_PIC_HEIGHT - PIC_HEIGHT) // 2        # first row kept
 
     @staticmethod
     def crop_image(img, x_start, x_end, y_start, y_end):

@@ -13,14 +13,33 @@ from utils.image_transform_utils import ImageTransformUtils
 # ============================================================================
 # Camera / lens configuration
 # ============================================================================
-# IMPORTANT: this is NOT the lens' rated 160 FOV. Picamera2's chosen sensor
+# IMPORTANT: this is NOT the lens' rated FOV (now a 222 deg lens, was 160).
+# Picamera2's chosen sensor
 # mode + the (CAMERA_PIC_WIDTH x CAMERA_PIC_HEIGHT) main-stream resize crop
 # the sensor before any of this code sees a frame, so the *delivered* image
 # covers a smaller angle than the lens spec sheet. Measure this directly
 # against the actual frame (point the camera at two references a known angle
 # apart, e.g. floor tiles or a printed protractor, and count pixels between
 # them) rather than trusting the lens datasheet number.
-CAPTURED_HORIZONTAL_FOV_DEG = 100.0
+#
+# 105 was fitted on the OLD 160 deg lens (red pillar straight ahead at 50 /
+# 100 / 150cm read 68 / 36 / 23px tall). On the 222 deg lens a pillar at 50 /
+# 70cm read 25 / 19px, implying 292 / 275 - averaged to 283. It can exceed the
+# lens' 222 because this is deg-per-px x frame width, and the fisheye's image
+# circle is narrower than the frame. Re-measure with:
+#   python test_object_solver.py --fov-at 50
+# with a pillar 50cm straight ahead, and put the number it prints here.
+CAPTURED_HORIZONTAL_FOV_DEG = 230.0
+
+# The camera is not mounted dead straight. Added to every bearing so 0 is the
+# ROBOT's straight ahead, not the lens's: + if the camera points left of the
+# robot's axis (things straight ahead then read right of the middle), - if
+# it points right. Measured 2026-10-26 on the OV5647 / 222 deg camera with a
+# pillar 50cm straight ahead, averaged over 30 frames (--place 50 0
+# --headless): +6.6. A first single-frame reading had said 8.6. Re-measure
+# after anything moves the camera or its lens is refocused:
+#   python test_object_solver.py --place 50 0 --headless
+CAMERA_YAW_DEG = 6.6
 
 # Full, UNCROPPED main-stream width that CAPTURED_HORIZONTAL_FOV_DEG was
 # measured against (see camera_manager.py's configure_camera/transform_image).
@@ -33,13 +52,17 @@ CAPTURED_FRAME_WIDTH_PX = ImageTransformUtils.CAMERA_PIC_WIDTH
 # a frame that isn't square.
 DEG_PER_PX = CAPTURED_HORIZONTAL_FOV_DEG / CAPTURED_FRAME_WIDTH_PX
 
+# What the CROPPED (zoomed) frame actually covers - the angle anything that
+# asks "should the camera see this?" has to use, not the full-frame figure.
+WORKING_HORIZONTAL_FOV_DEG = ImageTransformUtils.PIC_WIDTH * DEG_PER_PX
+
 # Real-world HEIGHT of the boxes. The WRO traffic signs are 5cm x 5cm on the
 # floor and 10cm tall - this is the 10, not the 5. Distance scales linearly
 # with it, so the 5.0 that used to be here reported every pillar at half its
 # true range.
 BOX_HEIGHT_CM = 10.0
-MIN_CONTOUR_AREA_PX = 160        # ignore specks smaller than this (noise)
-MAX_DISTANCE_CM = 200.0         # ignore solves further than this (noise / grazing angle)
+MIN_CONTOUR_AREA_PX = 100        # ignore specks smaller than this (noise)
+MAX_DISTANCE_CM = 150.0         # ignore solves further than this (noise / grazing angle)
 MIN_ANGULAR_HEIGHT_DEG = 0.05   # avoid a division by ~0 on a 1px-tall contour
 
 TARGET_COLORS = (Color.GREEN, Color.RED)
@@ -52,7 +75,7 @@ PARKING_COLOR = Color.PINK
 # Lower than the pillars' threshold: a bay wall is a low bar seen from a
 # couple of metres away, which is a much smaller blob than a 10cm pillar at
 # the same range, and it only has to be caught once while it is still ahead.
-MIN_PARKING_AREA_PX = 150
+MIN_PARKING_AREA_PX = 500
 
 # ============================================================================
 # Top-down debug visualizer configuration
@@ -91,11 +114,13 @@ class ParkingMark:
 class DetectedObject:
     color: Color
     distance_cm: float   # straight-line distance from the camera to the box
+                         # (forward_cm / cos(bearing) - see _solve_position)
     bearing_deg: float   # angle off the camera's forward axis, +right / -left
     forward_cm: float     # distance projected onto the robot's forward axis
     lateral_cm: float     # distance projected onto the robot's right axis
     pixel_center: tuple
     box_points: np.ndarray  # 4 corners of the detected box, for drawing
+    height_px: float = 0.0  # the rect's long side - what distance_cm is solved from
 
 
 class ObjectSolver:
@@ -119,16 +144,18 @@ class ObjectSolver:
     the box sits in the frame - so camera_manager.transform_image() cropping
     away the top rows does not affect it. Bearing is measured from a single
     pixel column, though, so it does depend on the frame's horizontal origin;
-    horizontal_crop_offset_px exists to correct that if the capture ever gets
-    cropped horizontally (it currently isn't - PIC_WIDTH == CAMERA_PIC_WIDTH).
+    horizontal_crop_offset_px corrects that for the horizontal crop (it
+    defaults to ImageTransformUtils.PIC_X_START, the zoom crop's left edge).
     """
 
     def __init__(self, debug=False, image_width=None, image_height=None,
-                 horizontal_crop_offset_px=0.0):
+                 horizontal_crop_offset_px=None):
         self.debug = debug
         self.image_width = image_width or ImageTransformUtils.PIC_WIDTH
         self.image_height = image_height or ImageTransformUtils.PIC_HEIGHT
-        self.horizontal_crop_offset_px = horizontal_crop_offset_px
+        self.horizontal_crop_offset_px = (ImageTransformUtils.PIC_X_START
+                                          if horizontal_crop_offset_px is None
+                                          else horizontal_crop_offset_px)
         self._last_parking = []
 
         # Debug canvases drawn by detect() and waiting to be put on screen.
@@ -226,14 +253,30 @@ class ObjectSolver:
         # upright box has a taller bounding box than it does an actual height,
         # which would otherwise read as closer than it really is.
         height_px = max(rect[1])
+
+        # A fisheye maps ANGLE FROM THE LENS AXIS linearly to pixels, but only
+        # along the radius. Across it - which, for a pillar off to the side,
+        # is its height - a degree spans theta/sin(theta) times as many
+        # pixels, so a pillar near the edge of the frame looks too tall and
+        # reads too close. Measured: one 80cm away 65 deg off the lens axis
+        # was 26px tall and read 61cm; scaled back it reads 77cm.
+        off_axis_rad = math.radians(self._horizontal_pixel_to_angle(center_x)
+                                    - CAMERA_YAW_DEG)
+        if abs(off_axis_rad) > 1e-6:
+            height_px *= math.sin(off_axis_rad) / off_axis_rad
         angular_height_deg = height_px * DEG_PER_PX
         if angular_height_deg < MIN_ANGULAR_HEIGHT_DEG:
             return None
 
+        # On the 222 deg fisheye the pillar's height in the frame gives its
+        # STRAIGHT-LINE distance from the lens, whatever the bearing. Measured:
+        # a pillar 100cm away at 41 deg off-axis was 16px tall, which solves
+        # to 99.6cm. (The old 160 deg lens behaved the other way - height gave
+        # distance AHEAD - and reading this lens that way put every pillar off
+        # to the side ~1/cos(bearing) too far: that one at 133cm.)
         distance_cm = (BOX_HEIGHT_CM / 2.0) / math.tan(math.radians(angular_height_deg / 2.0))
         if not (0 < distance_cm <= MAX_DISTANCE_CM):
             return None
-
         bearing_deg = self._horizontal_pixel_to_angle(center_x)
         forward_cm = distance_cm * math.cos(math.radians(bearing_deg))
         lateral_cm = distance_cm * math.sin(math.radians(bearing_deg))
@@ -246,11 +289,12 @@ class ObjectSolver:
             lateral_cm=round(lateral_cm, 1),
             pixel_center=(int(center_x), int(center_y)),
             box_points=np.intp(box_points),
+            height_px=round(height_px, 1),
         )
 
     def _horizontal_pixel_to_angle(self, x):
         full_frame_x = x + self.horizontal_crop_offset_px
-        return (full_frame_x - CAPTURED_FRAME_WIDTH_PX / 2.0) * DEG_PER_PX
+        return (full_frame_x - CAPTURED_FRAME_WIDTH_PX / 2.0) * DEG_PER_PX + CAMERA_YAW_DEG
 
     # ========================================================================
     # DEBUG VISUALIZATION

@@ -12,12 +12,12 @@ Each round is also runnable directly, which is what the pit crew should use:
 All the hardware now lives behind TaskContext (classes/task_context.py), which
 owns one manager per subsystem:
 
-    context.board       expansion board / ADC        classes/board_manager.py
-    context.motor       drive + steering (Arduino)   classes/motor_manager.py
+    context.board       DFR0604 expansion / ADC      classes/board_manager.py
+    context.motor       DFR0592 drive + steering     classes/motor_manager.py
     context.compass     BNO055 heading               classes/compass_manager.py
     context.ultra       ultrasonic head + servo      classes/ultra_servo_manager.py
     context.lights      corner line sensors          classes/light_sensor_manager.py
-    context.lidar       RPLidar C1 (opt-in)          classes/lidar_manager.py
+    context.lidar       RPLidar S2L (opt-in)         classes/lidar_manager.py
     context.camera      Picamera2 (opt-in)           camera_manager.py
     context.navigator   wall-following (legacy)      classes/navigator.py
     context.nav         where we are on the field    classes/navigation_manager.py

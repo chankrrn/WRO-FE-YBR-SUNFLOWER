@@ -1,4 +1,7 @@
+import threading
 import time
+
+from classes.motor_manager import MOTOR_BOARD_ADDRESS, MOTOR_I2C_BUS
 
 # Vendored DFRobot driver (libraries/) rather than a pip dependency - upstream
 # does not publish it to PyPI.
@@ -11,11 +14,13 @@ I2C_BUS = 1
 BOARD_ADDRESS = 0x10
 BEGIN_TIMEOUT_S = 10.0
 
+SERVO_FRAME_US = 20000     # 50Hz, what servo.begin() sets the PWM to
+
 
 class BoardManager:
     """
-    The DFRobot expansion board: the I2C hub every analog sensor and the
-    steering-independent servo hang off.
+    The DFRobot DFR0604 expansion board: the I2C hub every analog sensor and
+    both servos (steering and the ultrasonic head) hang off.
 
     Owns nothing application-specific - it just brings the board up, keeps the
     ADC enabled and hands out raw channel reads. LightSensorManager and
@@ -27,6 +32,10 @@ class BoardManager:
         self.address = address
         self.debug = debug
         self.board = None
+        self.servo = None
+        # The steering is written from the control loop and the ADC read from
+        # wherever a sensor is polled - one transaction at a time.
+        self._lock = threading.Lock()
 
     def start(self):
         """
@@ -34,6 +43,12 @@ class BoardManager:
         reports STA_OK - usually a power or I2C wiring problem, and there is no
         point letting a task run blind past it.
         """
+        # The DFR0592 answers begin() too (same PID), so without this the
+        # ADC enable and servo setup would be written into the motor board.
+        if (self.bus_id, self.address) == (MOTOR_I2C_BUS, MOTOR_BOARD_ADDRESS):
+            raise RuntimeError(
+                f"Expansion board and motor board are both set to {hex(self.address)} "
+                f"on i2c-{self.bus_id} - change one board's address switch")
         board = Board(self.bus_id, self.address)
         deadline = time.monotonic() + BEGIN_TIMEOUT_S
         while board.begin() != board.STA_OK:
@@ -52,23 +67,48 @@ class BoardManager:
         if self.board is None:
             return None
         try:
-            return self.board.get_adc_value(channel)
+            with self._lock:
+                return self.board.get_adc_value(channel)
         except Exception:
             return None
 
     def create_servo(self):
-        """Returns a started servo driver bound to this board."""
+        """
+        Returns the servo driver bound to this board, started on first use.
+
+        Shared, not one per caller: servo.begin() zeroes EVERY PWM channel, so
+        the ultrasonic head starting after the steering would otherwise cut
+        the steering servo's signal.
+        """
         if self.board is None:
             raise RuntimeError("BoardManager.start() must be called first")
-        servo = Servo(self.board)
-        servo.begin()
-        return servo
+        if self.servo is None:
+            with self._lock:
+                servo = Servo(self.board)
+                servo.begin()
+            self.servo = servo
+        return self.servo
+
+    def set_servo_pulse(self, channel, pulse_us):
+        """
+        Drives a servo on PWM `channel` (0-3) with a pulse of `pulse_us`.
+
+        Servo.move() maps 0-180 onto 500-2500us; this lets a caller keep its
+        own mapping. The board takes duty in 0.1% steps, which at 50Hz is 20us
+        - about 2 servo degrees - so that is the finest it can resolve.
+        """
+        self.create_servo()
+        duty = 100.0 * pulse_us / SERVO_FRAME_US
+        with self._lock:
+            self.board.set_pwm_duty(channel, duty)
 
     def stop(self):
         if self.board is None:
             return
         try:
-            self.board.set_adc_disable()
+            with self._lock:
+                self.board.set_adc_disable()
         except Exception:
             pass
         self.board = None
+        self.servo = None

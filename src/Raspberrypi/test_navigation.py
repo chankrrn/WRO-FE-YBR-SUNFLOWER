@@ -448,7 +448,7 @@ if __name__ == "__main__":
     simulation.add_argument("--seed", type=int, default=0)
 
     hardware = parser.add_argument_group("hardware")
-    hardware.add_argument("--port", default=None, help="lidar port (default: autodetect)")
+    hardware.add_argument("--port", default=None, help="lidar port (default: /dev/ttyAMA0)")
     hardware.add_argument("--offset", type=float, default=0.0,
                           help="degrees to rotate the lidar's zero onto robot forward")
     hardware.add_argument("--mirror", action="store_true",

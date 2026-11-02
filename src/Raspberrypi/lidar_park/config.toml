@@ -1,0 +1,209 @@
+# =============================================================================
+# Lidar-only parking - every number you might need to tune.
+# Distances are millimetres FROM THE LIDAR, angles degrees.
+# Steering: - left, + right (same as the rest of the robot).
+# =============================================================================
+
+[park]
+# "auto" works out which side the outer wall is on (the side with nothing
+# behind it). Force "left" or "right" if auto ever picks the island.
+outer_side = "auto"
+
+# Refuse to drive if the first scan did not find the bay.
+require_bay = false
+
+# Pressing the (start) button while the parking runs cuts the motor at once
+# and ends the program. Only a NEW press counts - it waits for the button to
+# be let go first, so the press that started the round cannot trigger it.
+stop_button = true
+
+[drive]
+# STEP 2: drive forward until the wall AHEAD is this far from the lidar
+# (measured along the corridor, so a crooked nose does not change it).
+front_target_mm = 300.0
+
+# The robot rolls on after the motor is cut, so the stop is called this much
+# early: it stops when the wall ahead reads front_target_mm + coast_mm. Each
+# run prints how far off it ended - add that to this.
+coast_mm = 0.0
+
+# Where to end up: perpendicular distance from the LIDAR to the outer wall.
+# The robot is ~90 mm centreline-to-side (final/config.toml), so the gap
+# between the body and the wall is roughly this minus 90.
+wall_target_mm = 330.0
+# Keep this above blade_length_mm + 90 + margin (~330) or the body will clip
+# the bay's blades when it drives past them.
+
+speed = 70                  # PWM command (0-255 scale, like the main round)
+
+# Steering is "aim for a heading, then steer to that heading":
+#   wanted_heading = toward the wall line, steep enough to reach it before
+#                    the last straighten_mm, and at least wall_kp * error,
+#                    capped at max_approach_deg
+#   steer          = clamp(heading_kp * (wanted_heading - heading), +-max_steer_deg)
+# For the last straighten_mm before the stop point, wanted_heading is 0, so it
+# always ends straight.
+wall_kp = 0.12              # deg of approach angle per mm of wall error
+max_approach_deg = 25.0     # never point at the wall more steeply than this
+straighten_mm = 250.0       # final stretch spent only on getting straight
+heading_kp = 2.0            # steering command per deg of heading error
+                            # (lower it if it wobbles side to side)
+max_steer_deg = 100.0        # steering COMMAND (90 = full lock ~27 deg at the wheel)
+steer_invert = false        # flip if it steers AWAY from the wall
+
+# Stop if ANYTHING (a block, a wall) is this close in the robot's own path
+# (+-front_half_width_mm sideways). Blocks further away are driven toward;
+# 0 turns the check off.
+obstacle_stop_mm = 10.0
+
+# Distances come from the lidar only (the walls at both ends of the corridor
+# - see Odometry in run.py); the drive encoder is not used. When neither end
+# wall is in view for a moment, the robot's speed is taken as
+# speed command x mm_s_per_speed. This is only the starting guess - every run
+# corrects it from the lidar while the walls are in view. 4.3 was measured
+# on 2026-10-15 with the new gears (240 mm/s at speed 55, 207 at 50 back).
+mm_s_per_speed = 4.3
+
+# Safety limit for step 2, by that lidar odometry: stop after this far even
+# if the wall ahead never comes into range.
+max_forward_mm = 3000.0
+
+timeout_s = 20.0            # forward leg; step 3 runs anyway if this is hit
+loop_hz = 20.0
+
+[to_bay]
+# STEP 3: after the forward drive, go back to the parking bay and stop with
+# its first blade beside the lidar. It keeps steering onto drive.wall_target_mm and finishes straight,
+# using the [drive] gains. (If the bay is somehow ahead, it drives forward.)
+enabled = true
+
+# Stop when the FIRST blade of the bay the robot comes to is this far from
+# the LIDAR along the corridor: 0 = blade right beside the lidar, negative =
+# blade that far behind it (e.g. -80 = level with the rear axle).
+blade_stop_x_mm = -150.0
+
+# Every blade seen (step 1, while passing the bay in step 2, step 3) goes on
+# a map along the corridor. A sighting within merge_mm of a mapped blade
+# moves it map_follow of the way there (newest sightings count most, so the
+# map keeps up with odometry drift); a blade only counts once seen
+# min_sightings times. Blades are ~360mm apart, so merge_mm must stay well
+# under half that.
+merge_mm = 160.0
+map_follow = 0.4
+min_sightings = 3
+
+# The lidar sits near the front, so the robot's tail is this far BEHIND the
+# lidar. MEASURE IT (lidar centre to the rearmost part of the robot). The
+# safety stop behind is this + drive.obstacle_stop_mm.
+lidar_to_tail_mm = 75.0
+
+speed = 50                  # PWM command
+coast_mm = 0.0              # stop called this early; each run prints the miss
+overshoot_mm = 300.0        # never drive more than this past where the blade
+                            # was expected - a hard stop if tracking goes wrong
+search_mm = 3000.0          # with no blade on the map yet: how far to look
+timeout_s = 15.0            # this leg only; drive.timeout_s is the forward leg
+# heading_kp = 8.0          # uncomment to use a different gain for this leg
+
+[scan]
+
+min_range_mm = 120.0        # nearer than this is the robot itself
+max_range_mm = 4500.0
+min_points = 60             # fewer valid points than this = lidar problem
+settle_s = 0.6              # wait this long after stopping before a scan
+
+# Heading from wall directions
+segment_step = 2            # pair each point with the one this many deg on
+segment_gate_factor = 3.0   # max pair spacing, x the arc length between them
+heading_window_deg = 6.0    # segments within this of the peak are averaged
+
+# Walls
+side_window_mm = 1000.0     # only points within +-this along the corridor
+min_wall_points = 8         # points needed to call something a wall
+beyond_margin_mm = 200.0    # "behind the wall" starts this far past it
+beyond_max_points = 15      # outer wall has fewer than this behind it
+front_half_width_mm = 110.0 # the robot's path: +-this sideways, for obstacle_stop_mm
+robot_half_width_mm = 90.0  # centreline to the widest point (final/config.toml)
+lidar_ahead_mm = 65.0       # rear axle centre to lidar centre (final/config.toml)
+# The bay's blades are left out of that path check while the body clears
+# their tips by at least this (outer wall - robot_half_width_mm >
+# blade_length_mm + this). Closer to the wall than that, a blade IS in the
+# way and still stops the robot.
+blade_clearance_mm = 10.0
+
+# Readings that jump (the lidar sees over the 100mm walls and past blocks):
+# a wall reading more than jump_mm from the last is ignored until
+# jump_confirm readings in a row agree on it.
+jump_mm = 120.0
+jump_confirm = 4
+
+# Bay: two blades sticking out of the outer wall
+blade_length_mm = 200.0     # how far a blade sticks out (field rule)
+blade_thickness_mm = 20.0
+blade_min_depth_mm = 50.0   # nearer the wall than this counts as wall
+blade_gap_mm = 60.0         # points further apart than this along X = new blade
+blade_min_points = 3
+blade_min_reach_mm = 120.0  # a blade's points must reach this far out from the
+                            # wall (a real blade sticks out ~200mm)
+blade_max_width_mm = 120.0  # wider than this along X is not a blade
+bay_gap_mm = 340.0          # inside face to inside face (same as final/config.toml)
+bay_gap_tolerance_mm = 120.0
+bay_search_mm = 3000.0      # look this far ahead and behind
+
+[finish]
+# STEP 4: extra moves after step 3, driven in the order listed. Each
+# [[finish.moves]] block below is ONE move: the steering is set, then it
+# drives that far, then the next move starts. No blocks = no step 4.
+#
+#   steer_deg    steering COMMAND, RELATIVE TO THE BAY: + = toward the outer
+#                wall (the bay's side), - = away from it, 0 = straight. The
+#                same list works whether the bay is on the left or right.
+#   distance_mm  how far the REAR AXLE rolls, measured by lining each scan up
+#                with one taken at the start of the move (scan matching) -
+#                real distance, turns included. Mind the turn: at full lock
+#                (~24 deg at the wheel) the robot turns ~15 deg every 100mm,
+#                so 300mm there is already ~45 deg.
+#   reverse      true = drive backward, false = forward (default false)
+#   speed        optional, default finish.speed below
+#   timeout_s    optional, default finish.timeout_s below
+#   pause_s      optional wait after this move
+#   coast_mm     optional, default finish.coast_mm below
+#
+#   obstacle_stop_mm  optional, default finish.obstacle_stop_mm below
+#
+# Every move stops if something is in its path, along the way the ROBOT
+# points: ahead, closer than obstacle_stop_mm to the lidar; behind, closer
+# than obstacle_stop_mm to the TAIL (to_bay.lidar_to_tail_mm behind the
+# lidar - measure it, it decides how far back the robot can go).
+obstacle_stop_mm = 25.0     # smaller than drive's: tucking in is meant to be close
+# The robot rolls on after the motor cuts. Each move prints what it really
+# rolled ("rolled 162mm (wanted 150, +12)") - set this to that overshoot so
+# it cuts the motor that much early.
+coast_mm = 0.0
+# A scan match only counts if its fit is this good; otherwise that tick
+# falls back to time x speed. Loosen if the log shows lots of "speed".
+match_max_rms_mm = 40.0
+match_min_inliers = 0.5
+speed = 35
+timeout_s = 5.0
+
+[[finish.moves]]
+steer_deg = 83          # back in, tail swinging toward the bay
+distance_mm = 150
+reverse = true
+
+
+[[finish.moves]]
+steer_deg = 50          # back in, tail swinging toward the bay
+distance_mm = 60
+reverse = true
+
+[[finish.moves]]
+steer_deg = -100         # counter-steer to straighten up inside the bay
+distance_mm = 250
+reverse = true
+
+[[finish.moves]]
+steer_deg = 60           # small straight shuffle to centre
+distance_mm = 40
+reverse = false

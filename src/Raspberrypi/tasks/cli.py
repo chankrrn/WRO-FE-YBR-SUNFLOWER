@@ -49,10 +49,8 @@ def build_parser(description):
     parser.add_argument("--max-runtime", type=float, default=None,
                         help="stop after N seconds (default: 180, the WRO limit; "
                              "no limit under --no-drive)")
-    parser.add_argument("--motor-port", default=None,
-                        help="Arduino serial port (default: autodetect)")
     parser.add_argument("--lidar-port", default=None,
-                        help="lidar serial port (default: autodetect)")
+                        help="lidar serial port (default: /dev/ttyAMA0)")
     parser.add_argument("--start-pose", type=float, nargs=3, default=None,
                         metavar=("X_MM", "Y_MM", "HEADING_DEG"),
                         help="where the robot is placed, for context.nav: mm from the "
@@ -116,7 +114,6 @@ def run_task(task_class, argv=None):
         use_lidar=task_class.requires_lidar or args.lidar,
         use_camera=task_class.requires_camera and not args.no_camera,
         laps_goal=config.get("laps.goal", 3),
-        motor_port=args.motor_port,
         lidar_port=args.lidar_port,
         start_pose=args.start_pose,
         no_drive=args.no_drive,
@@ -126,7 +123,13 @@ def run_task(task_class, argv=None):
 
     with context:
         task = task_class(context, config=config, max_runtime_s=max_runtime)
-        return task.run()
+        ok = task.run()
+        # Anything a round wants to do once its own driving is over, while
+        # the hardware is still up (the final round's lidar parking).
+        after = getattr(task, "after_round", None)
+        if after is not None:
+            ok = after(ok) and ok
+        return ok
 
 
 def dry_run(task_class, config):

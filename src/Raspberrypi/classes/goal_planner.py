@@ -91,7 +91,17 @@ SPAN_MARGIN = 1.35
 # sharpest thing the plan ever contains is a 90-degree corner and a pass
 # either side of it - so this is a clean test for "that goal cannot be met
 # from here". See _chain.
-LOOP_TURN_DEG = 270.0
+#
+# 200, not the 270 this was first set to. 270 is inside the failure it is
+# meant to exclude: a goal a hundred-odd mm ahead needs most of a circle to
+# reach, and measured over 3000 random layouts every such path came out
+# between 255 and 270 - under the gate, so accepted, and then PREFERRED,
+# because a circle sweeps wide of the pillars and therefore scores clear.
+# Legitimate segments are nowhere near: their 99th percentile turn is 163.
+# Swept end to end, every value from 240 down to 160 removes the last of the
+# circles without changing a single scenario verdict or losing one reported-ok
+# plan, so this sits in the middle of that plateau rather than at either edge.
+LOOP_TURN_DEG = 200.0
 
 # How many progressively tighter passes a pillar's goal is retried at when the
 # one it wanted turns out to be unreachable from where the robot is. They run
@@ -194,6 +204,19 @@ SWEEP_STEP_MM = 25.0
 # whole overhang, which is exactly the part that swings out in a corner and
 # exactly the part that clips a pillar on the way past.
 FOOTPRINT_STATIONS = (-1.0, 0.0, 1.0)
+
+
+def _where(obstacle):
+    """
+    Where the plan believes a pillar is and which side it passes it, for the
+    reason strings - "pillar +619mm ahead" alone cannot be checked against
+    the mat, and a wrong belief about a pillar's position is the first thing
+    to rule out when a pass goes wrong.
+    """
+    if obstacle is None:
+        return ""
+    return (f"at ({obstacle.x / 10.0:+.0f},{obstacle.y / 10.0:+.0f})cm "
+            f"{'R' if obstacle.side > 0 else 'L'}-side ")
 
 
 def _turn_total_deg(headings):
@@ -380,6 +403,23 @@ class GoalPlanner:
         self.exit_mm = float(exit_mm)
         self.align_mm = float(align_mm)
         self.step_mm = float(step_mm)
+        # Boxes the body must stay out of on top of the walls and the map's
+        # own obstacles - in practice the parking bay, already grown by the
+        # gap wanted from it. See set_keep_out.
+        self.keep_out = []
+
+    def set_keep_out(self, rects):
+        """
+        Replaces the no-go boxes, a sequence of ((x_min, y_min), (x_max, y_max)).
+
+        Planner-only, unlike FieldMap.add_obstacle: these are not walls the
+        lidar should raycast, they are ground the plan must not put the body
+        on. A pass goal beside one is held off it in _gate_offset, and every
+        candidate segment is swept against it in clearances().
+        """
+        self.keep_out = [(tuple(float(v) for v in low),
+                          tuple(float(v) for v in high)) for low, high in rects]
+        return self
 
     # ========================================================================
     # PLANNING
@@ -414,8 +454,8 @@ class GoalPlanner:
                                                         nearby)
         if skipped:
             compromised = True
-            late = "; ".join(f"pillar {goal.progress - progress:+.0f}mm ahead "
-                             f"unreachable - seen too late"
+            late = "; ".join(f"pillar {self.path.gap(progress, goal.progress):+.0f}mm ahead "
+                             f"{_where(goal.obstacle)}unreachable - seen too late"
                              for goal in skipped)
             reason = "; ".join(filter(None, [reason, late]))
 
@@ -425,8 +465,8 @@ class GoalPlanner:
         for goal in driven:
             if goal.obstacle is not None and goal.clearance_mm < self.min_clearance_mm:
                 compromised = True
-                shortfall = (f"pillar {goal.progress - progress:+.0f}mm ahead "
-                             f"gets only {goal.clearance_mm:.0f}mm "
+                shortfall = (f"pillar {self.path.gap(progress, goal.progress):+.0f}mm ahead "
+                             f"{_where(goal.obstacle)}gets only {goal.clearance_mm:.0f}mm "
                              f"(asked {self.clearance_mm:.0f})")
                 if shortfall not in reason:
                     reason = "; ".join(filter(None, [reason, shortfall]))
@@ -488,6 +528,9 @@ class GoalPlanner:
         nodes = [_Node(progress, lateral, _ROBOT, None, float("inf"), ())]
         horizon = progress + self.horizon_mm
         walked, compromised, reasons = progress, False, []
+        # Where the stretch into the next pillar starts from, sideways: the
+        # robot itself for the first one, then each pillar's pass offset.
+        previous = lateral
 
         for _, at, pillar_lateral, obstacle in ahead:
             offset, achieved = self._gate_offset(at, pillar_lateral, obstacle,
@@ -499,7 +542,16 @@ class GoalPlanner:
             # approach_mm short of the pillar: a route node sitting on the
             # centerline just before a pass would pull the robot back onto the
             # line at exactly the wrong moment.
-            nodes.extend(self._route_nodes(walked, at - self.approach_mm))
+            #
+            # And they stay OFF the line when both ends of the stretch are on
+            # the same side of it. Two pillars wanting the same side used to be
+            # bridged on the centreline, so the plan swung back to the middle
+            # and out again between them - measured closed loop, from ~240mm
+            # out back to 30mm past the line for pillars 1.2-2m apart - a swing
+            # toward the other side that nothing on the mat asked for.
+            hold = self._held_offset(previous, offset)
+            nodes.extend(self._route_nodes(walked, at - self.approach_mm,
+                                           hold, direction))
             fallbacks = self._fallback_offsets(offset, pillar_lateral,
                                                obstacle.side)
             nodes.append(_Node(at, offset, _GATE, obstacle, achieved, fallbacks))
@@ -514,9 +566,11 @@ class GoalPlanner:
                                fallbacks))
             if achieved < self.min_clearance_mm:
                 compromised = True
-                reasons.append(f"pillar {at - progress:+.0f}mm ahead gets only "
+                reasons.append(f"pillar {self.path.gap(progress, at):+.0f}mm ahead "
+                               f"{_where(obstacle)}gets only "
                                f"{achieved:.0f}mm (asked {self.clearance_mm:.0f})")
             walked = exit_at
+            previous = offset
 
         # The tail, out to the horizon - or past it, where a pillar's exit
         # node already ran beyond. Without this floor the chain can END on a
@@ -657,7 +711,7 @@ class GoalPlanner:
                           - BLOCK_RADIUS_MM - self.half_width_mm))
         return tuple(steps)
 
-    def _route_nodes(self, from_progress, to_progress):
+    def _route_nodes(self, from_progress, to_progress, hold=0.0, direction=1):
         """
         Plain nodes on the racing line, spaced along an empty stretch.
 
@@ -666,14 +720,53 @@ class GoalPlanner:
         between two poses, and nothing in it prefers the racing line. Pinning
         it every route_spacing_mm keeps the plan on the line wherever there is
         no reason to leave it, which is most of the lap.
+
+        `hold` puts them that far off the line instead (see _held_offset),
+        kept inside the corridor and the bend at each node's own progress.
         """
         span = self.path.gap(from_progress, to_progress)
         if span <= 0.0:
             return []
         count = max(1, int(round(span / self.route_spacing_mm)))
-        return [_Node(from_progress + span * step / count, 0.0, _ROUTE, None,
-                      float("inf"), ())
-                for step in range(1, count + 1)]
+        nodes = []
+        for step in range(1, count + 1):
+            at = from_progress + span * step / count
+            offset = self._within_limits(at, hold, direction) if hold else 0.0
+            nodes.append(_Node(at, offset, _ROUTE, None, float("inf"), ()))
+        return nodes
+
+    @staticmethod
+    def _held_offset(previous, offset):
+        """
+        How far off the line to keep a stretch that starts at `previous` and
+        ends at a pass at `offset`: the nearer of the two to the line when
+        both are on the same side of it, and the line itself otherwise - a
+        stretch between opposite sides still crosses through the middle.
+        """
+        if previous * offset <= 0.0:
+            return 0.0
+        return math.copysign(min(abs(previous), abs(offset)), offset)
+
+    def _within_limits(self, at, offset, direction):
+        """
+        `offset` clamped to what the plan may hold at progress `at`: the
+        corridor, the bend's inward limit and the parking bay - the same three
+        limits _gate_offset puts on a pass.
+        """
+        low, high = self._lateral_bounds(direction)
+        inward = self.path.inward_limit_mm(at, direction, self.min_radius_mm)
+        if math.isfinite(inward):
+            if self.path.inward_sign(direction) < 0.0:
+                low = max(low, -inward)
+            else:
+                high = min(high, inward)
+        outward = self._keep_out_limit_mm(at, direction)
+        if math.isfinite(outward):
+            if direction > 0:
+                high = min(high, outward)
+            else:
+                low = max(low, -outward)
+        return float(np.clip(offset, low, high))
 
     def _reachable_span_mm(self, offset_change):
         """
@@ -816,6 +909,18 @@ class GoalPlanner:
             else:
                 high = min(high, inward)
 
+        # And beside the parking bay the wall side ends at the bay's tips,
+        # not at the wall. Without this the pass is placed as though the
+        # wall were flat, the sweep rejects it, and the search runs out of
+        # candidates before it relaxes far enough to find the gap between
+        # the pillar and the bay - so the least-bad pass, into the bay, won.
+        outward = self._keep_out_limit_mm(at, direction)
+        if math.isfinite(outward):
+            if direction > 0:
+                high = min(high, outward)
+            else:
+                low = max(low, -outward)
+
         offset = float(np.clip(wanted, low, high))
 
         # The clamp can land the centerline on the WRONG SIDE of the pillar,
@@ -826,6 +931,33 @@ class GoalPlanner:
         if (offset - lateral) * obstacle.side <= 0.0:
             offset = high if obstacle.side > 0 else low
         return offset, abs(offset - lateral) - BLOCK_RADIUS_MM - self.half_width_mm
+
+    def _keep_out_limit_mm(self, at, direction):
+        """
+        How far toward the outer wall the centerline may go for a pass at
+        `at`, given the keep-out boxes, or inf where none is in reach.
+
+        A box counts when the body could be beside it while holding the pass:
+        from the align pose and the run-in before it, back by the rear
+        overhang, out to the exit and the nose past that.
+
+        I/O:
+            return: a distance in mm from the racing line, toward the wall
+        """
+        wall_sign = 1.0 if direction > 0 else -1.0
+        before = self.align_mm + self.approach_mm + self.rear_mm
+        after = self.exit_mm + self.front_mm
+        limit = float("inf")
+        for (x0, y0), (x1, y1) in self.keep_out:
+            gaps, near = [], float("inf")
+            for x, y in ((x0, y0), (x0, y1), (x1, y0), (x1, y1)):
+                progress, lateral = self.path.project(x, y, direction)
+                gaps.append(self.path.gap(at, progress))
+                near = min(near, lateral * wall_sign)
+            if min(gaps) > after or max(gaps) < -before:
+                continue
+            limit = min(limit, near - self.half_width_mm)
+        return limit
 
     # ========================================================================
     # CHAINING
@@ -946,10 +1078,12 @@ class GoalPlanner:
             return: (goal actually used, sampled segment), or (None, None)
         """
         # How much lap there is between where this segment starts and the goal
-        # it aims at. A backward shift may not eat all of it - see
-        # MIN_SEGMENT_MM.
+        # it aims at. Signed: NEGATIVE means the goal is already behind the
+        # pose this segment starts from, which happens without anything being
+        # shifted at all - two pillars close together put the second one's
+        # pass goal behind the first one's exit pose. See the floor below.
         here, _ = self.path.project(cursor[0], cursor[1], direction)
-        room = self.path.gap(here, goal.progress) - MIN_SEGMENT_MM
+        lap_room = self.path.gap(here, goal.progress)
         search_step = self.step_mm * SEARCH_STEP_FACTOR
 
         best = None                     # (score, candidate)
@@ -965,10 +1099,15 @@ class GoalPlanner:
         # align_mm off this is not on the path and the round behaves exactly
         # as it did. The same overlap prune applies as everywhere else: a pose
         # already inside the pillar is not a candidate however it was built.
+        # `lap_room > 0.0` for the same reason the attempts loop below tests
+        # it: this branch bypasses _attempts entirely, so without it a goal
+        # behind the cursor is drawn HERE instead and the guard below never
+        # gets to see it.
         translated = self.align_mm > 0.0
-        if translated and goal.obstacle is not None and math.hypot(
-                goal.x - goal.obstacle.x, goal.y - goal.obstacle.y) > (
-                BLOCK_RADIUS_MM + self.half_width_mm):
+        if (translated and lap_room > 0.0 and goal.obstacle is not None
+                and math.hypot(goal.x - goal.obstacle.x,
+                               goal.y - goal.obstacle.y)
+                > BLOCK_RADIUS_MM + self.half_width_mm):
             _, turned = dubins_cost(cursor, (goal.x, goal.y, goal.heading),
                                     self.min_radius_mm)
             if turned <= LOOP_TURN_DEG:
@@ -984,7 +1123,23 @@ class GoalPlanner:
                     swept += 1
 
         for offset, clearance, turn, shift in self._attempts(goal):
-            if shift < 0.0 and -shift > room:
+            # Every candidate has to lie AHEAD of the pose its segment starts
+            # from, whether or not anything was shifted. A goal behind you is
+            # one Dubins reaches by going all the way round, because a circle
+            # is the shortest thing that gets there - and it arrives disguised
+            # as a valid answer. Testing only the SHIFT missed the case where
+            # the goal was already behind at shift 0, which measured over 3000
+            # random layouts was 13 of the 15 plans that drove a circle.
+            #
+            # The floor is MIN_SEGMENT_MM only for a goal being pulled BACK,
+            # because that constant is about not SPENDING lap room the segment
+            # does not have. A goal at its built progress is required to be
+            # ahead and nothing more: align_mm routinely leaves an align pose
+            # within 150mm of the pass it feeds - 139mm on the plain
+            # one-pillar case - so demanding the full margin there drops
+            # ordinary passes. Near-zero room with a big turn is real, and it
+            # is LOOP_TURN_DEG below that catches it, not this.
+            if lap_room + shift <= (MIN_SEGMENT_MM if shift < 0.0 else 0.0):
                 continue
             candidate = self._goal_at(goal.progress + shift, offset, direction,
                                       goal.obstacle, clearance,
@@ -1148,7 +1303,7 @@ class GoalPlanner:
                               np.abs(body[:, 1]) - self.map.inner)
         wall_gap = float(min(np.min(to_outer), np.min(to_inner))) - self.half_width_mm
 
-        for low, high in getattr(self.map, "obstacles", ()):
+        for low, high in list(getattr(self.map, "obstacles", ())) + self.keep_out:
             # A bay wall is a box the body must stay out of: the gap is the
             # distance from each disc centre to the box, zero inside it.
             dx = np.maximum(np.maximum(low[0] - body[:, 0], body[:, 0] - high[0]), 0.0)
