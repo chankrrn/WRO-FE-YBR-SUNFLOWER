@@ -91,6 +91,22 @@ All sides are in [`v-photos/`](v-photos/)
 
 *robot shown: version 1.0. A version 2.0 photograph will be added after assembly.*
 
+### Version 1 — National Final Robot Design
+The first version of our robot was designed without LiDAR in mind. Since this was our first time designing this type of robot, we used our senior team's previous robot as a reference and explored which design elements could be adapted to suit our needs.
+
+We initially chose an Arduino for motor and servo control because we were concerned that assigning these tasks to the Raspberry Pi might place too much computational load on it. This concern was based on an issue our senior team had encountered. However, after taking inspiration from other teams at the previous year's competition, we decided to adopt the Raspberry Pi for our system.
+
+After completing the first prototype, we decided to integrate a LiDAR sensor. At the time, the RPLiDAR C1 was the only model available to us. Its compact size made it a suitable choice for our robot.
+
+However, the initial layout introduced one major limitation: parts of the robot obstructed the LiDAR's rear field of view, preventing it from detecting the area behind the robot. Although the LiDAR remained usable, this restricted rear-side perception and affected the robot's parking performance.
+
+### Version 2 — Current Robot Design
+
+By the second version, we had gained more experience and a clearer understanding of our design requirements. We therefore carried out a major redesign, building the robot around a design philosophy that we believed would best suit our needs.
+
+Our main principle was to design the robot around the LiDAR sensor and provide it with an unobstructed 360-degree field of view. To achieve this, we arranged the other components below the LiDAR, keeping its surrounding view as clear as possible.
+
+
 ---
 
 ## Project Files
