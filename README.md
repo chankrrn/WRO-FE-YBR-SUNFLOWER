@@ -2,6 +2,8 @@
 
 <div align="center">
 
+![YBR-SUNFLOWER team logo](other/Pic/team_logo.png)
+
 ### WRO 2026 · Future Engineers · Self-Driving Cars
 
 **Thailand · Yothinburana School · Science–Mathematics English Program**
@@ -70,19 +72,28 @@ All sides are in [`v-photos/`](v-photos/)
 
 | Front | Left | Top |
 |---|---|---|
-| **[TODO]** Front-view photo | **[TODO]** Right-side photo | **[TODO]** Rear-view photo |
+| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/front.jpg" width="300" alt="Front View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/left.jpg" width="300" alt=" Left View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/top.jpg" width="300" alt="Top View"> |
 
 | Rear | Right | Bottom |
 |---|---|---|
-| **[TODO]** Left-side photo | **[TODO]** Top-view photo | **[TODO]** Bottom-view photo |
+| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/rear.jpg" width="300" alt="Rear View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/right.jpg" width="300" alt="Right View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/bottom.jpg" width="300" alt="Bottom View"> |
 
 ### Photoshoot
 
-| Right-front | Right-rear | Left-front | Left-rear |
-|---|---|---|---|
-| **[TODO]** Photo | **[TODO]** Photo | **[TODO]** Photo | **[TODO]** Photo |
+<table border="1">
+  <tr>
+    <td>
+      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/photoshoot1.jpg" width="500">
+    </td>
+  </tr>
+</table>
+
 
 ### Versions
+
+| Rear | Right |
+|---|---|
+| <img src="immage.jpg" width="500" alt="ver 1"> | <img src="image.jpg" width="500" alt="ver 2"> |
 
 | Version | Short description | Status |
 |:---|:---|:---|
