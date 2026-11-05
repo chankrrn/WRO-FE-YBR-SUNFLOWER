@@ -202,7 +202,7 @@ Autonomous Testing
 
 # 3. Bill of Materials
 
-This section lists the main components required to reproduce the final **YBR-SUNFLOWER Version 3 robot**.
+This section lists the main components required to reproduce the final **YBR-SUNFLOWER Version 2.4 robot**.
 
 Where possible, the exact model used by our team is listed together with the original purchasing link used during development.
 
@@ -414,197 +414,80 @@ D4
 
 ## 6.2 Wire the Main Switch
 
-Connect:
+![Build_Pic_1](../other/Pic/Build/01.png)  ![Build_Pic_2](../other/Pic/Build/02.png) ![Build_Pic_3](../other/Pic/Build/03.png)
 
-```text
-Battery Positive
-       |
-       v
-Power Switch
-       |
-       v
-D1-30 Positive Distribution
-```
-
-The main switch must remove power from the robot's electrical system.
+Soder the XT60H-M to a 14AWG wire and soder the positive wire to the power switch and use a shrinking tube to short circuit
 
 ---
 
-## 6.3 Connect the LM2596 Branch
+## 6.3 Soder the Buck converter
 
-Connect the LM2596 input to the positive power distribution and common ground. Use its output to supply the Raspberry Pi power branch.
+![Build_Pic_4](../other/Pic/Build/04.png)
 
-Target:
-
-```text
-Approximately 5.1 V
-```
-
-**Do not connect the Raspberry Pi yet.** Voltage is verified in Section 7.
+Soder the 12V buck to a one output to the DC Motor Driver HAT
+Soder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR)
 
 ---
 
-## 6.4 Connect the XL4015 Branch
+## 6.4 OLED Voltmeter
 
-Connect the XL4015 input to the positive power distribution and common ground. Its output supplies the motor and control-side power system.
+![Build_Pic_5](../other/Pic/Build/05.png)
 
-Do not assume the previous draft value is correct without measuring the physical final robot.
+Soder the positive wire to the **V** and **V+** and the negative to the **G**
 
 ---
 
 ## 6.5 Ground Distribution
 
-Connect the required negative / ground paths to the PCT-21 distribution. Maintain a common electrical reference for signals shared between subsystems. Before powering the system, use a multimeter to check the ground connections for continuity.
+Connect the required negative / ground paths to the D4 distribution. Maintain a common electrical reference for signals shared between subsystems. Before powering the system, use a multimeter to check the ground connections for continuity.
 
 ---
 
-## 6.6 Connect Raspberry Pi 5
+## 6.6 LiDAR UART port
 
-After the LM2596 output has been verified:
+![Build_Pic_6](../other/Pic/Build/06.png)
 
-1. power off the robot,
-2. connect the regulated Raspberry Pi supply,
-3. confirm polarity,
-4. inspect the USB-C power wiring,
-5. confirm there is no exposed conductor.
+Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in the [wiring diagram](../schemes/wiring_diagram.png)
 
 ---
 
-## 6.7 Connect BNO055 IMU
+## 6.7 Connect to other components
 
-The BNO055 communicates through I²C.
-
-Connect:
-
-```text
-BNO055
-   |
-   v
-DFR0566 I²C interface
-   |
-   v
-Raspberry Pi
-```
-
-Use the I²C / Gravity connector corresponding to the final wiring diagram.
-
----
-
-## 6.8 Connect Raspberry Pi Camera
-
-Connect the camera through the Raspberry Pi CSI interface.
-
-Check:
-
-- CSI connector orientation,
-- ribbon-cable direction,
-- locking tab.
-
-Do not insert or remove the CSI cable while the Raspberry Pi is powered.
-
----
+1. Connect the camera through the Raspberry Pi CSI interface.
+       Check:
+       - CSI connector orientation,
+       - ribbon-cable direction,
+       - locking tab.
+       Do not insert or remove the CSI cable while the Raspberry Pi is powered.
 
 
-## 6.10 Connect Drive Motor and Encoder
+2. Connect the motor and encoder
+   
+<img height=300 scr=other/Pic/Motor Port.png /> 
 
-Current documented encoder wiring:
+       M1 MOTOR      -> M1+
+       GND HALL      -> E1-
+       C2 HALL       -> E1B
+       C1 HALL       -> E2A
+       VCC HALL      -> E1+
+       M2 MOTOR      -> M1-
 
-<img height=300 scr=other/DrivingMotor3.jpg /> 
+3. Connect Steering Servo
+   
+       PWM 3
 
-Arduino pins:
+4. Connect Start Button
 
-```text
-Encoder A      -> D2
-Encoder B      -> D3
-Motor PWM      -> D11
-Motor Direction-> D13
-```
+       Digital 16
+
+5. Connect RPLiDAR S2l
+
+       UART
+
 
 ---
 
-## 6.11 Connect Steering Servo
-
-Current final servo control pin:
-
-```text
-Arduino D9
-```
-
-Servo connections:
-
-```text
-Signal
-Positive
-Ground
-```
-
-Check the electrical wiring diagram for the exact power path. Do not force the steering linkage against a mechanical end stop during initial testing.
-
----
-
-## 6.12 Connect Start Button
-
-The ZX-Switch01 is connected to:
-
-```text
-Arduino A0
-```
-
-Its purpose is not to power the robot.
-
-The distinction is:
-
-```text
-SPST Main Switch
-= Power On / Off
-
-ZX-Switch01
-= Start Autonomous Run
-```
-
----
-
-## 6.13 Connect Raspberry Pi ↔ Arduino
-
-Connect the Arduino to the Raspberry Pi using a USB data cable.
-
-Default device:
-
-```text
-/dev/ttyACM0
-```
-
-Serial configuration:
-
-```text
-115200 baud
-```
-
-The final robot currently routes this cable to one of the Raspberry Pi USB 3 ports. The exact physical USB port is less important than reliable device detection unless the final software explicitly assumes otherwise.
-
----
-
-## 6.14 Connect RPLiDAR C1
-
-Connect the RPLiDAR C1 through its adapter to the Raspberry Pi USB interface.
-
-Default device:
-
-```text
-/dev/ttyUSB0
-```
-
-Current communication rate:
-
-```text
-460800 baud
-```
-
-The LiDAR cable must not interfere mechanically with the rotating sensor.
-
----
-
-## 6.15 Cable Management
+## 6.8 Cable Management
 
 After all wiring is complete:
 
