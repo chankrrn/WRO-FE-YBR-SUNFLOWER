@@ -72,18 +72,18 @@ All sides are in [`v-photos/`](v-photos/)
 
 | Front | Left | Top |
 |---|---|---|
-| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/front.jpg" width="300" alt="Front View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/left.jpg" width="300" alt=" Left View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/top.jpg" width="300" alt="Top View"> |
+| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/front.jpg" width="300" alt="Front View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/left.jpg" width="300" alt=" Left View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/top.jpg" width="300" alt="Top View"> |
 
 | Rear | Right | Bottom |
 |---|---|---|
-| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/rear.jpg" width="300" alt="Rear View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/right.jpg" width="300" alt="Right View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/bottom.jpg" width="300" alt="Bottom View"> |
+| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/rear.jpg" width="300" alt="Rear View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/right.jpg" width="300" alt="Right View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/bottom.jpg" width="300" alt="Bottom View"> |
 
 ### Photoshoot
 
 <table border="1">
   <tr>
     <td>
-      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/9376d9b24aa1c48f588ec8d0bbb9a3724b5620fc/v-photos/photoshoot1.jpg" width="500">
+      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/photoshoot1.jpg" width="500">
     </td>
   </tr>
 </table>
@@ -91,16 +91,14 @@ All sides are in [`v-photos/`](v-photos/)
 
 ### Versions
 
-| Rear | Right |
-|---|---|
-| <img src="immage.jpg" width="500" alt="ver 1"> | <img src="image.jpg" width="500" alt="ver 2"> |
-
 | Version | Short description | Status |
 |:---|:---|:---|
 | **[1.0](history/README.md)** | The completed robot used in the **WRO Thailand 2026 Future Engineers National Final**. | Completed |
 | **2.0** | The redesigned robot for the **WRO 2026 Future Engineers International Final**. | In progress |
 
-*robot shown: version 1.0. A version 2.0 photograph will be added after assembly.*
+| Ver 1.0 | Ver 2.0 |
+|---|---|
+| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver1/ver1_pic.png" width="500" alt="Ver 1.0"> | <img src="image.jpg" width="500" alt="Ver 2.0"> |
 
 ### Version 1 — National Final Robot Design
 The first version of our robot was designed without LiDAR in mind. Since this was our first time designing this type of robot, we used our senior team's previous robot as a reference and explored which design elements could be adapted to suit our needs.
