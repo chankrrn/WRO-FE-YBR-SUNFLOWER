@@ -11,7 +11,7 @@ YBR-SUNFLOWER, representing **Yothinburana School**, placed **1st** in the **WRO
       <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/32deda38582131d35e26f1482590f194d5bbfa52/history/national_prize.jpg" width="500">
     </td>
     <td>
-      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/8dd486efac223b7d656d39b2666fa2929a788862/history/ver01.jpg" width="500">
+      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/fd78820b7d7ed52d27e6dcabd09b40992ab77f3e/v-photos/Ver1/ver1_view.jpg" width="500">
     </td>
   </tr>
 </table>
