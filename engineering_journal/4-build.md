@@ -109,15 +109,15 @@ rather than powering the complete robot immediately after wiring.
 
 | Reproduction Requirement | Primary Resource |
 |---|---|
-| Mechanical design | [`mech/mech_README.md`](mech/mech_README.md) |
-| CAD / STL files | [`mech/models/`](mech/models/) |
+| Mechanical design | [`mech.md`](1-mech.md) |
+| CAD / STL files | [`models/`](models/) |
 | Mechanical assembly | This document — Sections 5–6 |
-| Electrical architecture | [`elec/elec_README.md`](elec/elec_README.md) |
-| Schematic | [`schemes/Schematic Diagram.png`](schemes/Schematic%20Diagram.png) |
-| Physical wiring | [`schemes/Wiring Diagram.png`](schemes/Wiring%20Diagram.png) |
+| Electrical architecture | [`elec.md`](2-elec.md) |
+| Schematic | [`schemes/Schematic Diagram.png`](schemes/Schematic_Diagram.png) |
+| Physical wiring | [`schemes/Wiring Diagram.png`](schemes/Wiring_Diagram.png) |
 | Electrical assembly | This document — Sections 7–8 |
 | Raspberry Pi software | [`src/Raspberrypi/`](src/Raspberrypi/) |
-| Software architecture | [`software/software_README.md`](software/software_README.md) |
+| Software architecture | [`software.md`](3-software.md) |
 | Testing workflow | Section 14 |
 | Competition version | GitHub Release / tag |
 
@@ -596,12 +596,12 @@ Electrical Plate
 
 Relevant CAD files are documented in:
 
-[`1-mech.md`](1-mech.md)
+[`mech.md`](1-mech.md)
 
 
 Sensor-placement reasoning is documented in:
 
-[`2-elec.md`](2-elec.md)
+[`elec.md`](2-elec.md)
 
 
 ---
@@ -1524,15 +1524,15 @@ For design reasoning, use:
 
 ### Mechanical
 
-[`1-mech.md`](1-mech.md)
+[`mech.md`](1-mech.md)
 
 ### Electrical and Sensors
 
-[`2-elec.md`](2-elec.md)
+[`elec.md`](2-elec.md)
 
 ### Software
 
-[`3-software.md`](`3-software.md)
+[`software.md`](`3-software.md)
 
 ### Electrical Schematic
 
