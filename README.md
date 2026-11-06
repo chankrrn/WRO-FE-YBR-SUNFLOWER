@@ -78,16 +78,6 @@ All sides are in [`v-photos/`](v-photos/)
 |---|---|---|
 | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/rear.jpg" width="300" alt="Rear View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/right.jpg" width="300" alt="Right View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/bottom.jpg" width="300" alt="Bottom View"> |
 
-### Photoshoot
-
-<table border="1">
-  <tr>
-    <td>
-      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/photoshoot1.jpg" width="500">
-    </td>
-  </tr>
-</table>
-
 
 ### Versions
 
@@ -98,7 +88,7 @@ All sides are in [`v-photos/`](v-photos/)
 
 | Ver 1.0 | Ver 2.0 |
 |---|---|
-| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver1/ver1_pic.png" width="500" alt="Ver 1.0"> | <img src="image.jpg" width="500" alt="Ver 2.0"> |
+| <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver1/ver1_pic.png" width="500" alt="Ver 1.0"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/photoshoot1.jpg" width="500" alt="Ver 2.0"> |
 
 ### Version 1 — National Final Robot Design
 The first version of our robot was designed without LiDAR in mind. Since this was our first time designing this type of robot, we used our senior team's previous robot as a reference and explored which design elements could be adapted to suit our needs.

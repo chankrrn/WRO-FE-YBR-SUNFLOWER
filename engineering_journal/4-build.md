@@ -1,15 +1,5 @@
 # Build and Reproduction Guide
 
-> **Scope:**
-
-[← Project README](../README.md) · [← Engineering Overview](0-overview.md)
-
-[← Software Architecture and Obstacle Strategy](3-software.md)
-
----
-
-## Contents
-
 This document is the complete reproduction guide for the **YBR-SUNFLOWER WRO 2026 Future Engineers robot**.
 
 Its purpose is different from the subsystem engineering documentation.
@@ -21,6 +11,13 @@ The subsystem documents explain **why** the robot was designed as it is:
 - [`software.md`](3-software.md) — software and autonomous navigation
 
 This document explains **how to reproduce the final robot**.
+
+---
+
+[← Project README](../README.md) · [← Engineering Overview](0-overview.md)
+
+[← Software Architecture and Obstacle Strategy](3-software.md)
+
 
 ---
 
