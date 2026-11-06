@@ -8,7 +8,7 @@ YBR-SUNFLOWER, representing **Yothinburana School**, placed **1st** in the **WRO
 <table border="1">
   <tr>
     <td>
-      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/32deda38582131d35e26f1482590f194d5bbfa52/history/national_prize.jpg" width="500">
+      <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/4f6da85a84eba3a23efff243b5df138958d818ed/history/pic/national_prize.jpg" width="500">
     </td>
     <td>
       <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/fd78820b7d7ed52d27e6dcabd09b40992ab77f3e/v-photos/Ver1/ver1_view.jpg" width="500">
@@ -23,7 +23,7 @@ YBR-SUNFLOWER, representing **Yothinburana School**, placed **1st** in the **WRO
 Our team made its international debut at the World Robot Olympiad (WRO) in 2010, achieving 3rd place (Second Runner-Up).
 
 <p align="center">
-  <img src="" width="500"/>
+  <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/4f6da85a84eba3a23efff243b5df138958d818ed/history/pic/First%20International%20Round.jpg" width="500"/>
 </p>
 
 `2011 — Second International Round Achievement`
@@ -31,7 +31,7 @@ Our team made its international debut at the World Robot Olympiad (WRO) in 2010,
 In our second appearance at the WRO international round in 2011, our team achieved 1st place (Champion), marking a significant milestone in our competition history.  
 
 <p align="center">
-  <img src="" width="500"/>
+  <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/4f6da85a84eba3a23efff243b5df138958d818ed/history/pic/Second%20International%20Round.jpg" width="500"/>
 </p>
 
 `20XX — Latest International Round Achievement`
