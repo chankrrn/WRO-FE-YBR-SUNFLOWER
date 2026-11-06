@@ -411,7 +411,8 @@ D4
 
 ## 6.2 Wire the Main Switch
 
-![Build_Pic_1](../other/Pic/Build/01.png)  ![Build_Pic_2](../other/Pic/Build/02.png) ![Build_Pic_3](../other/Pic/Build/03.png)
+<img src="../other/Pic/Build/01.png" height="330" /> <img src="../other/Pic/Build/02.png" height="330" /> <img src="../other/Pic/Build/03.png" height="660" /> 
+
 
 Soder the XT60H-M to a 14AWG wire and soder the positive wire to the power switch and use a shrinking tube to short circuit
 
@@ -419,7 +420,7 @@ Soder the XT60H-M to a 14AWG wire and soder the positive wire to the power switc
 
 ## 6.3 Soder the Buck converter
 
-![Build_Pic_4](../other/Pic/Build/04.png)
+<img src="../other/Pic/Build/04.png" height="500" />
 
 Soder the 12V buck to a one output to the DC Motor Driver HAT
 Soder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR)
@@ -428,7 +429,7 @@ Soder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR)
 
 ## 6.4 OLED Voltmeter
 
-![Build_Pic_5](../other/Pic/Build/05.png)
+<img src="../other/Pic/Build/05.png" height="500" />
 
 Soder the positive wire to the **V** and **V+** and the negative to the **G**
 
@@ -442,7 +443,7 @@ Connect the required negative / ground paths to the D4 distribution. Maintain a 
 
 ## 6.6 LiDAR UART port
 
-![Build_Pic_6](../other/Pic/Build/06.png)
+<img src="../other/Pic/Build/06.png" height="500" />
 
 Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in the [wiring diagram](../schemes/wiring_diagram.png)
 
@@ -459,25 +460,26 @@ Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in
 
 
 2. Connect the motor and encoder
-   
-<img height=300 scr=other/Pic/Motor Port.png /> 
-
+       
        M1 MOTOR      -> M1+
        GND HALL      -> E1-
        C2 HALL       -> E1B
        C1 HALL       -> E2A
        VCC HALL      -> E1+
        M2 MOTOR      -> M1-
+   
+   
+   <img src="../other/Pic/Motor Port.png" height="300" />
 
-3. Connect Steering Servo
+4. Connect Steering Servo
    
        PWM 3
 
-4. Connect Start Button
+5. Connect Start Button
 
        Digital 16
 
-5. Connect RPLiDAR S2l
+6. Connect RPLiDAR S2l
 
        UART
 
@@ -507,7 +509,7 @@ Do **not** connect the Raspberry Pi or other sensitive loads until converter vol
 
 ---
 
-## 8.1 Power Verification Sequence
+## 7.1 Power Verification Sequence
 
 ```text
 Complete Power Wiring
@@ -516,28 +518,28 @@ Complete Power Wiring
 Disconnect Sensitive Electronics
        |
        v
-Inspect Polarity
+ Inspect Polarity
        |
        v
-Connect Battery
+ Connect Battery
        |
        v
 Turn Main Switch ON
        |
        v
-Measure LM2596
+  Measure Buck 5V
        |
        v
-Confirm ~5.1 V
+  Confirm ~5.1 V
        |
        v
-Measure XL4015
+ Measure Buck 12V
        |
        v
-Confirm Final Documented Voltage
+ Confirm ~12.1 V
        |
        v
-Turn Power OFF
+  Turn Power OFF
        |
        v
 Connect Electronics
@@ -545,34 +547,32 @@ Connect Electronics
 
 ---
 
-## 8.2 Multimeter Checklist
+## 7.2 Multimeter Checklist
 
 Before connecting electronics:
 
-- [ ] battery polarity correct,
-- [ ] no short between positive and ground,
-- [ ] LM2596 input correct,
-- [ ] LM2596 output approximately 5.1 V,
-- [ ] XL4015 input correct,
-- [ ] XL4015 output = 11.1,
-- [ ] common ground continuity verified,
-- [ ] no exposed conductor contacting chassis / PCB,
-- [ ] connectors mechanically secure.
+- [ ] battery polarity correct
+- [ ] no short between positive and ground
+- [ ] Buck 5V input correct
+- [ ] Buck 5V output approximately 5.1 V
+- [ ] Buck 12V input correct
+- [ ] Buck 12V output = 12.1
+- [ ] common ground continuity verified
+- [ ] no exposed conductor contacting chassis / PCB
+- [ ] connectors mechanically secure
 
 ---
 
-## 8.3 First Powered Electrical Test
+## 7.3 First Powered Electrical Test
 
 After converter verification:
 
-1. power off,
-2. connect Raspberry Pi / control electronics,
-3. lift drive wheels off the ground,
-4. power on,
-5. observe for unexpected heat, smell, sound or resets,
-6. power off immediately if abnormal behavior occurs.
+1. power off
+2. connect Raspberry Pi / control electronics
+3. power on
+4. observe for unexpected heat, smell, sound or resets
+5. power off immediately if abnormal behavior occurs
 
-During this first test, do not run full-speed autonomous software.
 
 ---
 
@@ -585,84 +585,90 @@ Steering System
       ↓
 Electrical Plate
       ↓
-Top Plate
+  Top Plate
       ↓
-Drivetrain
+  Drivetrain
       ↓
-Camera 
+   Assemble 
       
 ```
 
----
 
-## 6.1 Assemble Steerng System
+Relevant CAD files are documented in:
 
-
-
+[`1-mech.md`](1-mech.md)
 
 
+Sensor-placement reasoning is documented in:
 
+[`2-elec.md`](2-elec.md)
 
-## 6.1 Assemble the Rear / Upper Structure
-
-We recommend building the rear stacked section from bottom to top.
-
-```text
-Camera
-   |
-   v
-Camera Support
-   |
-   v
-DFR0566 / Pi Layer
-   |
-   v
-Raspberry Pi 5
-   |
-   v
-Electrical Base
-```
-
-Existing assembly references:
-
-<img width="300" height="400" alt="Pi5 Layer" src="other/Pi5 Layer.jpg" />
-<img width="400" height="400" alt="Electrical Layer" src="other/Elec layer.jpg" />
-<img width="300" height="400" alt="Back Section" src="other/Back Part.jpg" />
-
-Before tightening completely:
-
-- verify the plates are parallel,
-- check the pillar spacing,
-- confirm cables will still be accessible.
 
 ---
 
-## 6.2 Assemble the Rear Drivetrain
+## 8.1 Assemble Steerng System
 
-Install:
+   <img src="../other/Pic/Build/07.png" height="640" />
+   <img src="../other/Pic/Build/08.png" height="640" />       
+   
+   First we use a 1.75 mm filament as a pin to hold the steering and use a M2.5 screw to lock it in place
+   
+   And install the servo and the king pin to the servo base
+   
+   <img src="../other/Pic/Build/09.png" height="640" />
+   
+   Then install the left and right knuckles to the kingpin and install the Steering Rack 
+   After that connect the Wheel Connectors to the Steering Hub with the front bearing
+   
+After assembly:
 
-1. CHP-20GP-180 motor
-2. Motor Bracket
-3. 16-tooth drive gear
-4. LEGO 28-tooth differential
-5. rear bearings
-6. axle sleeves
-7. rear axles
-8. wheels
+- [ ] move the steering manually,
+- [ ] verify both wheels rotate freely,
+- [ ] check for mechanical binding,
+- [ ] verify the linkage does not contact the chassis.
 
-<img width="300" src="other/Drivetrains.jpg" />
 
+## 8.2 Assemble Electrical Plate
+
+   <img src="../other/Pic/Build/10.png" height="640" />
+   <img src="../other/Pic/Build/11.png" height="640" />       
+
+   First screw in the 12V buck to the Elec Plate and the 5V buck on top with the spacer
+
+   Then install the D4 Quick Connector in the Elec Plate
+
+---
+
+## 8.3 Assemble Top Plate
+
+   <img src="../other/Pic/Build/12.png" height="640" />
+   <img src="../other/Pic/Build/13.png" height="640" />       
+
+   First install the LiDAR, Oled Voltmeter, and the Power Switch (the Start Button will be install later)
+   
+
+---
+
+## 8.4 Assemble Drivetrain
+
+   <img src="../other/Pic/Build/14.png" height="640" />
+   <img src="../other/Pic/Build/15.png" height="640" />       
+
+   Install the Motor Backet and the Gear on the CHP-20GP-180 motor
+
+   Next connect the Rear Bearings with the Bearing Mount and Axel Sleeves then connect the LEGO Axel and Differential
+   
 Before continuing:
 
-- rotate the drivetrain manually,
-- verify the gear teeth mesh correctly,
-- confirm the differential rotates freely,
-- check that the axle does not bind,
-- verify both wheels rotate without excessive friction.
+- [ ] rotate the drivetrain manually,
+- [ ] verify the gear teeth mesh correctly,
+- [ ] confirm the differential rotates freely,
+- [ ] check that the axle does not bind,
+- [ ] verify both wheels rotate without excessive friction.
 
 ### Gear-Mesh Check
 
-The 16T and 28T gears should:
+The 18T and 28T gears should:
 
 - engage fully,
 - rotate without skipping,
@@ -672,108 +678,45 @@ Incorrect gear mesh can cause excessive current draw, increased drivetrain noise
 
 ---
 
-## 6.3 Install Arduino Base and Steering Servo
+## 8.5 Assemble Everything
 
-Mount:
+We recommend assembling from the top to bottm
 
-- Arduino supporting plate
-- steering servo
-- servo bracket
+```text
+  Top Plate
+      ↓
+Electrical Plate
+      ↓
+    Base
 
-<img width="300" src="other/Servo and Uno.jpg" />
+```
 
-The steering linkage should not be permanently installed until the servo center has been verified during actuator setup. This makes mechanical steering centering easier.
+   <img src="../other/Pic/Build/16.png" height="640" />
 
+   Mount 4 **M2.5 x 25mm** spacer on top and 5 **M3 x 30mm** at the bottom of the Elec Plate
+
+   After mounting the spacer, install the Top Plate on the Elec Base, and them the Elec Base on the Mian Base completing the Back Section
+   
+   <img src="../other/Pic/Build/17.png" height="640" />  
+
+   Mount the Steering Support on the base and install the Steering System on top completing the Front Section
+   
+
+   Next **Install Raspberry Pi, DFR0592, and DFR0604**
+   
+   Install the Raspberry Pi 5 onto its mounting position on the Main Base. Then, mount the DFR0592 DC Motor Driver HAT, and the DFR0604 I/O Expansion HAT directly onto the Raspberry Pi header according to the board orientation.
+   
+Before finishing:
+
+- [ ] confirm no pin is misaligned,
+- [ ] confirm no metal part can short the Raspberry Pi,
+   
+   
+   <img src="../other/Pic/Build/18.png" height="640" />  
+   
 ---
 
-## 6.4 Assemble the Front Steering System
-
-Install:
-
-1. Steering Axle
-2. Lower Steering Mount
-3. Left Steering Arm
-4. Right Steering Arm
-5. Steering Linkage
-6. Top Steering Mount / Cap
-7. Front wheels
-
-<img width="300" src="other/Steering system.jpg" />
-
-Relevant CAD files are documented in:
-
-[`mech/mech_README.md`](mech/mech_README.md)
-
-After assembly:
-
-- move the steering manually,
-- verify both wheels rotate freely,
-- check for mechanical binding,
-- verify the linkage does not contact the chassis.
-
----
-
-## 6.5 Install Arduino and Motor Shield
-
-Mount:
-
-- Arduino UNO R4 Minima
-- L298P Motor Shield
-- XL4015 tray / converter assembly
-
-<img width="300" src="other/Arduino mount.jpg" />
-
-Keep enough space around the wiring terminals for later electrical inspection.
-
----
-
-## 6.6 Install Raspberry Pi and DFR0566
-
-Install the Raspberry Pi 5 onto its mounting plate. Then, mount the DFR0566 I/O Expansion HAT directly onto the Raspberry Pi header according to the board orientation.
-
-Before installing upper structures:
-
-- confirm no pin is misaligned,
-- confirm no metal part can short the Raspberry Pi,
-- verify the microSD card remains accessible.
-
----
-
-## 6.7 Install Camera
-
-Mount:
-
-- camera plate,
-- camera arm,
-- camera connector / support,
-- Raspberry Pi camera.
-
-Connect the CSI cable without sharply folding it. Keep the camera mount adjustable, and do not permanently fix the final viewing angle until camera testing has been completed.
-
----
-
-## 6.8 Install LiDAR and IMU
-
-Mount the BNO055 underneath the LiDAR according to the final sensor layout. Then install the RPLiDAR C1 above the BNO055, ensuring that both sensors are securely positioned.
-
-<img width="300" src="other/Lidar mount.jpg" />
-
-Important checks:
-
-- LiDAR should be approximately parallel with the field,
-- LiDAR rotation must not be physically obstructed,
-- IMU should not move relative to the chassis,
-- cables must not enter the LiDAR scanning area.
-
-Sensor-placement reasoning is documented in:
-
-[`elec/elec_README.md`](elec/elec_README.md)
-
----
-
-## 6.9 Mechanical Inspection
-
-Before beginning electrical assembly:
+## 8.6 Mechanical Inspection
 
 - [ ] all wheels rotate freely
 - [ ] differential rotates freely
@@ -787,6 +730,10 @@ Before beginning electrical assembly:
 - [ ] electronics plates are secure
 - [ ] no screw contacts an exposed circuit board
 - [ ] no loose printed component remains
+- [ ] LiDAR should be approximately parallel with the field,
+- [ ] LiDAR rotation must not be physically obstructed,
+- [ ] cables must not enter the LiDAR scanning area.
+
 
 ---
 
@@ -811,7 +758,7 @@ uv
 
 ## 9.1 Prepare Raspberry Pi OS
 
-Using Raspberry Pi Imager:
+Using Raspberry [Pi Imager](https://www.raspberrypi.com/software/):
 
 1. install Raspberry Pi OS 64-bit,
 2. configure username / password,
@@ -833,7 +780,7 @@ cd WRO-FE-YBR-SUNFLOWER/src/Raspberrypi
 
 For exact competition reproduction, the final tagged release should eventually be used instead of following the changing `main` branch.
 
-See Section 17.
+See Section 16.
 
 ---
 
@@ -877,20 +824,12 @@ Check I²C:
 i2cdetect -y 1
 ```
 
-Check USB serial devices:
+Check UART serial devices:
 
 ```bash
-ls /dev/ttyACM* /dev/ttyUSB*
+ls -l /dev/serial*
 ```
 
-Typical final configuration:
-
-```text
-Arduino -> /dev/ttyACM0
-LiDAR   -> /dev/ttyUSB0
-```
-
-Actual numbering may change if USB devices are connected differently.
 
 ---
 
@@ -932,112 +871,8 @@ Expected behavior:
 
 ---
 
-# 10. Arduino Setup and Firmware Upload
 
-The final Arduino controller is:
-
-```text
-Arduino UNO R4 Minima
-```
-
-Firmware:
-
-[`src/Arduino/Main.ino`](src/Arduino/Main.ino)
-
----
-
-## 10.1 Arduino IDE
-
-Install:
-
-- Arduino IDE
-- Arduino UNO R4 board package
-
-Select:
-
-```text
-Board:
-Arduino UNO R4 Minima
-```
-
----
-
-## 10.2 Required Libraries
-
-Current firmware uses:
-
-```text
-Servo
-PID_v2
-```
-
-The repository also contains library files associated with the Arduino firmware.
-
-Existing Arduino Library Manager screenshots may remain as supporting instructions:
-
-<img src="other/Screenshot-Open-lib_manager.png" width="800">
-
-<img src="other/Screenshot-Install-Servo.png" width="395">
-<img src="other/Screenshot-Install-PID_V2.png" width="395">
-
----
-
-## 10.3 Upload Firmware
-
-1. Open:
-
-```text
-src/Arduino/Main.ino
-```
-
-2. Select:
-
-```text
-Arduino UNO R4 Minima
-```
-
-3. Select the correct serial port.
-
-4. Click **Upload**.
-
-5. Wait for successful compilation and upload.
-
----
-
-## 10.4 Verify Arduino Startup
-
-Open Serial Monitor at:
-
-```text
-115200 baud
-```
-
-After initialization, the Arduino should return:
-
-```text
-READY
-```
-
-This confirms that the firmware has reached its initialized state.
-
----
-
-## 10.5 Verify Start Button
-
-With the robot waiting:
-
-1. press the ZX-Switch01,
-2. observe Arduino serial output.
-
-Expected response:
-
-```text
-Start
-```
-
----
-
-# 11. Final Software Configuration
+# 10. Final Software Configuration
 
 Competition parameters are stored primarily in:
 
@@ -1055,7 +890,7 @@ These configuration files contain adjustable values for the robot, including spe
 
 ---
 
-## 11.1 Do Not Re-Tune During Reproduction Unless Necessary
+## 10.1 Do Not Re-Tune During Reproduction Unless Necessary
 
 For exact reproduction:
 
@@ -1067,13 +902,13 @@ For exact reproduction:
 
 ---
 
-# 12. Subsystem Verification
+# 11. Subsystem Verification
 
 Do not immediately run the full autonomous challenge. Instead, test the system step by step.
 
 ---
 
-## 12.1 Stage 1 — Electrical Verification
+## 11.1 Stage 1 — Electrical Verification
 
 - [ ] main switch works
 - [ ] Raspberry Pi supply measured correctly
@@ -1085,25 +920,7 @@ Do not immediately run the full autonomous challenge. Instead, test the system s
 
 ---
 
-## 12.2 Stage 2 — Controller Communication
-
-Verify:
-
-```bash
-ls /dev/ttyACM*
-```
-
-Arduino should be detected. Run the appropriate motor / serial test if available.
-
-Expected Arduino initialization response:
-
-```text
-READY
-```
-
----
-
-## 12.3 Stage 3 — Steering Test
+## 11.3 Stage 2 — Steering Test
 
 With drive wheels off the ground:
 
@@ -1117,7 +934,7 @@ After centering, connect / adjust the steering linkage mechanically if required.
 
 ---
 
-## 12.4 Stage 4 — Drive Motor Test
+## 11.4 Stage 3 — Drive Motor Test
 
 With wheels lifted:
 
@@ -1129,7 +946,7 @@ With wheels lifted:
 
 ---
 
-## 12.5 Stage 5 — Encoder Test
+## 11.5 Stage 4 — Encoder Test
 
 Rotate / drive the drivetrain slowly.
 
@@ -1143,7 +960,7 @@ Verify:
 
 ---
 
-## 12.6 Stage 6 — IMU Test
+## 11.6 Stage 5 — IMU Test
 
 Run the IMU/software initialization, then rotate the robot by hand.
 
@@ -1156,7 +973,7 @@ Verify:
 
 ---
 
-## 12.7 Stage 7 — LiDAR Test
+## 11.7 Stage 6 — LiDAR Test
 
 Verify that the LiDAR:
 
@@ -1170,7 +987,7 @@ The debug view can be used to verify whether the scan matches the surrounding ge
 
 ---
 
-# 12.8 Stage 8 — Camera Test
+# 11.8 Stage 7 — Camera Test
 
 Verify:
 
@@ -1190,7 +1007,7 @@ if color thresholds require validation.
 
 ---
 
-## 12.9 Stage 9 — Start Button
+## 11.9 Stage 8 — Start Button
 
 Verify:
 
@@ -1201,13 +1018,13 @@ Verify:
 
 ---
 
-# 13. First Autonomous Run
+# 12. First Autonomous Run
 
 The first autonomous test should be performed at reduced risk.
 
 ---
 
-## 13.1 Pre-Run Inspection
+## 12.1 Pre-Run Inspection
 
 Before placing the robot on the track:
 
@@ -1216,14 +1033,12 @@ Before placing the robot on the track:
 - [ ] LiDAR unobstructed
 - [ ] camera secure
 - [ ] wheels secure
-- [ ] steering centered
-- [ ] Pi / Arduino detected
 - [ ] correct configuration selected
 - [ ] debug mode available if required
 
 ---
 
-## 13.2 Localization Test
+## 12.2 Localization Test
 
 Before completing full laps:
 
@@ -1235,7 +1050,7 @@ Verify that localization particles converge toward a reasonable robot pose. Do n
 
 ---
 
-## 13.3 Low-Speed Driving Test
+## 12.3 Low-Speed Driving Test
 
 Perform:
 
@@ -1254,7 +1069,7 @@ Confirm:
 
 ---
 
-## 13.4 Qualification / Open Challenge
+## 12.4 Qualification / Open Challenge
 
 Run:
 
@@ -1274,7 +1089,7 @@ The robot should:
 
 ---
 
-## 13.5 Obstacle Challenge
+## 12.5 Obstacle Challenge
 
 Run:
 
@@ -1298,13 +1113,13 @@ The final task adds:
 
 ---
 
-# 14. Testing Workflow
+# 13. Testing Workflow
 
 Testing is an important part of the reproducible engineering workflow. The repository contains dedicated tools instead of requiring every change to be tested through a full competition run.
 
 ---
 
-## 14.1 Recommended Development Workflow
+## 13.1 Recommended Development Workflow
 
 ```text
 Change Code / Config
@@ -1326,14 +1141,11 @@ Full Track Test
         |
         v
 Record Result
-        |
-        v
-Commit Change
 ```
 
 ---
 
-# 14.2 Software Test Tools
+# 13.2 Software Test Tools
 
 ### Localization
 
@@ -1361,133 +1173,38 @@ uv run python test_color_picker.py
 
 ---
 
-# 14.3 Testing Evidence
 
-Testing evidence should be stored separately from source code.
-
-Recommended structure:
-
-```text
-engineering-process/
-└── testing/
-    ├── mechanical/
-    ├── electrical/
-    ├── sensors/
-    ├── software/
-    └── competition/
-```
-
-For important tests, record:
-
-```text
-Date
-Configuration / Commit
-Test
-Result
-Failure
-Change Made
-```
-
----
-
-# 14.4 Test Record Template
-
-```markdown
-## Test: [Name]
-
-Date:
-Commit:
-Robot Version:
-
-### Objective
-[What are we trying to verify?]
-
-### Configuration
-[Important parameters]
-
-### Method
-[What was tested?]
-
-### Result
-[What happened?]
-
-### Failure / Observation
-[If applicable]
-
-### Engineering Decision
-[What changed because of this result?]
-```
-
----
-
-# 15. Troubleshooting
+# 14. Troubleshooting
 
 Follow the troubleshooting steps in order. Avoid changing multiple configuration values at the same time, as this makes it more difficult to identify the cause of a problem.
 
 ---
 
-## 15.1 Raspberry Pi Does Not Detect Arduino
-
-### Symptom
-
-```text
-/dev/ttyACM0
-```
-
-does not appear.
+## 14.1 Raspberry Pi Does Not Detect LiDAR
 
 ### Check
 
 ```bash
-ls /dev/ttyACM*
-```
-
-Then check:
-
-- USB cable supports data,
-- Arduino is powered,
-- correct USB port,
-- firmware uploaded.
-
-Try pressing the Arduino reset button once.
-
-If the device appears but access is denied:
-
-```bash
-groups
-```
-
-Confirm that the user has the required serial-device permissions. The repository setup script is intended to configure these permissions.
-
----
-
-## 15.2 Raspberry Pi Does Not Detect LiDAR
-
-### Check
-
-```bash
-ls /dev/ttyUSB*
+ls -l /dev/serial*
 ```
 
 Then inspect:
 
 - LiDAR power
-- USB adapter
-- USB cable
+- UART adapter
+- UART cable
 - connector seating
 
 If the device exists but permission is denied, inspect:
 
 ```bash
-ls -l /dev/ttyUSB0
+ls -l /dev/ttyAMA0
 groups
 ```
 
-Use the permanent user / device-permission setup rather than relying on temporary world-writable permissions.
-
 ---
 
-## 15.3 BNO055 Not Detected
+## 14.2 BNO055 Not Detected
 
 Run:
 
@@ -1505,7 +1222,7 @@ Check:
 
 ---
 
-## 15.4 Camera Not Available
+## 14.3 Camera Not Available
 
 Check:
 
@@ -1519,7 +1236,7 @@ Then test camera functionality before running competition software.
 
 ---
 
-## 15.5 Servo Jitters or Resets
+## 14.4 Servo Jitters or Resets
 
 Possible causes:
 
@@ -1538,14 +1255,14 @@ Check:
 
 ---
 
-## 15.6 Raspberry Pi Resets During Acceleration
+## 14.5 Raspberry Pi Resets During Acceleration
 
 Possible cause: actuator-related power disturbance or Pi supply voltage drop.
 
 Check:
 
 1. Raspberry Pi branch voltage while motor starts
-2. LM2596 output under load
+2. 12V Buck output under load
 3. connectors
 4. common ground
 5. battery state
@@ -1553,39 +1270,39 @@ Check:
 
 ---
 
-## 15.7 Motor Rotates in Wrong Direction
+## 14.6 Motor Rotates in Wrong Direction
 
 Do not change several software signs simultaneously.
 
 First verify:
 
 - motor wiring polarity
-- Arduino direction convention
+- DC Motor Driver HAT direction convention
 - software forward command
 
 Document the final convention after correcting it.
 
 ---
 
-## 15.8 Encoder Counts in Wrong Direction
+## 14.7 Encoder Counts in Wrong Direction
 
 Check:
 
 - Encoder A / B wiring
-- D2 / D3 assignment
+- E1A / E1B assignment
 - motor rotation direction
 
 Swapping encoder A and B changes quadrature direction.
 
 ---
 
-## 15.9 LiDAR Map Looks Distorted
+## 14.8 LiDAR Map Looks Distorted
 
 Check the physical mounting first. The LiDAR scan plane should be approximately parallel to the field surface. A tilted LiDAR can produce incorrect 2D geometry even when communication is working correctly.
 
 ---
 
-## 15.10 Robot Localizes Incorrectly
+## 14.9 Robot Localizes Incorrectly
 
 Check:
 
@@ -1606,7 +1323,7 @@ and debug visualization before changing path-following parameters.
 
 ---
 
-## 15.11 Camera Detects Wrong Pillar Color
+## 14.10 Camera Detects Wrong Pillar Color
 
 Use:
 
@@ -1625,7 +1342,7 @@ Do not increase threshold ranges without checking real camera values.
 
 ---
 
-# 16. Competition Startup Procedure
+# 15. Competition Startup Procedure
 
 Once the robot has passed the reproduction tests, use the following competition startup sequence.
 
@@ -1642,7 +1359,7 @@ Place Robot
 Main Power ON
       |
       v
-Wait for Pi + Arduino Initialization
+Wait for Pi Initialization
       |
       v
 Confirm Sensors
@@ -1651,7 +1368,7 @@ Confirm Sensors
 Start Correct Competition Task
       |
       v
-Robot Waits for ZX-Switch01
+Robot Waits for Start Button
       |
       v
 Press Start Button
@@ -1665,7 +1382,7 @@ Autonomous Run Begins
 
 ---
 
-## 16.1 Open Challenge
+## 15.1 Open Challenge
 
 ```bash
 cd ~/WRO-FE-YBR-SUNFLOWER/src/Raspberrypi
@@ -1674,7 +1391,7 @@ uv run python main.py qualification
 
 ---
 
-## 16.2 Obstacle Challenge
+## 15.2 Obstacle Challenge
 
 ```bash
 cd ~/WRO-FE-YBR-SUNFLOWER/src/Raspberrypi
@@ -1683,13 +1400,13 @@ uv run python main.py final
 
 ---
 
-# 17. Version Lock and Competition Release
+# 16. Version Lock and Competition Release
 
 A reproducible robot requires more than the latest `main` branch. The exact competition version should be permanently identifiable.
 
 ---
 
-## 17.1 Reproduce the Exact Competition Version
+## 16.1 Reproduce the Exact Competition Version
 
 After cloning:
 
@@ -1707,9 +1424,9 @@ The returned commit should match the final documented competition SHA.
 
 ---
 
-# 18. Reproducibility Checklist
+# 17. Reproducibility Checklist
 
-## 18.1 Documentation
+## 17.1 Documentation
 
 - [ ] Main README available
 - [ ] Mechanical README available
@@ -1725,10 +1442,10 @@ The returned commit should match the final documented competition SHA.
 
 ---
 
-## 18.2 Mechanical
+## 17.2 Mechanical
 
 - [ ] all required printed parts identified
-- [ ] final V3 parts separated from prototypes
+- [ ] final V2.4 parts separated from prototypes
 - [ ] drivetrain assembled
 - [ ] differential works
 - [ ] bearings installed
@@ -1741,7 +1458,7 @@ The returned commit should match the final documented competition SHA.
 
 ---
 
-## 18.3 Electrical
+## 17.3 Electrical
 
 - [ ] battery polarity documented
 - [ ] LM2596 output documented
@@ -1760,22 +1477,19 @@ The returned commit should match the final documented competition SHA.
 
 ---
 
-## 18.4 Software
+## 17.4 Software
 
 - [ ] Raspberry Pi OS version documented
 - [ ] repository cloned
 - [ ] final release checked out
 - [ ] `setup_pi.sh` completed
 - [ ] `uv sync` succeeds
-- [ ] Arduino firmware uploaded
-- [ ] Arduino libraries / versions documented
 - [ ] dry run succeeds
 
 ---
 
-## 18.5 Subsystem Tests
+## 17.5 Subsystem Tests
 
-- [ ] Arduino detected
 - [ ] LiDAR detected
 - [ ] IMU detected
 - [ ] camera works
@@ -1789,7 +1503,7 @@ The returned commit should match the final documented competition SHA.
 
 ---
 
-## 18.6 Competition Functions
+## 17.6 Competition Functions
 
 - [ ] Open Challenge task starts correctly
 - [ ] robot follows racing line
@@ -1803,29 +1517,30 @@ The returned commit should match the final documented competition SHA.
 
 ---
 
-# 19. Related Documentation
+
+# 18. Related Documentation
 
 For design reasoning, use:
 
 ### Mechanical
 
-[`mech/mech_README.md`](mech/mech_README.md)
+[`1-mech.md`](1-mech.md)
 
 ### Electrical and Sensors
 
-[`elec/elec_README.md`](elec/elec_README.md)
+[`2-elec.md`](2-elec.md)
 
 ### Software
 
-[`software/software_README.md`](software/software_README.md)
+[`3-software.md`](`3-software.md)
 
 ### Electrical Schematic
 
-[`schemes/Schematic Diagram.png`](schemes/Schematic%20Diagram.png)
+[`schemes/Schematic Diagram.png`](schemes/Schematic_Diagram.png)
 
 ### Physical Wiring Diagram
 
-[`schemes/Wiring Diagram.png`](schemes/Wiring%20Diagram.png)
+[`schemes/Wiring Diagram.png`](schemes/Wiring_Diagram.png)
 
 ### Source Code
 
@@ -1860,4 +1575,4 @@ The final reproduction process is:
 
 > **Manufacture → Assemble → Wire → Measure → Configure → Verify → Test → Run**
 
-and should lead to the same Version 3 hardware and competition software documented throughout this repository.
+and should lead to the same Version 2.4 hardware and competition software documented throughout this repository.
