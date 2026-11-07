@@ -223,7 +223,7 @@ Where possible, the exact model used by our team is listed together with the ori
 | Power | GAONENG GNB LiHV 4S 15.2V 1300mAh 120C XT60 LiPo Battery | 1 |  | [PrinceBot](https://www.princebotshop.com/product/%E0%B9%81%E0%B8%9A%E0%B8%95%E0%B9%80%E0%B8%95%E0%B8%AD%E0%B8%A3%E0%B8%B5%E0%B9%88-15-2-v-1300-mah-xt60/11000585830000944) |
 | Power | Step Down Buck Converter (6~24V to 5V/16A) | 1 | DFR1202 | [DFRobot](https://www.dfrobot.com/product-2907.html)  |
 | Power | Step Down Buck Converter  (15~24V to 12V/12A) | 1 | DFR1208 | [DFRobot](https://www.dfrobot.com/product-2908.html)  |
-| Power | Quick Wire Connectors | 2 | D4 and D1-30 | [Shopee](https://th.shp.ee/pKZ9582e)  |
+| Power | Quick Wire Connectors | 2 | CT-214 and D1-3 | [Shopee](https://th.shp.ee/pKZ9582e)  |
 | Power | Oled Voltmeter | 1 |  | [Shopee](https://th.shp.ee/GocziV4p)  |
 
 
@@ -389,7 +389,7 @@ Current final architecture:
 Power Switch
        |
        v
-D1-30 Positive Distribution
+D1-3 Positive Distribution
        |
        +--------------------+
        |                    |
@@ -403,7 +403,7 @@ Raspberry Pi Branch    DC Motor Driver HAT
 Negative / ground distribution uses:
 
 ```text
-D4
+CT-214
 ```
 
 ---
@@ -436,7 +436,7 @@ Soder the positive wire to the **V** and **V+** and the negative to the **G**
 
 ## 6.5 Ground Distribution
 
-Connect the required negative / ground paths to the D4 distribution. Maintain a common electrical reference for signals shared between subsystems. Before powering the system, use a multimeter to check the ground connections for continuity.
+Connect the required negative / ground paths to the CT-214 distribution. Maintain a common electrical reference for signals shared between subsystems. Before powering the system, use a multimeter to check the ground connections for continuity.
 
 ---
 
@@ -634,7 +634,7 @@ After assembly:
 
    First screw in the 12V buck to the Elec Plate and the 5V buck on top with the spacer
 
-   Then install the D4 Quick Connector in the Elec Plate
+   Then install the CT-214 Quick Connector in the Elec Plate
 
 ---
 
@@ -1460,11 +1460,10 @@ The returned commit should match the final documented competition SHA.
 ## 17.3 Electrical
 
 - [ ] battery polarity documented
-- [ ] LM2596 output documented
-- [ ] XL4015 output documented
+- [ ] 12V Buck output documented
+- [ ] 5V Buck output documented
 - [ ] common ground verified
 - [ ] Raspberry Pi powered correctly
-- [ ] Arduino powered correctly
 - [ ] motor wired
 - [ ] servo wired
 - [ ] encoder wired
