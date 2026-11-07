@@ -109,13 +109,13 @@ rather than powering the complete robot immediately after wiring.
 | Reproduction Requirement | Primary Resource |
 |---|---|
 | Mechanical design | [`mech.md`](1-mech.md) |
-| CAD / STL files | [`models/`](models/) |
+| CAD / STL files | [`models/`](../models/CAD) |
 | Mechanical assembly | This document — Sections 5–6 |
 | Electrical architecture | [`elec.md`](2-elec.md) |
-| Schematic | [`schemes/Schematic Diagram.png`](schemes/Schematic_Diagram.png) |
-| Physical wiring | [`schemes/Wiring Diagram.png`](schemes/Wiring_Diagram.png) |
+| Schematic | [`schemes/Schematic Diagram.png`](../schemes/schematic_diagram.pdf) |
+| Physical wiring | [`schemes/Wiring Diagram.png`](../schemes/wiring_diagram.png) |
 | Electrical assembly | This document — Sections 7–8 |
-| Raspberry Pi software | [`src/Raspberrypi/`](src/Raspberrypi/) |
+| Raspberry Pi software | [`src/Raspberrypi/`](../src/Raspberrypi/) |
 | Software architecture | [`software.md`](3-software.md) |
 | Testing workflow | Section 14 |
 | Competition version | GitHub Release / tag |
@@ -240,7 +240,7 @@ Where possible, the exact model used by our team is listed together with the ori
 | Rear Bearings | 3 | 8x16x5mm | [Shopee](https://th.shp.ee/6UK8voGj) |
 | Rear Axles | 1| LEGO Technic Axle 11 | [LEGO](https://www.lego.com/en-us/product/robot-inventor-51515) |
 | Structural Pillars | 7 | M3x30 | [Shopee](https://th.shp.ee/fPzjk2dR) |
-| Custom 3D-Printed Parts | 1 set | See mechanical CAD files | [`mech/models/`](mech/models/) |
+| Custom 3D-Printed Parts | 1 set | See mechanical CAD files | [`mech/models/`](../models/CAD) |
 
 ---
 
@@ -264,7 +264,7 @@ Where possible, the exact model used by our team is listed together with the ori
 
 The detailed reason for selecting ABS and ABS-GF is documented in:
 
-[`mech.md`](mech.md)
+[`mech.md`](1-mech.md)
 
 ---
 
@@ -290,7 +290,7 @@ Recommended tools:
 
 The final custom mechanical parts are stored in:
 
-[`mech/models/`](mech/models/)
+[`mech/models/`](../models/CAD)
 
 The team manufactured the robot primarily using:
 
@@ -300,7 +300,7 @@ The team manufactured the robot primarily using:
 
 Detailed material reasoning is documented in:
 
-[`mech.md`](mech.md)
+[`mech.md`](1-mech.md)
 
 ---
 
@@ -367,8 +367,8 @@ Important final components include:
 
 Use both:
 
-- [`schemes/Schematic Diagram.png`](schemes/Schematic%20Diagram.png)
-- [`schemes/Wiring Diagram.png`](schemes/Wiring%20Diagram.png)
+- [`schemes/Schematic Diagram.png`](../schemes/schematic_diagram.pdf)
+- [`schemes/Wiring Diagram.png`](../schemes/wiring_diagram.png)
 
 The schematic explains the **electrical relationship**.
 
@@ -1534,11 +1534,11 @@ For design reasoning, use:
 
 ### Electrical Schematic
 
-[`schemes/Schematic Diagram.png`](schemes/Schematic_Diagram.png)
+[`schemes/Schematic Diagram.png`](../schemes/schematic_diagram.pdf)
 
 ### Physical Wiring Diagram
 
-[`schemes/Wiring Diagram.png`](schemes/Wiring_Diagram.png)
+[`schemes/Wiring Diagram.png`](../schemes/wiring_diagram.png)
 
 ### Source Code
 
