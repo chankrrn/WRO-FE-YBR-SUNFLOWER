@@ -66,7 +66,7 @@ A published **maximum** current is not a measured operating current. An assumed 
 
 **Figure E-01.** Redesigned **vertical** functional power distribution. Battery positive passes through SW1 to the **D1-3 positive splitter**; battery negative passes **directly** to the **CT-214 ground splitter**. DFR1202 and DFR1208 feed separate nominal 5 V and 12 V domains. Team-reported output measurements are **5.1 V and 12.1 V**, respectively; these were not derived from MATLAB or datasheets. DFR0592 drives the motor through **M1/E1 as physically confirmed**, although its live software still needs a channel-selection correction. This is a functional block diagram, not a connector-contact wiring instruction.
 
-Figure E-01 keeps battery-positive wiring and common-ground returns separate. The actual **negative** connector is the team-identified **CT-214**; no positive battery conductor is connected to it. Regulator inputs return to this GND node; individual GND wires are abbreviated to keep the power architecture legible. [Editable E-01 vector source](../schemes/modular_power_architecture_clean.svg).
+Figure E-01 keeps battery-positive wiring and common-ground returns separate. The actual **negative** connector is the team-identified **CT-214**; no positive battery conductor is connected to it. Regulator inputs return to this GND node; individual GND wires are abbreviated to keep the power architecture legible.
 
 The rail names from the EasyEDA schematic are `VBAT_RAW` (battery positive before SW1), `VBAT_SW` (switched positive), `+5V_REG` (DFR1202 output), `+12V_REG` (DFR1208 output), `PI_5V`, `PI_3V3` and `GND`. `PI_5V` denotes the Pi/header side of the 5 V power path; it is not a second independent buck converter.
 
