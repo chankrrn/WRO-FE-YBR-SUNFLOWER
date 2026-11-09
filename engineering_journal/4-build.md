@@ -222,9 +222,10 @@ Where possible, the exact model used by our team is listed together with the ori
 | Power | GAONENG GNB LiHV 4S 15.2V 1300mAh 120C XT60 LiPo Battery | 1 |  | [PrinceBot](https://www.princebotshop.com/product/%E0%B9%81%E0%B8%9A%E0%B8%95%E0%B9%80%E0%B8%95%E0%B8%AD%E0%B8%A3%E0%B8%B5%E0%B9%88-15-2-v-1300-mah-xt60/11000585830000944) |
 | Power | Step Down Buck Converter (6~24V to 5V/16A) | 1 | DFR1202 | [DFRobot](https://www.dfrobot.com/product-2907.html)  |
 | Power | Step Down Buck Converter  (15~24V to 12V/12A) | 1 | DFR1208 | [DFRobot](https://www.dfrobot.com/product-2908.html)  |
-| Power | Quick Wire Connectors | 2 | CT-214 and D1-3 | [Shopee](https://th.shp.ee/pKZ9582e)  |
+| Power | Quick Wire Connectors | 2 | PCT-214 and D1-3 | [Shopee](https://th.shp.ee/pKZ9582e)  |
 | Power | Oled Voltmeter | 1 |  | [Shopee](https://th.shp.ee/GocziV4p)  |
 
+**Note:** The seller lists the ground distribution connector as **CT-214**, but the component used by our team is identified as **PCT-214**. Both names refer to the same connector in our documentation. We consistently use **PCT-214** throughout the engineering journal, wiring diagrams, and electrical schematics to avoid confusion.
 
 ---
 
@@ -402,7 +403,7 @@ Raspberry Pi Branch    DC Motor Driver HAT
 Negative / ground distribution uses:
 
 ```text
-CT-214
+PCT-214
 ```
 
 ---
@@ -436,7 +437,7 @@ Soder the positive wire to the **V** and **V+** and the negative to the **G**.
 
 ## 6.5 Ground Distribution
 
-Connect the required negative / ground paths to the CT-214 distribution. Maintain a common electrical reference for signals shared between subsystems. Before powering the system, use a multimeter to check the ground connections for continuity.
+Connect the required negative / ground paths to the PCT-214 distribution. Maintain a common electrical reference for signals shared between subsystems. Before powering the system, use a multimeter to check the ground connections for continuity.
 
 ---
 
@@ -463,7 +464,7 @@ Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in
        M1 MOTOR      -> M1+
        GND HALL      -> E1-
        C2 HALL       -> E1B
-       C1 HALL       -> E2A
+       C1 HALL       -> E1A
        VCC HALL      -> E1+
        M2 MOTOR      -> M1-
    
@@ -635,7 +636,7 @@ After assembly:
 
    First screw in the 12V buck to the Elec Plate and the 5V buck on top with the spacer.
 
-   Then, install the CT-214 Quick Connector in the Elec Plate.
+   Then, install the PCT-214 Quick Connector in the Elec Plate.
 
 ---
 
