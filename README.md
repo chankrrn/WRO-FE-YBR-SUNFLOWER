@@ -105,6 +105,16 @@ By the second version, we had gained more experience and a clearer understanding
 
 Our main principle was to design the robot around the LiDAR sensor and provide it with an unobstructed 360-degree field of view. To achieve this, we arranged the other components below the LiDAR, keeping its surrounding view as clear as possible.
 
+---
+
+## Performance Videos
+
+| Challenge | Link |
+|---|---|
+| Open Challenge | [**TODO**] add link |
+| Obstacle Challenge | [**TODO**] add link |
+
+> **All the videos including additional testing videos can be found in:** [`video/`](video/)
 
 ---
 
@@ -125,6 +135,11 @@ The technical records explain **why** decisions were made; the source and suppor
 | Demonstration videos | [`video/`](video/) |
 | License | [`LICENSE.md`](LICENSE.md) |
 | Project overview and repository guide| [`README.md`](README.md) |
+
+---
+
+## Use of Artificial Intelligence
+
 
 ---
 

@@ -409,7 +409,11 @@ CT-214
 
 ## 6.2 Wire the Main Switch
 
-<img src="../other/Pic/Build/01.png" height="330" /> <img src="../other/Pic/Build/02.png" height="330" /> <img src="../other/Pic/Build/03.png" height="660" /> 
+<img src="../other/Pic/Build/01.png" height="660" /> 
+
+<img src="../other/Pic/Build/02.png" height="660" /> 
+
+<img src="../other/Pic/Build/03.png" height="660" /> 
 
 
 Soder the XT60H-M to a 14AWG wire and soder the positive wire to the power switch and use a shrinking tube to short circuit.
