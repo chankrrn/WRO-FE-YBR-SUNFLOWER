@@ -18,7 +18,6 @@ This document explains **how to reproduce the final robot**.
 
 [← Software Architecture and Obstacle Strategy](3-software.md)
 
-
 ---
 
 # Contents
@@ -108,15 +107,15 @@ rather than powering the complete robot immediately after wiring.
 
 | Reproduction Requirement | Primary Resource |
 |---|---|
-| Mechanical design | [`mech.md`](1-mech.md) |
+| Mechanical design | [`1-mech.md`](1-mech.md) |
 | CAD / STL files | [`models/`](../models/CAD) |
 | Mechanical assembly | This document — Sections 5–6 |
-| Electrical architecture | [`elec.md`](2-elec.md) |
+| Electrical architecture | [`2-elec.md`](2-elec.md) |
 | Schematic | [`schemes/Schematic Diagram.png`](../schemes/schematic_diagram.pdf) |
 | Physical wiring | [`schemes/Wiring Diagram.png`](../schemes/wiring_diagram.png) |
 | Electrical assembly | This document — Sections 7–8 |
 | Raspberry Pi software | [`src/Raspberrypi/`](../src/Raspberrypi/) |
-| Software architecture | [`software.md`](3-software.md) |
+| Software architecture | [`3-software.md`](3-software.md) |
 | Testing workflow | Section 14 |
 | Competition version | GitHub Release / tag |
 
@@ -128,14 +127,14 @@ rather than powering the complete robot immediately after wiring.
 
 The build requires basic experience with:
 
-- FDM 3D printing,
-- mechanical assembly,
-- soldering,
-- crimping / wire preparation,
-- multimeter use,
-- Raspberry Pi OS,
-- Linux terminal commands,
-- and basic Git usage.
+- FDM 3D printing
+- mechanical assembly
+- soldering
+- crimping / wire preparation
+- multimeter use
+- Raspberry Pi OS
+- Linux terminal commands
+- and basic Git usage
 
 ---
 
@@ -147,10 +146,10 @@ A 4S LiPo battery can supply high current.
 
 Before wiring:
 
-- inspect the battery for swelling or damage,
-- avoid short circuits,
-- check polarity before connection,
-- and disconnect the battery while modifying wiring.
+- inspect the battery for swelling or damage
+- avoid short circuits
+- check polarity before connection
+- and disconnect the battery while modifying wiring
 
 ### Power Converters
 
@@ -198,7 +197,7 @@ Autonomous Testing
 
 # 3. Bill of Materials
 
-This section lists the main components required to reproduce the final **YBR-SUNFLOWER Version 2.4 robot**.
+This section lists the main components required to reproduce the final **YBR-SUNFLOWER Version 2.0 robot**.
 
 Where possible, the exact model used by our team is listed together with the original purchasing link used during development.
 
@@ -240,7 +239,7 @@ Where possible, the exact model used by our team is listed together with the ori
 | Rear Bearings | 3 | 8x16x5mm | [Shopee](https://th.shp.ee/6UK8voGj) |
 | Rear Axles | 1| LEGO Technic Axle 11 | [LEGO](https://www.lego.com/en-us/product/robot-inventor-51515) |
 | Structural Pillars | 7 | M3x30 | [Shopee](https://th.shp.ee/fPzjk2dR) |
-| Custom 3D-Printed Parts | 1 set | See mechanical CAD files | [`mech/models/`](../models/CAD) |
+| Custom 3D-Printed Parts | 1 set | See mechanical CAD files | [`models/`](../models/CAD) |
 
 ---
 
@@ -264,7 +263,7 @@ Where possible, the exact model used by our team is listed together with the ori
 
 The detailed reason for selecting ABS and ABS-GF is documented in:
 
-[`mech.md`](1-mech.md)
+[`1-mech.md`](1-mech.md)
 
 ---
 
@@ -290,7 +289,7 @@ Recommended tools:
 
 The final custom mechanical parts are stored in:
 
-[`mech/models/`](../models/CAD)
+[`models/`](../models/CAD)
 
 The team manufactured the robot primarily using:
 
@@ -300,7 +299,7 @@ The team manufactured the robot primarily using:
 
 Detailed material reasoning is documented in:
 
-[`mech.md`](1-mech.md)
+[`1-mech.md`](1-mech.md)
 
 ---
 
@@ -308,15 +307,15 @@ Detailed material reasoning is documented in:
 
 Before printing:
 
-1. identify only the **final 2.4 parts**,
-2. inspect STL orientation,
-3. select ABS or ABS-GF according to the final part configuration,
-4. slice the models,
-5. inspect support placement,
-6. print,
-7. remove supports,
-8. clean mounting holes,
-9. test-fit mating parts before final assembly.
+1. identify only the **final 2.0 parts**
+2. inspect STL orientation
+3. select ABS or ABS-GF according to the final part configuration
+4. slice the models
+5. inspect support placement
+6. print
+7. remove supports
+8. clean mounting holes
+9. test-fit mating parts before final assembly
 
 ---
 
@@ -413,24 +412,25 @@ CT-214
 <img src="../other/Pic/Build/01.png" height="330" /> <img src="../other/Pic/Build/02.png" height="330" /> <img src="../other/Pic/Build/03.png" height="660" /> 
 
 
-Soder the XT60H-M to a 14AWG wire and soder the positive wire to the power switch and use a shrinking tube to short circuit
+Soder the XT60H-M to a 14AWG wire and soder the positive wire to the power switch and use a shrinking tube to short circuit.
 
 ---
 
 ## 6.3 Soder the Buck converter
 
-<img src="../other/Pic/Build/04.png" height="500" />
+<img src="../other/Pic/Build/04.png" height="660" />
 
-Soder the 12V buck to a one output to the DC Motor Driver HAT
-Soder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR)
+Soder the 12V buck to a one output to the DC Motor Driver HAT.
+
+Soder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR).
 
 ---
 
 ## 6.4 OLED Voltmeter
 
-<img src="../other/Pic/Build/05.png" height="500" />
+<img src="../other/Pic/Build/05.png" height="660" />
 
-Soder the positive wire to the **V** and **V+** and the negative to the **G**
+Soder the positive wire to the **V** and **V+** and the negative to the **G**.
 
 ---
 
@@ -442,9 +442,9 @@ Connect the required negative / ground paths to the CT-214 distribution. Maintai
 
 ## 6.6 LiDAR UART port
 
-<img src="../other/Pic/Build/06.png" height="500" />
+<img src="../other/Pic/Build/06.png" height="660" />
 
-Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in the [wiring diagram](../schemes/wiring_diagram.png)
+Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in the [wiring diagram](../schemes/wiring_diagram.png).
 
 ---
 
@@ -452,9 +452,9 @@ Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in
 
 1. Connect the camera through the Raspberry Pi CSI interface.
        Check:
-       - CSI connector orientation,
-       - ribbon-cable direction,
-       - locking tab.
+       - CSI connector orientation
+       - ribbon-cable direction
+       - locking tab
        Do not insert or remove the CSI cable while the Raspberry Pi is powered.
 
 
@@ -489,12 +489,12 @@ Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in
 
 After all wiring is complete:
 
-- secure loose wires,
-- prevent cables from touching wheels,
-- prevent cables from touching drivetrain gears,
-- keep wires away from steering movement,
-- prevent wires from entering the LiDAR scan / rotating area,
-- provide strain relief near connectors.
+- secure loose wires
+- prevent cables from touching wheels
+- prevent cables from touching drivetrain gears
+- keep wires away from steering movement
+- prevent wires from entering the LiDAR scan / rotating area
+- provide strain relief near connectors
 
 Do not permanently secure all cables until the electrical verification tests pass.
 
@@ -595,75 +595,76 @@ Electrical Plate
 
 Relevant CAD files are documented in:
 
-[`mech.md`](1-mech.md)
+[`1-mech.md`](1-mech.md)
 
 
 Sensor-placement reasoning is documented in:
 
-[`elec.md`](2-elec.md)
+[`2-elec.md`](2-elec.md)
 
 
 ---
 
 ## 8.1 Assemble Steerng System
 
-   <img src="../other/Pic/Build/07.png" height="640" />
-   <img src="../other/Pic/Build/08.png" height="640" />       
+   <img src="../other/Pic/Build/07.png" height="660" />
+   <img src="../other/Pic/Build/08.png" height="660" />       
    
-   First we use a 1.75 mm filament as a pin to hold the steering and use a M2.5 screw to lock it in place
+   First we use a 1.75 mm filament as a pin to hold the steering and use a M2.5 screw to lock it in place.
    
-   And install the servo and the king pin to the servo base
+   Then, install the servo and the king pin to the servo base.
    
-   <img src="../other/Pic/Build/09.png" height="640" />
+   <img src="../other/Pic/Build/09.png" height="660" />
    
-   Then install the left and right knuckles to the kingpin and install the Steering Rack 
-   After that connect the Wheel Connectors to the Steering Hub with the front bearing
+   Then install the left and right knuckles to the kingpin and install the Steering Rack.
+
+   After that connect the Wheel Connectors to the Steering Hub with the front bearing.
    
 After assembly:
 
-- [ ] move the steering manually,
-- [ ] verify both wheels rotate freely,
-- [ ] check for mechanical binding,
-- [ ] verify the linkage does not contact the chassis.
+- [ ] move the steering manually
+- [ ] verify both wheels rotate freely
+- [ ] check for mechanical binding
+- [ ] verify the linkage does not contact the chassis
 
 
 ## 8.2 Assemble Electrical Plate
 
-   <img src="../other/Pic/Build/10.png" height="640" />
-   <img src="../other/Pic/Build/11.png" height="640" />       
+   <img src="../other/Pic/Build/10.png" height="660" />
+   <img src="../other/Pic/Build/11.png" height="660" />       
 
-   First screw in the 12V buck to the Elec Plate and the 5V buck on top with the spacer
+   First screw in the 12V buck to the Elec Plate and the 5V buck on top with the spacer.
 
-   Then install the CT-214 Quick Connector in the Elec Plate
+   Then, install the CT-214 Quick Connector in the Elec Plate.
 
 ---
 
 ## 8.3 Assemble Top Plate
 
-   <img src="../other/Pic/Build/12.png" height="640" />
-   <img src="../other/Pic/Build/13.png" height="640" />       
+   <img src="../other/Pic/Build/12.png" height="660" />
+   <img src="../other/Pic/Build/13.png" height="660" />       
 
-   First install the LiDAR, Oled Voltmeter, and the Power Switch (the Start Button will be install later)
+   First install the LiDAR, Oled Voltmeter, and the Power Switch (the Start Button will be install later).
    
 
 ---
 
 ## 8.4 Assemble Drivetrain
 
-   <img src="../other/Pic/Build/14.png" height="640" />
-   <img src="../other/Pic/Build/15.png" height="640" />       
+   <img src="../other/Pic/Build/14.png" height="660" />
+   <img src="../other/Pic/Build/15.png" height="660" />       
 
-   Install the Motor Backet and the Gear on the CHP-20GP-180 motor
+   Install the Motor Backet and the Gear on the CHP-20GP-180 motor.
 
-   Next connect the Rear Bearings with the Bearing Mount and Axel Sleeves then connect the LEGO Axel and Differential
+   Next connect the Rear Bearings with the Bearing Mount and Axel Sleeves then connect the LEGO Axel and Differential.
    
 Before continuing:
 
-- [ ] rotate the drivetrain manually,
-- [ ] verify the gear teeth mesh correctly,
-- [ ] confirm the differential rotates freely,
-- [ ] check that the axle does not bind,
-- [ ] verify both wheels rotate without excessive friction.
+- [ ] rotate the drivetrain manually
+- [ ] verify the gear teeth mesh correctly
+- [ ] confirm the differential rotates freely
+- [ ] check that the axle does not bind
+- [ ] verify both wheels rotate without excessive friction
 
 ### Gear-Mesh Check
 
@@ -679,7 +680,7 @@ Incorrect gear mesh can cause excessive current draw, increased drivetrain noise
 
 ## 8.5 Assemble Everything
 
-We recommend assembling from the top to bottm
+We recommend assembling from the top to bottom.
 
 ```text
   Top Plate
@@ -690,28 +691,27 @@ Electrical Plate
 
 ```
 
-   <img src="../other/Pic/Build/16.png" height="640" />
+   <img src="../other/Pic/Build/16.png" height="660" />
 
-   Mount 4 **M2.5 x 25mm** spacer on top and 5 **M3 x 30mm** at the bottom of the Elec Plate
+   Mount 4 **M2.5 x 25mm** spacer on top and 5 **M3 x 30mm** at the bottom of the Elec Plate.
 
-   After mounting the spacer, install the Top Plate on the Elec Base, and them the Elec Base on the Mian Base completing the Back Section
+   After mounting the spacer, install the Top Plate on the Elec Base, and them the Elec Base on the Mian Base completing the Back Section.
    
-   <img src="../other/Pic/Build/17.png" height="640" />  
+   <img src="../other/Pic/Build/17.png" height="660" />  
 
-   Mount the Steering Support on the base and install the Steering System on top completing the Front Section
-   
+   Mount the Steering Support on the base and install the Steering System on top completing the Front Section.
 
-   Next **Install Raspberry Pi, DFR0592, and DFR0604**
+   Next **Install Raspberry Pi, DFR0592, and DFR0604**.
    
    Install the Raspberry Pi 5 onto its mounting position on the Main Base. Then, mount the DFR0592 DC Motor Driver HAT, and the DFR0604 I/O Expansion HAT directly onto the Raspberry Pi header according to the board orientation.
    
 Before finishing:
 
-- [ ] confirm no pin is misaligned,
-- [ ] confirm no metal part can short the Raspberry Pi,
+- [ ] confirm no pin is misaligned
+- [ ] confirm no metal part can short the Raspberry Pi
    
    
-   <img src="../other/Pic/Build/18.png" height="640" />  
+   <img src="../other/Pic/Build/18.png" height="660" />  
    
 ---
 
@@ -729,9 +729,9 @@ Before finishing:
 - [ ] electronics plates are secure
 - [ ] no screw contacts an exposed circuit board
 - [ ] no loose printed component remains
-- [ ] LiDAR should be approximately parallel with the field,
-- [ ] LiDAR rotation must not be physically obstructed,
-- [ ] cables must not enter the LiDAR scanning area.
+- [ ] LiDAR should be approximately parallel with the field
+- [ ] LiDAR rotation must not be physically obstructed
+- [ ] cables must not enter the LiDAR scanning area
 
 
 ---
@@ -759,11 +759,11 @@ uv
 
 Using Raspberry [Pi Imager](https://www.raspberrypi.com/software/):
 
-1. install Raspberry Pi OS 64-bit,
-2. configure username / password,
-3. configure network access if required,
-4. enable SSH,
-5. boot the Raspberry Pi.
+1. install Raspberry Pi OS 64-bit
+2. configure username / password
+3. configure network access if required
+4. enable SSH
+5. boot the Raspberry Pi
 
 ---
 
@@ -863,9 +863,9 @@ uv run python main.py qualification --dry-run
 
 Expected behavior:
 
-- configuration loads,
-- task plan is created,
-- software exits without attempting normal hardware-driving behavior.
+- configuration loads
+- task plan is created
+- software exits without attempting normal hardware-driving behavior
 
 
 ---
@@ -893,10 +893,10 @@ These configuration files contain adjustable values for the robot, including spe
 
 For exact reproduction:
 
-1. use the final tagged repository version,
-2. use its included configuration files,
-3. first reproduce the robot behavior,
-4. only then change tuning values if the reproduced mechanical platform differs.
+1. use the final tagged repository version
+2. use its included configuration files
+3. first reproduce the robot behavior
+4. only then change tuning values if the reproduced mechanical platform differs
 
 
 ---
@@ -1078,13 +1078,13 @@ uv run python main.py qualification
 
 The robot should:
 
-1. initialize,
-2. wait for physical start,
-3. capture its heading reference,
-4. localize,
-5. follow the racing line,
-6. complete the task according to qualification logic,
-7. stop safely.
+1. initialize
+2. wait for physical start
+3. capture its heading reference
+4. localize
+5. follow the racing line
+6. complete the task according to qualification logic
+7. stop safely
 
 ---
 
@@ -1104,11 +1104,11 @@ uv run python main.py final --debug
 
 The final task adds:
 
-- traffic-pillar detection,
-- obstacle map,
-- racing-line deformation,
-- obstacle passing,
-- parking behavior.
+- traffic-pillar detection
+- obstacle map
+- racing-line deformation
+- obstacle passing
+- parking behavior
 
 ---
 
@@ -1239,11 +1239,11 @@ Then test camera functionality before running competition software.
 
 Possible causes:
 
-- unstable servo supply,
-- voltage drop,
-- mechanical binding,
-- poor ground connection,
-- excessive load.
+- unstable servo supply
+- voltage drop
+- mechanical binding
+- poor ground connection
+- excessive load
 
 Check:
 
@@ -1444,7 +1444,7 @@ The returned commit should match the final documented competition SHA.
 ## 17.2 Mechanical
 
 - [ ] all required printed parts identified
-- [ ] final V2.4 parts separated from prototypes
+- [ ] final V2.0 parts separated from prototypes
 - [ ] drivetrain assembled
 - [ ] differential works
 - [ ] bearings installed
@@ -1522,15 +1522,15 @@ For design reasoning, use:
 
 ### Mechanical
 
-[`mech.md`](1-mech.md)
+[`1-mech.md`](1-mech.md)
 
 ### Electrical and Sensors
 
-[`elec.md`](2-elec.md)
+[`2-elec.md`](2-elec.md)
 
 ### Software
 
-[`software.md`](`3-software.md)
+[`3-software.md`](`3-software.md)
 
 ### Electrical Schematic
 
@@ -1573,4 +1573,4 @@ The final reproduction process is:
 
 > **Manufacture → Assemble → Wire → Measure → Configure → Verify → Test → Run**
 
-and should lead to the same Version 2.4 hardware and competition software documented throughout this repository.
+and should lead to the same Version 2.0 hardware and competition software documented throughout this repository.
