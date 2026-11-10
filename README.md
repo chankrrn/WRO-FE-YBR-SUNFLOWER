@@ -64,10 +64,6 @@ All team members contribute to the engineering process through collaborative des
 
 Our robot combines a Raspberry Pi computer, range and vision sensors, a geared drive motor with encoder feedback, and servo-controlled steering. The computer processes observations and coordinates the car's motion through the onboard software and electrical interfaces. Full component specifications, circuit diagrams, pin assignments, mechanical dimensions, tuning parameters, and validation results belong in the engineering records above.
 
-**[TO DO]** Add representative version 2.0 photographs once the physical car is complete
-
-All sides are in [`v-photos/`](v-photos/)
-
 ### Standard Views
 
 | Front | Left | Top |
@@ -78,6 +74,7 @@ All sides are in [`v-photos/`](v-photos/)
 |---|---|---|
 | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/rear.jpg" width="300" alt="Rear View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/right.jpg" width="300" alt="Right View"> | <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/ec662764608c9275a398615384cd75fea4babaa6/v-photos/Ver2_(Current)/bottom.jpg" width="300" alt="Bottom View"> |
 
+All photos are in [`v-photos/`](v-photos/)
 
 ### Versions
 
@@ -140,6 +137,11 @@ The technical records explain **why** decisions were made; the source and suppor
 
 ## Use of Artificial Intelligence
 
+Artificial intelligence (AI) tools were used solely to support the preparation of project documentation. Our use of AI was limited to grammar checking, revising sentences, improving wording, and making technical explanations clearer and easier to understand.
+
+AI tools were **not used to design, develop, program, control, or operate the robot**. All engineering decisions, mechanical designs, electrical systems, software development, and robot testing were carried out by our team.
+
+The responsibility for the technical content and final documentation remains with our team.
 
 ---
 
