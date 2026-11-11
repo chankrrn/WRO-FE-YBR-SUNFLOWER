@@ -36,7 +36,7 @@ The robot has been completed, including its 3D-printed chassis, system integrati
 
 The following **technical journals** combine design explanation and supporting evidence within the same file. Each engineering discipline has its own journal, integrating technical analysis and supporting evidence in one place.
 
-| Record | What a reader will find |
+| Record | What you will find [**TODO**]check whether it's the same as the info in the doc |
 |---|---|
 | **[Mobility and Mechanical Design](1-mech.md)** | Chassis, drivetrain, steering, physical packaging, fabrication, dimensional tolerances and design trade-offs |
 | **[Power and Sensor Architecture](2-elec.md)** | Supply rails, regulators, components, wiring, camera, LiDAR, encoder, control interfaces and calibration |
@@ -122,7 +122,7 @@ Every published technical figure should specify:
 
 ### 5.2 Optional Visualization Catalogue
 
-The team has explored visual examples including an Open Challenge field animation, an Obstacle Challenge layout/parking animation, pillar-clearance heatmaps, steering-response traces, trajectory/clearance dashboards, and camera-like pillar renderings. These are candidate evidence types, **not mandatory content** for this overview.
+The team has explored visual examples including an Open Challenge field animation, an Obstacle Challenge layout/parking animation, pillar-clearance heatmaps, steering-response traces, trajectory/clearance dashboards, and camera-like pillar renderings. These are candidate evidence types.
 
 | Candidate figure | Question it could answer | Publication status |
 |---|---|---|

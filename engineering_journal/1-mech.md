@@ -5,7 +5,11 @@
 > **Current generation:** V2.1–V2.4 overhaul; V1.1–V1.3 are historical first-generation revisions.  
 > **Implementation:** Custom 3D-printed structures, a geared DC motor, an external gear pair and LEGO differential, and servo-controlled front steering.
 
-[← Project README](../README.md) · [← Engineering overview](0-overview.md) · [Power and sensor architecture](2-elec.md) · [Software](3-software.md) · [Build and reproduction guide](4-build.md)
+[← Project README](../README.md)
+
+[← Engineering Overview](0-overview.md) · [Power and Sensor Architecture →](2-elec.md)
+
+---
 
 ## Contents
 
@@ -45,17 +49,17 @@ No measured turning radius, vehicle mass, wheel diameter, speed, friction loss o
 
 ### 2.1 Version naming and development sequence
 
-The project has two robot generations. **V1.1, V1.2 and V1.3** are the stages previously called V1, V2 and V3 in the older mechanical text. **V2.1, V2.2, V2.3 and V2.4** belong to the new robot overhaul. V0 remains the previous-season senior team's reference vehicle, outside the current team's prototype sequence.
+The project consists of two generations of robots, each with multiple design iterations. V1.1, V1.2, and V1.3 belong to the first generation, representing the initial development of our team's robot. V2.1, V2.2, V2.3, and V2.4 belong to the second generation, which represents a major redesign based on our experience with the first generation. V0 refers to the previous-season robot designed by our senior team, which served as a reference for our initial design but is not part of our team's prototype sequence.
 
-| Older label | Revised label | Meaning |
-|---|---|---|
-| V0 | V0 | Previous-generation reference vehicle |
-| V1 | V1.1 | First team mechanical prototype |
-| V2 | V1.2 | Functional first-generation prototype |
-| V3 | V1.3 | Final first-generation competition robot |
-| New overhaul | V2.1–V2.4 | Second-generation robot development |
+| Revised label | Meaning |
+|---|---|
+| V0 | Previous-generation reference vehicle |
+| V1.1 | First team mechanical prototype |
+| V1.2 | Functional first-generation prototype |
+| V1.3 | Final first-generation competition robot |
+| V2.1–V2.4 | Second-generation robot development |
 
-References to “Version 2.0” in the build guide describe the second-generation platform as a family. This chapter uses V2.1–V2.4 for its development stages.
+References to “Version 2.0” in the documentation describe the second-generation platform as a family. This chapter uses V2.1–V2.4 for its development stages.
 
 ### 2.2 First generation — V1.1 to V1.3
 
@@ -78,9 +82,9 @@ The second generation is a substantial mechanical and electrical redesign. The t
 | Revision | Development stage | Documentation boundary |
 |---|---|---|
 | V2.1 | Initial overhaul prototype | Starting point of the new robot generation |
-| V2.2 | Upgrades to V2.1 | Add exact modified parts and observations when the revision record is available |
-| V2.3 | Functional overhaul prototype | Add its configuration and verification record |
-| V2.4 | Final second-generation competition-design stage | Current configuration described below; final release and validation evidence remain to be linked |
+| V2.2 | Upgrades to V2.1 | [**TODO**] Add exact modified parts and observations when the revision record is available |
+| V2.3 | Functional overhaul prototype | [**TODO**] Add its configuration and verification record |
+| V2.4 | Final second-generation competition-design stage | [**TODO**] Current configuration described below; final release and validation evidence remain to be linked |
 
 The stage names follow the team's supplied development sequence. The supplied records do not identify which V2 revision first received each new component. Accordingly, the S2L, controller and gearing changes are documented as generation-level changes rather than assigned invented introduction dates.
 
@@ -124,9 +128,9 @@ The [build guide](4-build.md#8-mechanical-assembly) documents assembly photograp
 | Wheels and tires | Four LEGO wheel/tire assemblies | [Mechanical BOM](4-build.md#32-mechanical-components) |
 | Printed structures | 26 STL files with matching PNG previews | [CAD catalog below](#9-cad-models-and-part-previews) |
 
-The BOM's tire entry says “30.4 mm D. × 20 mm.” Confirm whether this identifies a rim or a complete tire assembly before using it as rolling diameter. Effective rolling diameter must describe the installed tire under load.
+[**TODO**] The BOM's tire entry says “30.4 mm D. × 20 mm.” Confirm whether this identifies a rim or a complete tire assembly before using it as rolling diameter. Effective rolling diameter must describe the installed tire under load.
 
-### 3.2 Geometry to confirm on the final car
+### 3.2 Geometry to confirm on the final car [**TODO**] Check required record
 
 | Quantity | Symbol | Required record |
 |---|---|---|
@@ -139,7 +143,7 @@ The BOM's tire entry says “30.4 mm D. × 20 mm.” Confirm whether this identi
 | Vehicle mass | (m) | Ready-to-run mass with battery |
 | Road-wheel steering limits | $\delta_L,\delta_R$ | Measured angles at the wheels, independently of servo command |
 
-**Pending:** Add final measurements with date and robot revision. Use the same wheelbase, rolling radius and steering convention in the software configuration. Earlier geometry values must not silently become final dimensions after a chassis revision.
+[**TODO**] **Pending:** Add final measurements with date and robot revision. Use the same wheelbase, rolling radius and steering convention in the software configuration. Earlier geometry values must not silently become final dimensions after a chassis revision.
 
 ## 4. Chassis and structural layout
 
@@ -149,7 +153,7 @@ The BOM's tire entry says “30.4 mm D. × 20 mm.” Confirm whether this identi
 
 The layered construction provides separate mounting surfaces for propulsion, computing, power conversion and sensing. This makes the interfaces between assemblies easier to inspect and allows a module to be removed without redesigning the entire vehicle.
 
-The corresponding trade-offs are additional fasteners, stack height and possible plate movement. Joint stiffness and component placement influence sensor alignment and cable clearances. A low center of gravity is desirable, but no center-of-gravity location or tipping margin has been measured in this record.
+The corresponding trade-offs are additional fasteners, stack height and possible plate movement. Joint stiffness and component placement influence sensor alignment and cable clearances. A low center of gravity is desirable, but no center-of-gravity location or tipping margin has been measured in this record. [**TODO**] Last sentence of this para.
 
 ## 5. Drivetrain and external gearing
 
@@ -199,7 +203,9 @@ For straight rolling without slip:
 v=\frac{2\pi r_w n_c}{60}.
 ```
 
-A numerical vehicle speed requires the installed rolling radius and actual loaded motor speed. The external reduction trades speed for torque; this record does not claim that 18:28 is experimentally optimal.
+A numerical vehicle speed requires the installed rolling radius and actual loaded motor speed. The external reduction trades speed for torque; this record does not claim that 18:28 is experimentally optimal. 
+
+[**TODO**] LAst sentence of this last para. Keep or not. Its meaning = ตัวเลขเหล่านี้เป็นการคำนวณแปลงจากจุดการทำงานของผู้ผลิต ไม่ใช่ความเร็วล้อที่วัดได้จริง หรือความเร็วในการแข่งขันที่คาดการณ์ไว้
 
 ### 5.3 Why 18:28 must be distinguished from the V1.3 ratio
 
@@ -213,6 +219,7 @@ The historical progression was **28:28 → 21:28 → 16:28**. The overhaul then 
 | Total nominal reduction including 19:1 gearbox | 33.25:1 | 29.56:1 |
 
 At the same gearbox-output speed, the new ratio gives **18/16 = 1.125**, or **12.5% higher carrier speed**. At equal gearbox-output torque and equal external efficiency, it gives **16/18 ≈ 0.889**, or **11.1% lower carrier torque**. These are kinematic comparisons, not measured improvements in lap time or acceleration.
+[**TODO**] Last sentence = ทั้งนี้ ข้อมูลดังกล่าวเป็นการเปรียบเทียบเชิงจลนศาสตร์ (kinematic comparisons) เท่านั้น ไม่ใช่การวัดผลลัพธ์ที่ปรับปรุงขึ้นจริงในแง่ของเวลาต่อรอบ (lap time) หรืออัตราเร่ง
 
 A ratio change also affects encoder calibration. With the same encoder counting convention, nominal counts per wheel revolution scale with external reduction. Changing 16:28 to 18:28 therefore reduces counts per wheel revolution by 11.1%, while distance per count increases by 12.5%, assuming the same tire and straight rolling. Revalidate the software scale rather than retaining a calibration from V1.3.
 
