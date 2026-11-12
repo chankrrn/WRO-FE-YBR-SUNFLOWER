@@ -10,7 +10,7 @@
 
 [Published figures](visualization/)
 
-This folder contains **eight standalone MATLAB scripts** for investigating the robot's electrical power system. This guide explains their engineering purpose, equations, input assumptions, execution steps, outputs, and connection to the engineering journal.
+This directory contains the documentation, source programs, and published visualizations for **eight standalone MATLAB electrical models**. The `.m` scripts are stored in [`figures/`](figures/), and the published PNGs are stored in [`visualization/`](visualization/). This guide explains their engineering purpose, equations, input assumptions, execution steps, outputs, and connection to the engineering journal.
 
 **Main finding:** the battery's **15.2 V nominal label** is only **0.20 V above the DFR1208 converter's published 15 V minimum input**. The models examine how load, discharge, and wiring resistance could affect the electrical system. They identify questions for hardware verification; they do not establish measured endurance or successful operation under every load.
 
@@ -54,39 +54,49 @@ We use **base MATLAB** for component power arithmetic, voltage-range comparisons
 
 ## 2. Model and figure index
 
-Each image filename below is also the PNG produced in the script's local `results/` folder. The image links open the versions published in the electrical journal's visualization folder.
+The repository paths below are relative to the repository root unless a starting folder is stated.
+
+| Resource | Repository location | Role |
+|---|---|---|
+| This guide | `engineering_journal/matlab/README.md` | Equations, interpretation, and execution instructions |
+| MATLAB source programs | [`engineering_journal/matlab/figures/`](figures/) | Eight standalone `.m` scripts |
+| Generated run outputs | `engineering_journal/matlab/figures/results/` | PNGs and `.mat` files created when the scripts run; the scripts create this folder automatically |
+| Published visualizations | [`engineering_journal/matlab/visualization/`](visualization/) | Reviewed PNGs displayed in the documentation |
+| Electrical journal | [`engineering_journal/2-elec.md`](../2-elec.md) | Robot architecture, component evidence, and engineering interpretation |
+
+Each image filename in the model index is also the PNG produced in `figures/results/`. The image links open its published counterpart in `visualization/`. Generated outputs and published images are separate files; running a script does not replace the published image.
 
 | Model | Source script | Published PNG | Evidence and purpose |
 |:---:|---|---|---|
-| 01 | [figure01_electrical_load_budget.m](figure01_electrical_load_budget.m) | [01_assumed_load_budget.png](visualization/01_assumed_load_budget.png) | Published operating points plus assumed loads; component power allocation |
-| 02 | [figure02_converter_input_range.m](figure02_converter_input_range.m) | [02_input_range_screen.png](visualization/02_input_range_screen.png) | Published input limits; compatibility screening |
-| 03 | [figure03_battery_side_current.m](figure03_battery_side_current.m) | [03_estimated_input_current.png](visualization/03_estimated_input_current.png) | Calculated current versus battery voltage |
-| 04 | [figure04_battery_ocv_soc.m](figure04_battery_ocv_soc.m) | [04_assumed_voltage_vs_soc.png](visualization/04_assumed_voltage_vs_soc.png) | Illustrative, unmeasured open-circuit-voltage curve |
-| 05 | [figure05_battery_voltage_time.m](figure05_battery_voltage_time.m) | [05_voltage_vs_time_scenarios.png](visualization/05_voltage_vs_time_scenarios.png) | Simulated battery terminal voltage under three constant-demand cases |
-| 06 | [figure06_soc_and_current.m](figure06_soc_and_current.m) | [06_soc_and_current.png](visualization/06_soc_and_current.png) | The same battery simulation viewed as SOC and current |
-| 07 | [figure07_12v_input_headroom.m](figure07_12v_input_headroom.m) | [07_12v_input_headroom.png](visualization/07_12v_input_headroom.png) | Simulated margin above the DFR1208 minimum input |
-| 08 | [figure08_5v_wiring_sensitivity.m](figure08_5v_wiring_sensitivity.m) | [08_transient_timeline.png](visualization/08_transient_timeline.png) | Quasi-static resistive sensitivity to hypothetical load steps |
+| 01 | [figure01_electrical_load_budget.m](figures/figure01_electrical_load_budget.m) | [01_assumed_load_budget.png](visualization/01_assumed_load_budget.png) | Published operating points plus assumed loads; component power allocation |
+| 02 | [figure02_converter_input_range.m](figures/figure02_converter_input_range.m) | [02_input_range_screen.png](visualization/02_input_range_screen.png) | Published input limits; compatibility screening |
+| 03 | [figure03_battery_side_current.m](figures/figure03_battery_side_current.m) | [03_estimated_input_current.png](visualization/03_estimated_input_current.png) | Calculated current versus battery voltage |
+| 04 | [figure04_battery_ocv_soc.m](figures/figure04_battery_ocv_soc.m) | [04_assumed_voltage_vs_soc.png](visualization/04_assumed_voltage_vs_soc.png) | Illustrative, unmeasured open-circuit-voltage curve |
+| 05 | [figure05_battery_voltage_time.m](figures/figure05_battery_voltage_time.m) | [05_voltage_vs_time_scenarios.png](visualization/05_voltage_vs_time_scenarios.png) | Simulated battery terminal voltage under three constant-demand cases |
+| 06 | [figure06_soc_and_current.m](figures/figure06_soc_and_current.m) | [06_soc_and_current.png](visualization/06_soc_and_current.png) | The same battery simulation viewed as SOC and current |
+| 07 | [figure07_12v_input_headroom.m](figures/figure07_12v_input_headroom.m) | [07_12v_input_headroom.png](visualization/07_12v_input_headroom.png) | Simulated margin above the DFR1208 minimum input |
+| 08 | [figure08_5v_wiring_sensitivity.m](figures/figure08_5v_wiring_sensitivity.m) | [08_transient_timeline.png](visualization/08_transient_timeline.png) | Quasi-static resistive sensitivity to hypothetical load steps |
 
 For a short review, read **01 → 02 → 07 → 08**. Models **03–06** explain the calculations and battery assumptions behind that story. MATLAB figure numbers **01–08** are separate from the journal's architecture and wiring drawing numbers **E-01–E-04**.
 
 ## 3. Reproducing the figures
 
-### 3.1 Requirements and execution status
+### 3.1 Requirements and execution context
 
 - The scripts specify **MATLAB R2020a or newer** as their intended environment; `exportgraphics` was introduced in R2020a. No additional toolbox is explicitly required by the inspected source.
 - Use a writable local checkout or downloaded copy of the repository. No robot connection, external dataset, CSV, or earlier script output is required.
 - Run each **complete script**, including its input definitions and, for Models 05–07, its local simulation function.
 - Every script starts with `clearvars; close all; clc;`. Save unrelated workspace variables and figures before running. Parameters assigned in the Command Window beforehand will be cleared; edit the script's input section instead.
-- The exact MATLAB release and platform used for the published PNGs are not recorded in these scripts. The source and representative numerical results were checked while preparing this guide, but **the scripts were not executed in MATLAB during that check**. Record a real MATLAB run before treating release compatibility and rendering as verified.
+- The exact MATLAB release and platform used for the published PNGs are not recorded in these scripts. The source and representative numerical results were checked while preparing this guide, but **the scripts were not executed in MATLAB during that check**. MATLAB execution on a recorded release and platform establishes compatibility and rendering; numerical checks alone do not establish them.
 
 ### 3.2 Run one model
 
 1. Open MATLAB and set **Current Folder** to the repository root.
-2. Open the selected script and read its `USER INPUTS` or parameter section. Keep the default values for an initial reproduction.
+2. Open the selected script under `engineering_journal/matlab/figures/` and read its `USER INPUTS` or parameter section. Keep the default values for an initial reproduction.
 3. Run these commands, for example for Model 01:
 
 ```matlab
-cd(fullfile('other','matlab'))
+cd(fullfile('engineering_journal','matlab','figures'))
 run('figure01_electrical_load_budget.m')
 copyfile(fullfile('results','simulation_inputs.mat'), ...
          fullfile('results','figure01_inputs.mat'))
@@ -95,11 +105,20 @@ copyfile(fullfile('results','simulation_inputs.mat'), ...
 4. Inspect `results/01_assumed_load_budget.png`, the Command Window summary, and the saved inputs. Compare numerical values with this guide before changing assumptions.
 5. For another model, run its filename from the same folder and immediately preserve its `.mat` output under the corresponding model number.
 
-The scripts determine the output directory from their own file location, so their PNGs normally go to **`other/matlab/results/`**. They **do not automatically update** `engineering_journal/visualization/`. Copy a reviewed PNG there only when intentionally publishing that result.
+The scripts determine the output directory from their own file location. With this repository layout, their PNGs and shared `simulation_inputs.mat` are written to **`engineering_journal/matlab/figures/results/`**, not to a `results/` folder beside this README. In the commands above, `results/...` is relative to the Current Folder, `engineering_journal/matlab/figures/`.
+
+Published images are stored separately in **`engineering_journal/matlab/visualization/`**. After reviewing a result, the following example publishes Model 01's PNG; run it from `engineering_journal/matlab/figures/`:
+
+```matlab
+copyfile(fullfile('results','01_assumed_load_budget.png'), ...
+         fullfile('..','visualization','01_assumed_load_budget.png'))
+```
+
+This explicit publication step replaces the corresponding published PNG. The source scripts themselves export only to their own `results/` directory.
 
 ### 3.3 Run all eight and preserve each model's inputs
 
-With MATLAB's Current Folder set to `other/matlab`, execute the following commands. They deliberately avoid a caller-workspace loop: the scripts' `clearvars` would erase loop variables and a filename list stored in that workspace.
+With MATLAB's Current Folder set to `engineering_journal/matlab/figures`, execute the following commands. They deliberately avoid a caller-workspace loop: the scripts' `clearvars` would erase loop variables and a filename list stored in that workspace.
 
 ```matlab
 run('figure01_electrical_load_budget.m')
@@ -129,7 +148,7 @@ copyfile('results/simulation_inputs.mat','results/figure08_inputs.mat')
 
 Stop and resolve any error before proceeding; otherwise an old `simulation_inputs.mat` could be copied under a new model's name. After successful execution, there should be eight distinct PNGs and eight model-specific input snapshots. The shared `simulation_inputs.mat` will still contain only the last run. Repeating this sequence overwrites the named PNGs and snapshots, so preserve earlier versions before a comparison run.
 
-Each script exports a white-background PNG at **240 DPI** and prints a numerical summary. The `.mat` files contain input structures and selected calculated arrays; their contents differ between models. They are not robot telemetry. For example:
+From the same `engineering_journal/matlab/figures/` Current Folder, each script exports a white-background PNG at **240 DPI** and prints a numerical summary. The `.mat` files contain input structures and selected calculated arrays; their contents differ between models. They are not robot telemetry. For example:
 
 ```matlab
 whos('-file','results/figure07_inputs.mat')
@@ -204,7 +223,7 @@ Models 05–07 contain hard-coded consistency checks for the baseline branch pow
 
 ## 5. Model 01 — Electrical load budget
 
-[Source](figure01_electrical_load_budget.m) · [Published figure](../../engineering_journal/visualization/01_assumed_load_budget.png)
+[Source](figures/figure01_electrical_load_budget.m) · [Published figure](visualization/01_assumed_load_budget.png)
 
 **Question:** how are the selected loads distributed across the supply rails, and what battery-side power do they imply under the stated assumptions?
 
@@ -243,7 +262,7 @@ The model uses the shared inventory in Section 4. It assumes the servo is on the
 | Battery current at 15.2 V | 1.4794 A |
 | Separate high-servo battery-power scenario | 28.3197 W |
 
-![Figure 01 — Calculated electrical load budget](../../engineering_journal/visualization/01_assumed_load_budget.png)
+![Figure 01 — Calculated electrical load budget](visualization/01_assumed_load_budget.png)
 
 The Pi group and motor dominate this allocation. The high-servo result is printed in the summary; it is not a measured peak or a simultaneous worst-case motor-and-servo load test. The motor uses its rated-current bound, so this model does not establish starting-current, stall, protection, or wire-current margins.
 
@@ -251,7 +270,7 @@ The Pi group and motor dominate this allocation. The high-servo result is printe
 
 ## 6. Model 02 — Converter input-range screening
 
-[Source](figure02_converter_input_range.m) · [Published figure](../../engineering_journal/visualization/02_input_range_screen.png)
+[Source](figures/figure02_converter_input_range.m) · [Published figure](visualization/02_input_range_screen.png)
 
 **Question:** how do the battery voltage references compare with each converter's published input limits?
 
@@ -276,7 +295,7 @@ DFR1202 uses **6–24 V**; DFR1208 uses **15–24 V**. The default sweep is **13
 | DFR1208 at nominal 15.2 V | **+0.20 V** |
 | DFR1208 at the illustrative 17.4 V reference | +2.40 V |
 
-![Figure 02 — Published converter input ranges and calculated margins](../../engineering_journal/visualization/02_input_range_screen.png)
+![Figure 02 — Published converter input ranges and calculated margins](visualization/02_input_range_screen.png)
 
 This result establishes a small nominal margin for the selected 12 V converter. It does not simulate the converter's output, switching behavior, dropout curve, or failure time. A voltage below 15 V is outside the stated input range; it does not mean the real output necessarily becomes zero immediately.
 
@@ -284,7 +303,7 @@ This result establishes a small nominal margin for the selected 12 V converter. 
 
 ## 7. Model 03 — Battery-side current
 
-[Source](figure03_battery_side_current.m) · [Published figure](../../engineering_journal/visualization/03_estimated_input_current.png)
+[Source](figures/figure03_battery_side_current.m) · [Published figure](visualization/03_estimated_input_current.png)
 
 **Question:** for fixed regulated-load power, how does battery current change with input voltage and an assumed increase in servo demand?
 
@@ -310,7 +329,7 @@ The current curves are filled only where both converters satisfy their input-vol
 | 15.2 V nominal | 1.4794 A | 1.8631 A |
 | 17.4 V reference | 1.2942 A | 1.6295 A |
 
-![Figure 03 — Calculated battery-side current for two demand scenarios](../../engineering_journal/visualization/03_estimated_input_current.png)
+![Figure 03 — Calculated battery-side current for two demand scenarios](visualization/03_estimated_input_current.png)
 
 Current rises as voltage falls because the regulated-load power is held constant. These battery currents are different from the currents on the 5 V or 12 V branches. The model does not resolve cable loss, switching ripple, thermal effects, or changing efficiency.
 
@@ -318,7 +337,7 @@ Current rises as voltage falls because the regulated-load power is held constant
 
 ## 8. Model 04 — Battery OCV and state of charge
 
-[Source](figure04_battery_ocv_soc.m) · [Published figure](../../engineering_journal/visualization/04_assumed_voltage_vs_soc.png)
+[Source](figures/figure04_battery_ocv_soc.m) · [Published figure](visualization/04_assumed_voltage_vs_soc.png)
 
 **Question:** what explicit open-circuit-voltage assumption will the battery sensitivity studies use?
 
@@ -353,7 +372,7 @@ V_{\mathrm{OC}}(s)=4\,\mathrm{PCHIP}\bigl(s;\{s_i,V_{\mathrm{cell},i}\}\bigr).
 3. Check the **13.2 V** and **17.4 V** modeled endpoints and the nameplate-energy calculation **15.2 × 1.30 = 19.76 Wh**.
 4. If measured OCV data become available, document the measurement conditions before replacing the knots. Copy the same revised knots and interpolation method into Models 05–07.
 
-![Figure 04 — Illustrative and unmeasured battery OCV versus SOC](../../engineering_journal/visualization/04_assumed_voltage_vs_soc.png)
+![Figure 04 — Illustrative and unmeasured battery OCV versus SOC](visualization/04_assumed_voltage_vs_soc.png)
 
 The output is a continuous assumption curve, not a fitted electrochemical model. Temperature, aging, cell imbalance, hysteresis, relaxation, and dynamic polarization are not represented. Nameplate energy does not establish usable energy or competition runtime.
 
@@ -361,7 +380,7 @@ The output is a continuous assumption curve, not a fitted electrochemical model.
 
 ## 9. Model 05 — Battery terminal voltage over time
 
-[Source](figure05_battery_voltage_time.m) · [Published figure](../../engineering_journal/visualization/05_voltage_vs_time_scenarios.png)
+[Source](figures/figure05_battery_voltage_time.m) · [Published figure](visualization/05_voltage_vs_time_scenarios.png)
 
 **Question:** under a simple equivalent circuit, how do three constant-demand scenarios affect battery terminal voltage and the point where it reaches the 12 V converter's input limit?
 
@@ -420,7 +439,7 @@ This is a simple charge-balance calculation with fixed capacity. It assumes the 
 
 The crossing is found from the first sample below 15 V, with linear interpolation between surrounding samples. Displayed precision describes the numerical calculation, not physical accuracy.
 
-![Figure 05 — Simulated battery terminal voltage for three assumed loads](../../engineering_journal/visualization/05_voltage_vs_time_scenarios.png)
+![Figure 05 — Simulated battery terminal voltage for three assumed loads](visualization/05_voltage_vs_time_scenarios.png)
 
 The simulation stops at its demonstration endpoint, zero hypothetical SOC, maximum horizon, or an infeasible quadratic (`D < 0`). Continuing the equations below 15 V is an illustrative extrapolation: actual DFR1208 output and resulting load behavior are not modeled there. These times are **not measured endurance or predicted usable robot runtime**.
 
@@ -428,7 +447,7 @@ The simulation stops at its demonstration endpoint, zero hypothetical SOC, maxim
 
 ## 10. Model 06 — State of charge and current over time
 
-[Source](figure06_soc_and_current.m) · [Published figure](../../engineering_journal/visualization/06_soc_and_current.png)
+[Source](figures/figure06_soc_and_current.m) · [Published figure](visualization/06_soc_and_current.png)
 
 **Question:** what happens to modeled SOC and battery current during the voltage trajectories in Model 05?
 
@@ -445,7 +464,7 @@ SOC_{\%}(t)=100s(t),\qquad I(t)=\frac{P}{V(t)}+I_{\mathrm{meter}}.
 3. Compare `runs` with Model 05: voltage, SOC, battery current, and crossing times should agree numerically when the inputs match. The current begins at approximately **0.6575 / 1.3058 / 1.9601 A** for the light/planning/heavy cases because their initial terminal voltages differ under load.
 4. If a scenario is changed, update Models 05 and 07 as well. The default crossing times remain **61.52 / 28.03 / 16.64 min**, as in Model 05.
 
-![Figure 06 — Simulated SOC and battery current under the same three scenarios](../../engineering_journal/visualization/06_soc_and_current.png)
+![Figure 06 — Simulated SOC and battery current under the same three scenarios](visualization/06_soc_and_current.png)
 
 The upper panel shows charge depletion; the lower panel shows increasing current as voltage falls under constant-power demand. Solid portions satisfy the model's 15 V lower-input comparison. Dotted portions continue below that limit and do not establish converter operation. SOC here is an integrated model state, not a battery-gauge reading.
 
@@ -453,7 +472,7 @@ The upper panel shows charge depletion; the lower panel shows increasing current
 
 ## 11. Model 07 — 12 V converter input headroom
 
-[Source](figure07_12v_input_headroom.m) · [Published figure](../../engineering_journal/visualization/07_12v_input_headroom.png)
+[Source](figures/figure07_12v_input_headroom.m) · [Published figure](visualization/07_12v_input_headroom.png)
 
 **Question:** how much margin remains above the DFR1208's published minimum input during each synthetic battery scenario?
 
@@ -475,7 +494,7 @@ The physical-model parameters are those in Section 9. `p.converter12MinInputV = 
 3. Compare crossings with Models 05 and 06: **61.52 / 28.03 / 16.64 min** for the three default scenarios. Verify that `headroomV` equals `terminalV - 15`.
 4. When exploring a different battery or converter, revise the corresponding input limits, assertions, labels, and related scripts together.
 
-![Figure 07 — Simulated input headroom above the DFR1208 minimum](../../engineering_journal/visualization/07_12v_input_headroom.png)
+![Figure 07 — Simulated input headroom above the DFR1208 minimum](visualization/07_12v_input_headroom.png)
 
 Positive margin means the modeled input is above the lower published limit; it does not prove output regulation. Negative margin identifies a condition outside that range. The actual time at which the installed robot reaches it requires measured voltage and load data.
 
@@ -483,7 +502,7 @@ Positive margin means the modeled input is above the lower published limit; it d
 
 ## 12. Model 08 — 5 V wiring and load-step sensitivity
 
-[Source](figure08_5v_wiring_sensitivity.m) · [Published figure](../../engineering_journal/visualization/08_transient_timeline.png)
+[Source](figures/figure08_5v_wiring_sensitivity.m) · [Published figure](visualization/08_transient_timeline.png)
 
 **Question:** how could effective supply-path resistance and coincident hypothetical Pi/servo loads reduce voltage at the Pi-side supply node?
 
@@ -531,13 +550,13 @@ These are assumed effective round-trip/path resistances. In the implemented equa
 3. Check `IusbA`, `Vpi`, and `minimumV`. The peak-current interval should occur during the compute/servo overlap at **3.50–4.00 s**.
 4. Change one resistance or load assumption at a time. Keep a record of whether the new input is assumed or measured, and verify that the current paths still match the installed architecture.
 
-![Figure 08 — Resistive voltage sensitivity to assumed Pi and servo load steps](../../engineering_journal/visualization/08_transient_timeline.png)
+![Figure 08 — Resistive voltage sensitivity to assumed Pi and servo load steps](visualization/08_transient_timeline.png)
 
 The plot uses **4.80 V** as a design comparison and **4.63 V** as a nominal warning reference. Raspberry Pi's published low-voltage reference includes **±5%** tolerance; these horizontal lines are not exact measured trip thresholds or universal pass/fail tests for the assembled car.
 
 Despite the filename `08_transient_timeline.png`, this is a **quasi-static resistor calculation**. The sharp steps do not represent actual rise time, converter bandwidth, USB-C negotiation, Pi throttling, capacitance, inductance, or an observed servo transient.
 
-**Journal integration:** use the resistance table and the distinction between converter-output and Pi-input voltage in **Sections 7.2 and 8.4**. Compare a future test at the Pi input with the modeled node, recording simultaneous load and wiring conditions.
+**Journal integration:** use the resistance table and the distinction between converter-output and Pi-input voltage in **Sections 7.2 and 8.4**. Compare a physical test at the Pi input with the modeled node, recording simultaneous load and wiring conditions.
 
 ## 13. Verification, engineering decisions, and deployment
 
@@ -545,22 +564,22 @@ Despite the filename `08_transient_timeline.png`, this is a **quasi-static resis
 
 For this guide, the published source equations, input definitions, output names, and representative numerical values were reviewed. Independent arithmetic and a Python/SciPy implementation of the stated PCHIP/equivalent-circuit equations reproduced the rounded power, current, voltage-drop, and 15 V crossing values reported here. This is a numerical consistency check; it does not verify MATLAB execution, image rendering, or the physical model's accuracy.
 
-The journal reports **5.1 V at the DFR1202 output** and **12.1 V at the DFR1208 output** from multimeter observations. Those measurements neither calibrate the OCV curve nor validate battery resistance, converter efficiency, load assumptions, USB-C voltage drop, or discharge runtime. Their measurement locations and limitations are discussed in [electrical-journal Section 6.4](../../engineering_journal/2-elec.md#64-multimeter-observations-at-the-converter-outputs).
+The journal reports **5.1 V at the DFR1202 output** and **12.1 V at the DFR1208 output** from multimeter observations. Those measurements neither calibrate the OCV curve nor validate battery resistance, converter efficiency, load assumptions, USB-C voltage drop, or discharge runtime. Their measurement locations and limitations are discussed in [electrical-journal Section 6.4](../2-elec.md#64-multimeter-observations-at-the-converter-outputs).
 
-### 13.2 Findings and decision status
+### 13.2 Findings and engineering implications
 
-| Problem | Model result / insight | Engineering consequence | Current verification boundary |
+| Problem | Model result / insight | Engineering consequence | Evidence boundary |
 |---|---|---|---|
 | Loads operate on different rails | 13.4325 W on the 5 V branch and 6.6000 W on the motor branch in the baseline | Separate rail power from battery current; prioritize measurement of dominant loads | Simultaneous installed-robot demand is not measured by these scripts |
 | Nominal battery voltage is close to the 12 V converter minimum | +0.20 V nominal input margin | Check converter input under representative load and discharge; evaluate the architecture if the required margin is not maintained | No completed mitigation or verified full operating envelope is established here |
 | Capacity does not guarantee usable regulated operation | Synthetic voltage reaches 15 V before the simulation's charge/endpoint termination | Evaluate voltage compatibility as well as charge remaining | OCV, resistance, and crossing times remain uncalibrated |
 | Converter voltage differs from load-side voltage | Higher assumed resistance reduces modeled Pi voltage | Evaluate the installed supply path at the load and under concurrent demand | No measured resistance or dynamic Pi-input trace is supplied to Model 08 |
 
-The present documented outcome is **identification and explanation of electrical risks**. A completed hardware change, improved lap result, or measured reliability improvement should be recorded only when supported by a dated test and corresponding configuration.
+The present documented outcome is **identification and explanation of electrical risks**. Hardware changes, lap results, and measured reliability improvements are supported by dated tests and the corresponding configuration; the calculations alone do not establish those outcomes.
 
-### 13.3 Next verification steps
+### 13.3 Verification procedure
 
-These are proposed checks, not completed results:
+The following procedure defines reproducibility and physical-validation checks. It describes the test method; it does not certify a hardware result:
 
 1. **MATLAB reproduction:** run all eight scripts on a recorded release/platform, preserve input snapshots, compare the values above, and inspect exported labels and annotations.
 2. **Cross-model consistency:** compare Models 01/03 at 15.2 V and Models 05/06/07 using identical inputs. Check that Model 07's headroom equals Model 05's terminal voltage minus 15 V.
@@ -568,7 +587,7 @@ These are proposed checks, not completed results:
 4. **Loaded power checks:** record battery/converter-input voltages, converter-output voltages, and relevant load currents under stated robot conditions. Compare equivalent measurement nodes with model nodes.
 5. **Pi supply-path checks:** record Pi-input voltage during representative compute and steering loads, along with wiring state and observed Pi warnings. A converter-output multimeter reading alone cannot capture the modeled load-side behavior.
 
-Integrate each result using **problem → alternatives → actual change → test conditions → result → decision**. Include the date, Git SHA, model parameters, hardware configuration, instrumentation, and links to the plot, log, or video. The [electrical verification reference](../../engineering_journal/2-elec.md#182-verification-and-calibration-reference) provides the wider context.
+Integrate each result using **problem → alternatives → actual change → test conditions → result → decision**. Include the date, Git SHA, model parameters, hardware configuration, instrumentation, and links to the plot, log, or video. The [electrical verification reference](../2-elec.md#182-verification-and-calibration-reference) provides the wider context.
 
 MATLAB remains an **offline analysis tool** in this work. The onboard Python implementation is linked separately; no MATLAB deployment or model-generated controller is claimed.
 
@@ -579,7 +598,7 @@ This guide describes the inspected scripts as they exist. It does not silently c
 | Issue or symptom | Explanation and action |
 |---|---|
 | Several comments or console headings say `/11` | Historical numbering remains in the source. This published collection has eight figures. Use the filenames and index in this guide to identify them. |
-| Model 06 stores `p.figureID = '05/11'` | A metadata mismatch in the inspected source. Its file, plotted subject, and PNG belong to Model 06. Correct the field in a future source revision; do not use it alone to identify archived results. |
+| Model 06 stores `p.figureID = '05/11'` | A metadata mismatch in the inspected source. Its file, plotted subject, and PNG belong to Model 06. Identify archived results by the source filename and PNG name rather than this field; the field is inconsistent with Model 06. |
 | Earlier `.mat` output disappears | All scripts write `results/simulation_inputs.mat`. Copy it immediately to a model-specific filename as in Section 3, or deliberately revise the source save names. |
 | Figures or workspace variables vanish | The next script runs `clearvars`, `close all`, and `clc`. Read exported images and saved snapshots when comparing multiple runs. |
 | Changing `p` before execution has no effect | The script clears and redefines its inputs. Edit the parameter section in the script, retaining a traceable copy. |
@@ -613,13 +632,13 @@ Generative AI assisted with creating or refining MATLAB scripts, figures, and te
 |---|---|
 | Problem context and strategy | Section 1: robot context, power paths, software role, and reasons for using MATLAB |
 | Modeling approach | Sections 4–12: relationships, equations, input provenance, scripts, and figures |
-| Testing and verification | Section 13: numerical checks, existing measurements, deployment boundary, and remaining tests |
+| Testing and verification | Section 13: numerical checks, existing measurements, deployment boundary, and validation methods |
 | Code quality and readability | Sections 2–3 and 14: file map, reproduction steps, consistent input handling, and known source issues |
 | Report quality and product feedback | Linked explanations throughout; lessons and product suggestion in Section 15 |
 
 ## 16. References
 
-The [electrical journal's reference list](../../engineering_journal/2-elec.md#19-technical-references) records the wider hardware sources. The following are the main references for this modeling guide:
+The [electrical journal's reference list](../2-elec.md#19-technical-references) records the wider hardware sources. The following are the main references for this modeling guide:
 
 - [DFRobot DFR1202](https://www.dfrobot.com/product-2907.html) — published 5 V converter input/output specifications; performance claims have stated test conditions.
 - [DFRobot DFR1208](https://www.dfrobot.com/product-2908.html) — published 12 V converter input/output specifications; its advertised efficiency at 24 V is not a guaranteed value at 15.2 V.
@@ -629,4 +648,5 @@ The [electrical journal's reference list](../../engineering_journal/2-elec.md#19
 - [MathWorks: `exportgraphics`](https://www.mathworks.com/help/matlab/ref/exportgraphics.html) — figure export and release history.
 - [MathWorks: `run`](https://www.mathworks.com/help/matlab/ref/run.html) — script execution and workspace behavior.
 - [MathWorks: World Robot Olympiad resources](https://www.mathworks.com/academia/student-competitions/world-robot-olympiad.html) — competition software and learning resources. The review-navigation topics above follow the team-provided **MathWorks-Modeling-Award-Scoring-Rubric_20260312.pdf**; they are an evidence map, not a predicted award score.
+
 
