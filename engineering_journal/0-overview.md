@@ -2,7 +2,11 @@
 
 > **Scope:** This journal introduces YBR-SUNFLOWER's system architecture, engineering challenges, design decisions, and verification approach. It also guides readers to the detailed technical journals and supporting evidence.
 
-[← Project README](../README.md) · [Mobility and Mechanical Design →](1-mech.md)
+[← Project README](../README.md) 
+[← Mobility and Mechanical Design](1-mech.md)
+[← Power and Sensor Architecture](2-elec.md)
+[← Software Architecture and Obstacle Strategy](3-software.md)
+[← Build and Reproduction Guide](4-build.md)
 
 ---
 

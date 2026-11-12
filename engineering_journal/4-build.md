@@ -6,9 +6,11 @@ Its purpose is different from the subsystem engineering documentation.
 
 The subsystem documents explain **why** the robot was designed as it is:
 
-- [`mech.md`](1-mech.md) — mechanical design and mobility
-- [`elec.md`](2-elec.md) — power, electrical and sensor architecture
-- [`software.md`](3-software.md) — software and autonomous navigation
+[← Project README](../README.md) 
+[← Engineering Overview](0-overview.md)
+[← Mobility and Mechanical Design](1-mech.md)
+[← Power and Sensor Architecture](2-elec.md)
+[← Software Architecture and Obstacle Strategy](3-software.md)
 
 This document explains **how to reproduce the final robot**.
 
