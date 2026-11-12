@@ -9,7 +9,7 @@
 [← Power and Sensor Architecture](2-elec.md)
 
 [← Software Architecture and Obstacle Strategy](3-software.md)
-
+s
 [← Build and Reproduction Guide](4-build.md)
 
 ---
