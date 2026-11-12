@@ -146,7 +146,7 @@ Battery voltage changes as the pack discharges and under load. A useful illustra
 V_{\mathrm{terminal}}(t) = V_{\mathrm{OC}}\!\left(SOC(t)\right) - I_{\mathrm{battery}}(t)R_{\mathrm{pack}}.
 ```
 
-Here `V_OC(SOC)` and `R_pack` are **model inputs**, not measured battery data. The model explains why the battery's nominal voltage must not be substituted for its guaranteed terminal voltage at every instant. See Section 8 and the currently published [headroom-model script (Figure 07)](../other/matlab/figure07_12v_input_headroom.m).
+Here `V_OC(SOC)` and `R_pack` are **model inputs**, not measured battery data. The model explains why the battery's nominal voltage must not be substituted for its guaranteed terminal voltage at every instant. See Section 8 and the currently published [headroom-model script (Figure 07)](../engineering_journal/matlab/figures/figure07_12v_input_headroom.m).
 
 ## 5. Physical power distribution
 
@@ -225,7 +225,7 @@ These are measurements at the converters, not measurements of voltage at the Pi 
 
 ## 7. Electrical calculations and evidence-labeled load budget
 
-The load model was revised to match the selected [Figure 01 MATLAB source](../other/matlab/figure01_electrical_load_budget.m). It uses **published operating points where available** and identifies every other current as a **scenario assumption**, not an instrument reading. Component input power is calculated from each supply domain using:
+The load model was revised to match the selected [Figure 01 MATLAB source](../engineering_journal/matlab/figures/figure01_electrical_load_budget.m). It uses **published operating points where available** and identifies every other current as a **scenario assumption**, not an instrument reading. Component input power is calculated from each supply domain using:
 
 ```math
 P_k=V_k I_k,\qquad P_{\mathrm{branch}}=\sum_k P_k.
@@ -295,19 +295,19 @@ An energy-over-average-power quotient is only an idealized arithmetic comparison
 
 ## 8. MATLAB evidence selected for the electrical chapter
 
-The four embedded MATLAB graphics support complementary engineering questions: component load allocation, regulator input compatibility, 12 V converter headroom and Raspberry Pi power-path voltage drop. **MATLAB figures use their own 01–08 sequence**; E-01 through E-04 identify architecture, schematic and wiring drawings. Source code is provided as standalone MATLAB scripts in [`other/matlab/`](../other/matlab/). Calculated and synthetic results are not physical telemetry.
+The four embedded MATLAB graphics support complementary engineering questions: component load allocation, regulator input compatibility, 12 V converter headroom and Raspberry Pi power-path voltage drop. **MATLAB figures use their own 01–08 sequence**; E-01 through E-04 identify architecture, schematic and wiring drawings. Source code is provided as standalone MATLAB scripts in [`other/matlab/`](../engineering_journal/matlab/). Calculated and synthetic results are not physical telemetry.
 
 ### 8.1 MATLAB Figure 01 — Electrical load budget
 
-![MATLAB Figure 01 — Electrical load budget](visualization/01_assumed_load_budget.png)
+![MATLAB Figure 01 — Electrical load budget](../engineering_journal/matlab/visualization/01_assumed_load_budget.png)
 
-**MATLAB Figure 01.** Calculated load allocations based on manufacturer/supplier operating points and clearly identified design assumptions. The CHP-20GP-180 motor is represented at its supplier's rated-current bound, not at a measured driving current. The calculated output-power allocations are **13.4325 W on the nominal 5 V branch** (including downstream 3.3 V subloads) and **6.60 W for the 12 V motor branch**. With illustrative 90% converter efficiencies, the model gives approximately **22.49 W** and **1.48 A** at a nominal 15.2 V battery voltage. The output voltage readings in Section 6.4 are independent of this model. [MATLAB source](../other/matlab/figure01_electrical_load_budget.m).
+**MATLAB Figure 01.** Calculated load allocations based on manufacturer/supplier operating points and clearly identified design assumptions. The CHP-20GP-180 motor is represented at its supplier's rated-current bound, not at a measured driving current. The calculated output-power allocations are **13.4325 W on the nominal 5 V branch** (including downstream 3.3 V subloads) and **6.60 W for the 12 V motor branch**. With illustrative 90% converter efficiencies, the model gives approximately **22.49 W** and **1.48 A** at a nominal 15.2 V battery voltage. The output voltage readings in Section 6.4 are independent of this model. [MATLAB source](../engineering_journal/matlab/figures/figure01_electrical_load_budget.m).
 
 ### 8.2 MATLAB Figure 02 — Converter input-range screening
 
-![MATLAB Figure 02 — Published converter input ranges](visualization/02_input_range_screen.png)
+![MATLAB Figure 02 — Published converter input ranges](../engineering_journal/matlab/visualization/02_input_range_screen.png)
 
-**MATLAB Figure 02.** Manufacturer input ranges: DFR1202 **6–24 V** and DFR1208 **15–24 V**. The 4S LiHV battery is **15.2 V nominal**; **17.4 V** is a full-charge chemistry reference based on 4 × 4.35 V/cell. The DFR1208's nominal input headroom is only **0.20 V**. This is a compatibility screen, not a measurement of converter regulation; the sweep's lower plotting bound is not a battery cutoff. [MATLAB source](../other/matlab/figure02_converter_input_range.m).
+**MATLAB Figure 02.** Manufacturer input ranges: DFR1202 **6–24 V** and DFR1208 **15–24 V**. The 4S LiHV battery is **15.2 V nominal**; **17.4 V** is a full-charge chemistry reference based on 4 × 4.35 V/cell. The DFR1208's nominal input headroom is only **0.20 V**. This is a compatibility screen, not a measurement of converter regulation; the sweep's lower plotting bound is not a battery cutoff. [MATLAB source](../engineering_journal/matlab/figures/figure02_converter_input_range.m).
 
 ### 8.3 MATLAB Figure 07 — Simulated DFR1208 input headroom
 
@@ -318,13 +318,13 @@ V_{\mathrm{terminal}}=V_{\mathrm{OC}}(SOC)-I_{\mathrm{battery}}R_{\mathrm{pack}}
 M_{12}(t)=V_{\mathrm{terminal}}(t)-15\ \mathrm{V}.
 ```
 
-![MATLAB Figure 07 — Illustrative DFR1208 input margin](visualization/07_12v_input_headroom.png)
+![MATLAB Figure 07 — Illustrative DFR1208 input margin](../engineering_journal/matlab/visualization/07_12v_input_headroom.png)
 
-**MATLAB Figure 07.** The synthetic examples reach the DFR1208's published **15 V input minimum** at approximately **61.5 min (light)**, **28.0 min (planning)** and **16.6 min (heavy)**. These are neither measured battery endurance nor predicted usable robot runtime. Dotted portions show mathematical extrapolation below the published regulator input limit. [MATLAB source](../other/matlab/figure07_12v_input_headroom.m).
+**MATLAB Figure 07.** The synthetic examples reach the DFR1208's published **15 V input minimum** at approximately **61.5 min (light)**, **28.0 min (planning)** and **16.6 min (heavy)**. These are neither measured battery endurance nor predicted usable robot runtime. Dotted portions show mathematical extrapolation below the published regulator input limit. [MATLAB source](../engineering_journal/matlab/figures/figure07_12v_input_headroom.m).
 
 ### 8.4 MATLAB Figure 08 — 5 V USB-C path and load-step sensitivity
 
-![MATLAB Figure 08 — Illustrative Raspberry Pi power-path voltage drop](visualization/08_transient_timeline.png)
+![MATLAB Figure 08 — Illustrative Raspberry Pi power-path voltage drop](../engineering_journal/matlab/visualization/08_transient_timeline.png)
 
 **MATLAB Figure 08.** A resistive wiring sensitivity analysis for a hypothetical 5.00 V supply, not a recorded oscilloscope trace or switching-converter transient model. The assumed source voltage is intentionally separate from the **5.1 V converter output reading**. The LiDAR is supplied by its own 5 V branch and is not counted in the Pi USB-C cable current:
 
@@ -340,16 +340,16 @@ V_{\mathrm{Pi}}(t)=5.00\ \mathrm{V}-I_{\mathrm{USB}}(t)
 | Higher shared resistance | 0.080 Ω | **4.653 V** |
 | Higher USB-C path resistance | 0.110 Ω | **4.523 V** |
 
-The **4.80 V** design reference and **4.63 V** nominal undervoltage-warning reference are illustrative comparisons rather than exact trip thresholds. Actual cable resistance, USB-C power-source recognition, switching-regulator response and Pi input waveform are separate measurements. The simulated servo-current branch assumes DFR0604 VP is unpowered; that assumption does not establish installed VP wiring. [MATLAB source](../other/matlab/figure08_5v_wiring_sensitivity.m).
+The **4.80 V** design reference and **4.63 V** nominal undervoltage-warning reference are illustrative comparisons rather than exact trip thresholds. Actual cable resistance, USB-C power-source recognition, switching-regulator response and Pi input waveform are separate measurements. The simulated servo-current branch assumes DFR0604 VP is unpowered; that assumption does not establish installed VP wiring. [MATLAB source](../engineering_journal/matlab/figures/figure08_5v_wiring_sensitivity.m).
 
 ### 8.5 Simulation reproducibility
 
 | Embedded visualization | Standalone MATLAB program | Analytical role |
 |---|---|---|
-| MATLAB 01 | [`figure01_electrical_load_budget.m`](../other/matlab/figure01_electrical_load_budget.m) | Component load-budget arithmetic |
-| MATLAB 02 | [`figure02_converter_input_range.m`](../other/matlab/figure02_converter_input_range.m) | Published input-voltage limits |
-| MATLAB 07 | [`figure07_12v_input_headroom.m`](../other/matlab/figure07_12v_input_headroom.m) | Battery equivalent-circuit scenario |
-| MATLAB 08 | [`figure08_5v_wiring_sensitivity.m`](../other/matlab/figure08_5v_wiring_sensitivity.m) | Pi supply-path resistance sensitivity |
+| MATLAB 01 | [`figure01_electrical_load_budget.m`](../engineering_journal/matlab/figures/figure01_electrical_load_budget.m) | Component load-budget arithmetic |
+| MATLAB 02 | [`figure02_converter_input_range.m`](../engineering_journal/matlab/figures/figure02_converter_input_range.m) | Published input-voltage limits |
+| MATLAB 07 | [`figure07_12v_input_headroom.m`](../engineering_journal/matlab/figures/figure07_12v_input_headroom.m) | Battery equivalent-circuit scenario |
+| MATLAB 08 | [`figure08_5v_wiring_sensitivity.m`](../engineering_journal/matlab/figures/figure08_5v_wiring_sensitivity.m) | Pi supply-path resistance sensitivity |
 
 To reproduce a plot, execute its full `.m` program in MATLAB and use the generated PNG in `engineering_journal/visualization/`. Other exploratory electrical simulations are available in the same script directory, but the four shown here directly support the design and reliability discussion.
 
@@ -595,7 +595,7 @@ n_{\mathrm{wheel}} = \frac{60N}{C_{w}\,\Delta t},\qquad
 v_{\mathrm{wheel}} = \frac{2\pi r\,N}{C_{w}\,\Delta t}.
 ```
 
-No **measured wheel counts-per-revolution** are claimed: the nominal 836 gearbox-output edge count above is **derived from software parameters**, while an observed and calibrated `C_w` depends on the encoder pulse definition, quadrature decoding (×1, ×2 or ×4), gearbox, external gearing and software configuration. **No `encoder_calibration.m` script exists in the current public `other/matlab/` directory**; consequently the electrical journal does not link to an obsolete path or present an unrelated battery-current script as an encoder study. Keep `C_w` symbolic until the installed motor/encoder configuration supplies a defensible value.
+No **measured wheel counts-per-revolution** are claimed: the nominal 836 gearbox-output edge count above is **derived from software parameters**, while an observed and calibrated `C_w` depends on the encoder pulse definition, quadrature decoding (×1, ×2 or ×4), gearbox, external gearing and software configuration. **No `encoder_calibration.m` script exists in the current public `matlab/` directory**; consequently the electrical journal does not link to an obsolete path or present an unrelated battery-current script as an encoder study. Keep `C_w` symbolic until the installed motor/encoder configuration supplies a defensible value.
 
 ## 16. Steering-servo interface
 
@@ -680,7 +680,7 @@ The architecture is evaluated as a connected system: the power budget relates to
 | E-03 — Combined three-sheet EasyEDA schematic | [`schemes/schematic_diagram.pdf`](../schemes/schematic_diagram.pdf) |
 | E-04 — Pictorial wiring diagram | [`schemes/wiring_diagram.png`](../schemes/wiring_diagram.png) |
 | MATLAB Figures 01, 02, 07 and 08 | [`visualization/`](visualization/) |
-| Electrical MATLAB source code | [`other/matlab/`](../other/matlab/) |
+| Electrical MATLAB source code | [`engineering_journal/matlab/figures`](../engineering_journal/matlab/figures/) |
 | Completed-robot construction photos | [`4-build.md`](4-build.md) and [`other/Pic/Build/`](../other/Pic/Build/) |
 | Current Raspberry Pi interfaces and motor-control code | [`src/Raspberrypi/`](../src/Raspberrypi/) |
 

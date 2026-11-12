@@ -2,7 +2,13 @@
 
 **YBR-SUNFLOWER · WRO 2026 Future Engineers · MathWorks Modeling Award**
 
-[Project README](../../README.md) · [Power and Sensor Architecture](../../engineering_journal/2-elec.md) · [Software Architecture](../../engineering_journal/3-software.md) · [Published figures](../../engineering_journal/visualization/)
+[Project README](../../README.md)
+
+[Power and Sensor Architecture](../2-elec.md)
+
+[Software Architecture](../3-software.md)
+
+[Published figures](visualization/)
 
 This folder contains **eight standalone MATLAB scripts** for investigating the robot's electrical power system. This guide explains their engineering purpose, equations, input assumptions, execution steps, outputs, and connection to the engineering journal.
 
@@ -29,7 +35,7 @@ This folder contains **eight standalone MATLAB scripts** for investigating the r
 
 ## 1. Engineering problem and MATLAB's role
 
-The car combines a Raspberry Pi 5, RPLIDAR S2L, OV5647 camera, SEN0253 IMU, motor and encoder, and steering servo. The Pi runs the sensing, navigation, planning, and control software described in the [software journal](../../engineering_journal/3-software.md). Reliable electrical supply is therefore relevant to both perception and motion.
+The car combines a Raspberry Pi 5, RPLIDAR S2L, OV5647 camera, SEN0253 IMU, motor and encoder, and steering servo. The Pi runs the sensing, navigation, planning, and control software described in the [software journal](../3-software.md). Reliable electrical supply is therefore relevant to both perception and motion.
 
 The modeled power architecture is:
 
@@ -40,7 +46,7 @@ The modeled power architecture is:
 | Switched battery → voltmeter | Battery-voltage display | How should a direct battery load be counted separately from regulated loads? |
 | Pi-side 5 V → DFR0604 PWM supply | Steering servo, **conditional on external VP being unpowered** | How could an assumed servo load affect the shared Pi supply path? |
 
-Actual wiring, sensor interfaces, and mounting considerations are documented in the [electrical journal](../../engineering_journal/2-elec.md). The servo-supply assumption is a model condition, not evidence that the installed VP connection has been verified.
+Actual wiring, sensor interfaces, and mounting considerations are documented in the [electrical journal](../2-elec.md). The servo-supply assumption is a model condition, not evidence that the installed VP connection has been verified.
 
 We use **base MATLAB** for component power arithmetic, voltage-range comparisons, `interp1(...,'pchip')` interpolation, time-stepped battery simulation, scenario comparison, and annotated figure export with `exportgraphics`. These functions make assumptions visible and allow the same equations to be evaluated across several cases. The models remain deliberately simple because measured battery characteristics, converter efficiency maps, and dynamic load traces are not supplied as model inputs.
 
@@ -52,14 +58,14 @@ Each image filename below is also the PNG produced in the script's local `result
 
 | Model | Source script | Published PNG | Evidence and purpose |
 |:---:|---|---|---|
-| 01 | [figure01_electrical_load_budget.m](figure01_electrical_load_budget.m) | [01_assumed_load_budget.png](../../engineering_journal/visualization/01_assumed_load_budget.png) | Published operating points plus assumed loads; component power allocation |
-| 02 | [figure02_converter_input_range.m](figure02_converter_input_range.m) | [02_input_range_screen.png](../../engineering_journal/visualization/02_input_range_screen.png) | Published input limits; compatibility screening |
-| 03 | [figure03_battery_side_current.m](figure03_battery_side_current.m) | [03_estimated_input_current.png](../../engineering_journal/visualization/03_estimated_input_current.png) | Calculated current versus battery voltage |
-| 04 | [figure04_battery_ocv_soc.m](figure04_battery_ocv_soc.m) | [04_assumed_voltage_vs_soc.png](../../engineering_journal/visualization/04_assumed_voltage_vs_soc.png) | Illustrative, unmeasured open-circuit-voltage curve |
-| 05 | [figure05_battery_voltage_time.m](figure05_battery_voltage_time.m) | [05_voltage_vs_time_scenarios.png](../../engineering_journal/visualization/05_voltage_vs_time_scenarios.png) | Simulated battery terminal voltage under three constant-demand cases |
-| 06 | [figure06_soc_and_current.m](figure06_soc_and_current.m) | [06_soc_and_current.png](../../engineering_journal/visualization/06_soc_and_current.png) | The same battery simulation viewed as SOC and current |
-| 07 | [figure07_12v_input_headroom.m](figure07_12v_input_headroom.m) | [07_12v_input_headroom.png](../../engineering_journal/visualization/07_12v_input_headroom.png) | Simulated margin above the DFR1208 minimum input |
-| 08 | [figure08_5v_wiring_sensitivity.m](figure08_5v_wiring_sensitivity.m) | [08_transient_timeline.png](../../engineering_journal/visualization/08_transient_timeline.png) | Quasi-static resistive sensitivity to hypothetical load steps |
+| 01 | [figure01_electrical_load_budget.m](figure01_electrical_load_budget.m) | [01_assumed_load_budget.png](visualization/01_assumed_load_budget.png) | Published operating points plus assumed loads; component power allocation |
+| 02 | [figure02_converter_input_range.m](figure02_converter_input_range.m) | [02_input_range_screen.png](visualization/02_input_range_screen.png) | Published input limits; compatibility screening |
+| 03 | [figure03_battery_side_current.m](figure03_battery_side_current.m) | [03_estimated_input_current.png](visualization/03_estimated_input_current.png) | Calculated current versus battery voltage |
+| 04 | [figure04_battery_ocv_soc.m](figure04_battery_ocv_soc.m) | [04_assumed_voltage_vs_soc.png](visualization/04_assumed_voltage_vs_soc.png) | Illustrative, unmeasured open-circuit-voltage curve |
+| 05 | [figure05_battery_voltage_time.m](figure05_battery_voltage_time.m) | [05_voltage_vs_time_scenarios.png](visualization/05_voltage_vs_time_scenarios.png) | Simulated battery terminal voltage under three constant-demand cases |
+| 06 | [figure06_soc_and_current.m](figure06_soc_and_current.m) | [06_soc_and_current.png](visualization/06_soc_and_current.png) | The same battery simulation viewed as SOC and current |
+| 07 | [figure07_12v_input_headroom.m](figure07_12v_input_headroom.m) | [07_12v_input_headroom.png](visualization/07_12v_input_headroom.png) | Simulated margin above the DFR1208 minimum input |
+| 08 | [figure08_5v_wiring_sensitivity.m](figure08_5v_wiring_sensitivity.m) | [08_transient_timeline.png](visualization/08_transient_timeline.png) | Quasi-static resistive sensitivity to hypothetical load steps |
 
 For a short review, read **01 → 02 → 07 → 08**. Models **03–06** explain the calculations and battery assumptions behind that story. MATLAB figure numbers **01–08** are separate from the journal's architecture and wiring drawing numbers **E-01–E-04**.
 
