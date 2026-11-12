@@ -42,8 +42,8 @@ stop_early_mm = 320.0
 # the value goes to analogWrite unchanged. These are the figures measured
 # AFTER the 16:28 reduction was fitted (see startup.mm_per_s_at_full): 60 is
 # about 24% duty and around 234mm/s.
-base = 255
-corner = 200
+base = 130
+corner = 120
 lost = 105
 minimum = 105
 # While the planner reports a pass it could not give full clearance to. Every
@@ -386,6 +386,170 @@ lost_timeout_s = 4.0
 front_slow_mm = 350.0
 front_stop_mm = 250.0
 front_sector_deg = 25.0
+
+# =============================================================================
+# [surprise] - the WRO 2026 surprise rule.
+#
+# One traffic sign - never the first one the robot meets - is swapped for the
+# opposite colour and is 5cm or 15cm tall instead of 10cm. It has to be passed
+# on the side of its ORIGINAL colour, i.e. the opposite of the colour the
+# camera sees. Passing any sign on the wrong side ends the attempt, so
+# flipping a normal sign costs exactly what missing the modified one does, and
+# every number below is set to prefer "it is a normal sign".
+#
+# How it is found (classes/sign_sizer.py): a sign's pixel height puts it at
+# one of three ranges, one for each height it could be. The LIDAR says which
+# of those ranges has something at it; the SHAPE (height over width - the
+# signs are all 5cm wide) says which height looks right. Tall needs both to
+# say tall; short needs both to say short; anything else is 10cm. Each frame
+# is one vote, counted per tracked sign, and a sign is only passed on the
+# other side once its votes latch.
+#
+# THE NUMBERS MARKED "MEASURE" HAVE NOT BEEN MEASURED ON THE ROBOT. Until they
+# are, leave enabled = false. The bench script prints both cues and the
+# verdict for a sign in front of the robot:
+#     python test_sign_sizer.py --place 70 --height 15
+# =============================================================================
+[surprise]
+# Off: none of this section is read and the round is exactly what it was.
+# `--surprise` on the command line turns it on for one run.
+enabled = false
+
+# MEASURE. Does the lidar's scan plane hit a 5cm-tall sign, or pass over it?
+# Stand a 5cm sign 40cm in front of the robot and run
+#     python test_sign_sizer.py --place 40 --height 5
+# and read the "lidar at 5cm range" line. Both cases are handled:
+#   false - the beam passes over it. A short sign is then "squat blob, and
+#           the lidar sees nothing before the wall along that bearing".
+#   true  - the beam hits it. A short sign is then "squat blob, and a lidar
+#           return at the 5cm range".
+# Get it wrong and short signs are MISSED (passed by their colour), not
+# falsely flipped - each setting demands the evidence the other cannot give.
+lidar_sees_short = false
+
+# WHO DECIDES. Both modes only ever flip a sign the SHAPE (height / width)
+# says is 5cm or 15cm; they differ in what the lidar has to say about it.
+#   "confirm" - the lidar must ALSO point to that height. Safest, latest:
+#               every frame the lidar has no clear opinion on is lost, and
+#               on the mat that left a 5cm sign decided only 46cm ahead.
+#   "veto"    - the lidar only has to not DISAGREE. A frame where it sees
+#               something right where a 10cm sign that size would be (the
+#               normal case for a normal sign) still blocks the flip; a
+#               frame where it simply saw nothing useful no longer does.
+#               Decides earlier, and relies on the ratio bands being right -
+#               measure them with test_sign_sizer.py before trusting it.
+lidar_role = "veto"
+
+# ---- Detection: what ObjectSolver lets through while this is on -----------
+# The plain solver drops blobs under 100px (a 5cm cube is under that beyond
+# about 0.8m), blobs wider than tall (a 5cm cube corner-on) and anything that
+# ranges past 150cm as a 10cm sign (a 5cm sign reads at twice its range).
+# With the rule on those are kept for the size check, and dropped again after
+# it unless they turn out to be a short sign.
+# Smallest blob, in px of contour area. MEASURE: the smallest a real 5cm sign
+# gets at shape_max_range_mm, less a little. Lower lets in more specks.
+min_area_px = 30.0
+# Widest blob, as width / height. A 5cm cube corner-on is 1.41; the rest is
+# noise allowance. Anything wider is a reflection or a bay wall, not a sign.
+max_squat_ratio = 1.6
+
+# ---- The lidar check ------------------------------------------------------
+# Degrees either side of the sign's bearing (as seen from the LIDAR, not the
+# lens) that are searched for a return. A 5cm sign at 80cm is 3.6deg wide, and
+# the scan is one slot per whole degree - so 2 would do IF the camera's bearing
+# were right. Measured on the bench (2026-11) it was 11deg out near the middle
+# of the frame: the lidar was searched beside the sign, found nothing, and the
+# 15cm sign was never confirmed - nor was any normal sign, so the lidar never
+# vetoed anything either. 12 covered that until the bearing was fixed
+# (2026-11-12, test_sign_sizer.py --calibrate: CAMERA_YAW_DEG 6.6 -> -6.4).
+# What is left is ~3deg of scatter, up to ~5deg at the edges of the frame, so
+# 6 covers it. Wider can find a DIFFERENT sign at the right range, which only
+# ever blocks a flip (lidar_role = "veto") - but blocks it all the same.
+lidar_window_deg = 6
+# A return counts as "at" a candidate range within this many mm PLUS
+# lidar_tolerance_fraction of the range. The fixed part covers the lens-to-
+# lidar offset and the sign's own depth; the fraction covers the camera's
+# range error, which grows with range. MEASURE: the camera-vs-lidar range
+# disagreement on a normal sign at 40 / 70 / 100cm (the bench script prints
+# it) should sit well inside this. Too tight and normal signs stop getting
+# 10cm votes; too loose and the 10cm and 15cm ranges overlap up close (they
+# are only range/2 apart).
+lidar_tolerance_mm = 60.0
+lidar_tolerance_fraction = 0.08
+# Readings needed inside the window before "the beam went past" is believed.
+# One reading is too easily a stray.
+lidar_min_readings = 2
+# Lidar slots older than this are ignored. The scan is a rolling snapshot at
+# ~10Hz, so anything fresh is under 0.1s old; readings are also moved forward
+# by speed x age before they are compared.
+lidar_max_age_s = 0.3
+# A lidar return this close to where the wall or the centre block is along
+# that bearing is the wall, not a sign, and cannot be the evidence for one.
+wall_margin_mm = 150.0
+
+# ---- The shape check ------------------------------------------------------
+# Only sightings in this range band count. Too far and the blob is a few
+# pixels wide and its mask edge is most of its width; too near and it is cut
+# off by the frame.
+shape_min_range_mm = 200.0
+shape_max_range_mm = 800.0
+# ...and only this close to the middle of the frame (degrees off the lens
+# axis). The fisheye stretches blobs toward the edge, so narrower is safer -
+# but a sign close enough to judge is usually well off to one side: in the
+# simulator 30 missed the 15cm sign in 3 of 8 runs and 50 missed none.
+# MEASURE: the bench script with --place at 50cm and the sign 40-50deg off
+# to the side; if the ratio there is not within ~10% of straight ahead,
+# bring this in.
+shape_max_off_axis_deg = 50.0
+# MEASURE. Pixels the colour mask adds to (or, negative, takes off) BOTH the
+# height and the width of a blob. A constant pad pulls every ratio toward
+# 1:1, most of all on the narrow side. Find it with the bench script on a
+# 10cm sign at 40cm and 100cm: the pad is whatever makes the ratio read 2.0
+# at both.
+blob_pad_px = 0.0
+# The ratio bands, height / width, after the width is corrected for the angle
+# the sign is seen from (a 5cm square corner-on is 1.41x wider than face-on;
+# the signs stand square to the walls, so the angle is known from the pose).
+# Nominal is 1.0 / 2.0 / 3.0. The gaps between the bands are deliberate: a
+# ratio in a gap is no opinion at all.
+# MEASURE all four with the bench script, each height at 40 / 70 / 100cm.
+short_max_ratio = 1.35       # at or below: looks 5cm
+standard_min_ratio = 1.6     # between these two: looks 10cm
+standard_max_ratio = 2.4
+tall_min_ratio = 2.65        # at or above: looks 15cm
+
+# ---- The vote, per tracked sign -------------------------------------------
+# A sign is latched as modified once this many frames have voted for the same
+# odd height AND they are at least latch_fraction of all its votes. The
+# camera runs at ~15Hz, so 4 votes is about a quarter of a second of
+# agreement. Raise both if a normal sign is ever flipped; lower latch_votes
+# if the modified one is decided too late to steer round.
+latch_votes = 4
+latch_fraction = 0.7
+# 10cm votes (same fraction rule) before a sign counts as settled as normal.
+# Until a sign is settled or latched it is "undecided" - see slow_within_mm.
+settle_votes = 4
+
+# ---- The round ------------------------------------------------------------
+# While an undecided sign is this close ahead (along the lap), speed is capped
+# at slow_speed, so the decision arrives with room left to act on it. Signs
+# already sized on an earlier lap are not slowed for again.
+slow_within_mm = 1300.0
+# The cap itself. Unset = speed.compromised. THIS IS THE KNOB FOR "DECIDED TOO
+# LATE": a sign is judged from 80cm (shape_max_range_mm) and needs latch_votes
+# frames at ~15fps after that, so the faster the robot goes the closer it is
+# by the time the side is known. At speed.compromised = 105 (= speed.minimum,
+# what the round already drives at) the cap did nothing on the mat, and a 5cm
+# sign was decided 46cm ahead. MEASURE how low the motor will still pull.
+# slow_speed = 80
+# The robot also slows for this long after EITHER cue alone first says a
+# sign might be odd - well before a 5cm sign has a block on the map at all.
+suspect_hold_s = 0.8
+# One CSV row per sign per camera frame: both cues, the verdict, what the
+# lidar expected at each range and the nearest reading it actually had. The
+# file to look at after a run that decided late, or flipped a normal sign.
+# Relative to src/Raspberrypi; overwritten every run. "" = off.
+log_path = "logs/surprise_sizer.csv"
 
 # =============================================================================
 # [parking] - a script the lidar starts, not a trajectory the map plans.

@@ -89,12 +89,30 @@ HITS_TO_CONFIRM = 2              # sightings before a block is believed - lower
                                   # every missed/occluded frame along the way
                                   # burns into the approach_mm ramp before the
                                   # robot is even allowed to start dodging
-MAX_MISSES = 6                   # unseen-but-should-be-visible frames before dropping
+MAX_MISSES = 12                   # unseen-but-should-be-visible frames before dropping
 MAX_STALE_S = 6.0                # unconfirmed-regardless-of-visibility timeout
 POSITION_SMOOTHING_FLOOR = 0.15  # a settled block can still be nudged this hard
 
 # Blocks live on the mat, so anything solved into a wall is a bad detection.
 BLOCK_EDGE_MARGIN_MM = 20.0
+
+# --- The surprise rule: how tall each block is ---------------------------
+# Off unless BlockMap.size_voting is set, and then only for detections that
+# SignSizer has sized (classes/sign_sizer.py). Every block starts believed to
+# be STANDARD_HEIGHT_MM and is only ever believed otherwise once its votes
+# latch - see BlockMap._decide_size.
+STANDARD_HEIGHT_MM = int(BLOCK_HEIGHT_MM)
+
+
+@dataclass
+class SizeVoting:
+    """
+    When a block's votes settle its height. From tasks/final/config.toml
+    [surprise] - see there for what each one means.
+    """
+    latch_votes: int         # votes for 5cm (or 15cm) before it can latch
+    latch_fraction: float    # ...and the share of all votes they must be
+    settle_votes: int        # 10cm votes before a block is settled as 10cm
 
 # ============================================================================
 # Camera
@@ -143,9 +161,47 @@ class Block:
     last_seen: float = field(default_factory=time.monotonic)
     uid: int = field(default_factory=lambda: next(_BLOCK_UIDS))
 
+    # ---- The surprise rule - see BlockMap._observe_sized -----------------
+    # The height its x, y are ranged for: the one most frames placed it with
+    # (range_votes), or the latched one once it is modified.
+    height_mm: int = STANDARD_HEIGHT_MM
+    # Frames that RANGED it with each height, {height_mm: count}. Not the
+    # same as votes: the lidar alone can say where a tall sign is, long
+    # before both cues agree on what it is.
+    range_votes: dict = field(default_factory=dict)
+    # LATCHED: the votes said 5cm or 15cm, clearly enough. Only undone if the
+    # 10cm votes later win just as clearly - see BlockMap._decide_size.
+    modified: bool = False
+    # It WAS latched and the 10cm votes took it back. FinalTask clears the
+    # round's memory of it on seeing this.
+    unlatched: bool = False
+    # Frames that voted for each height, {height_mm: count}.
+    votes: dict = field(default_factory=dict)
+    # A position per height the block could be, {height_mm: [x, y, samples]}.
+    # One sign ranged as 10cm and as 15cm lands in two places a third of the
+    # range apart, so a single running average would be dragged between them
+    # - and one far enough apart would split the sign into two blocks. Each
+    # height keeps its own, and x, y is whichever one height_mm says.
+    estimates: dict = field(default_factory=dict)
+    # Set by BlockMap._decide_size from the rules it was given: settled is
+    # "enough votes say 10cm", undecided is "neither settled nor latched".
+    # Both stay False while the surprise rule is off.
+    settled: bool = False
+    undecided: bool = False
+
     @property
     def is_confirmed(self):
         return self.hits >= HITS_TO_CONFIRM
+
+    @property
+    def evidence(self):
+        """
+        How much the votes favour the height this block is believed to be,
+        over every other height: its votes minus all the others'. What
+        FinalTask compares when two blocks both latch, to keep only one.
+        """
+        own = self.votes.get(self.height_mm, 0)
+        return own - (sum(self.votes.values()) - own)
 
     @property
     def position(self):
@@ -153,6 +209,10 @@ class Block:
 
     def __str__(self):
         state = "confirmed" if self.is_confirmed else f"{self.hits}/{HITS_TO_CONFIRM}"
+        if self.modified:
+            state += f" {self.height_mm / 10:.0f}cm MODIFIED"
+        elif self.undecided:
+            state += " size?"
         return f"{self.color.value:<5} ({self.x / 10:+6.1f}, {self.y / 10:+6.1f})cm [{state}]"
 
 
@@ -196,6 +256,10 @@ class BlockMap:
         self.camera_fov_deg = float(camera_fov_deg)
         self.max_range_mm = float(max_range_mm)
         self.debug = debug
+        # The surprise rule's vote rules (SizeVoting), or None for off. Only
+        # read for detections SignSizer has sized, so with no sizer this
+        # changes nothing.
+        self.size_voting = None
 
         self._blocks = []
         self.observations = 0
@@ -269,6 +333,13 @@ class BlockMap:
         with self._lock:
             seen = []
             for detection in detections or ():
+                if detection.candidates_cm and self.size_voting is not None:
+                    block = self._observe_sized(pose, camera_x, camera_y, detection)
+                    if block is None:
+                        self.rejected += 1
+                    else:
+                        seen.append(block)
+                    continue
                 point = self._to_field(pose, camera_x, camera_y, detection)
                 if point is None:
                     self.rejected += 1
@@ -293,11 +364,16 @@ class BlockMap:
         yaw plus that - all three are clockwise-positive, which is the whole
         reason the convention is shared.
         """
-        distance = detection.distance_cm * 10.0 + FACE_TO_CENTER_MM
+        return self._place(pose, camera_x, camera_y, detection.distance_cm,
+                           detection.bearing_deg)
+
+    def _place(self, pose, camera_x, camera_y, distance_cm, bearing_deg):
+        """_to_field for a range and bearing rather than a detection."""
+        distance = distance_cm * 10.0 + FACE_TO_CENTER_MM
         if distance > self.max_range_mm:
             return None
 
-        bearing = normalize_angle(pose.heading + self.camera_yaw_deg + detection.bearing_deg)
+        bearing = normalize_angle(pose.heading + self.camera_yaw_deg + bearing_deg)
         radians = math.radians(bearing)
         x = camera_x + distance * math.sin(radians)
         y = camera_y + distance * math.cos(radians)
@@ -336,6 +412,147 @@ class BlockMap:
         match.misses = 0
         match.last_seen = time.monotonic()
         return match
+
+    # ========================================================================
+    # THE SURPRISE RULE - how tall each block is
+    # ========================================================================
+
+    def _observe_sized(self, pose, camera_x, camera_y, detection):
+        """
+        _merge for a detection SignSizer has sized: placed at every height it
+        could be, matched against each block AT THAT BLOCK'S OWN HEIGHT, and
+        its vote counted.
+
+        Matching on the frame's own verdict instead would split a tall sign
+        in two. Far off, before the shape can be judged, its frames say 10cm
+        and place it at the 10cm range; close up they say 15cm and place it
+        half as far again - over ASSOCIATION_RADIUS_MM from the first. So
+        each block is matched at the height IT is believed to be, and keeps
+        a position for each of the others to move to if the votes latch.
+
+        I/O:
+            return: the Block hit or created, or None if the frame's own
+                    height places it off the map or out of range
+        """
+        points = {}
+        for height_mm, distance_cm in detection.candidates_cm.items():
+            point = self._place(pose, camera_x, camera_y, distance_cm,
+                                detection.bearing_deg)
+            if point is not None:
+                points[int(height_mm)] = point
+        chosen = int(round(detection.assumed_height_cm * 10.0))
+        if chosen not in points:
+            return None
+
+        match = None
+        best = ASSOCIATION_RADIUS_MM ** 2
+        for block in self._blocks:
+            if block.color != detection.color:
+                continue
+            point = points.get(block.height_mm)
+            if point is None:
+                continue
+            distance = (block.x - point[0]) ** 2 + (block.y - point[1]) ** 2
+            if distance < best:
+                best, match = distance, block
+
+        if match is None:
+            x, y = points[chosen]
+            match = Block(color=detection.color, x=x, y=y, height_mm=chosen)
+            match.range_votes = {chosen: 1}
+            match.estimates = {height: [px, py, 1] for height, (px, py) in points.items()}
+            self._blocks.append(match)
+            if self.debug:
+                print(f"[blocks] new {match}")
+        else:
+            match.hits += 1
+            for height, (px, py) in points.items():
+                estimate = match.estimates.get(height)
+                if estimate is None:
+                    match.estimates[height] = [px, py, 1]
+                    continue
+                # The same running average _merge keeps, per height.
+                estimate[2] += 1
+                alpha = max(POSITION_SMOOTHING_FLOOR, 1.0 / estimate[2])
+                estimate[0] += alpha * (px - estimate[0])
+                estimate[1] += alpha * (py - estimate[1])
+            match.range_votes[chosen] = match.range_votes.get(chosen, 0) + 1
+            if not match.modified:
+                # Placed where MOST frames placed it; a tie stays put.
+                placed = max(match.range_votes, key=lambda height: (
+                    match.range_votes[height], height == match.height_mm))
+                if placed in match.estimates:
+                    match.height_mm = placed
+            match.x, match.y = match.estimates[match.height_mm][:2]
+            match.misses = 0
+            match.last_seen = time.monotonic()
+
+        if detection.size_vote is not None:
+            match.votes[detection.size_vote] = match.votes.get(detection.size_vote, 0) + 1
+        self._decide_size(match)
+        return match
+
+    def _decide_size(self, block):
+        """
+        Latches a block as modified once its votes say so clearly, and keeps
+        its settled/undecided flags current.
+
+            LATCH   votes for 5cm (or 15cm) reach latch_votes AND are at least
+                    latch_fraction of every vote it has had. Once latched it
+                    stays latched, and its position moves to the one ranged
+                    for that height.
+            SETTLED the same test passed by 10cm votes, with settle_votes.
+            UNDECIDED  neither yet - the round slows down for these.
+            UNLATCH a latched block whose 10cm votes then pass the same test
+                    (settle_votes, and latch_fraction of ALL its votes,
+                    the odd ones included). A few bad frames in a row can
+                    latch a normal sign; dozens of good ones afterwards
+                    should be able to say so. Measured on the mat: a normal
+                    green latched as 5cm on 4 votes and finished the lap at
+                    4 against 44.
+
+        Where an unlatched block STANDS is not decided here - that follows
+        range_votes, in _observe_sized.
+        """
+        rules = self.size_voting
+        total = sum(block.votes.values())
+
+        def clear(height, needed):
+            count = block.votes.get(height, 0)
+            return count >= needed and count >= rules.latch_fraction * total
+
+        if block.modified and clear(STANDARD_HEIGHT_MM, rules.settle_votes):
+            block.modified = False
+            block.unlatched = True
+            self._move_to_height(block, STANDARD_HEIGHT_MM)
+            print(f"[blocks] {block.color.name} sign at ({block.x / 10:+.0f}, "
+                  f"{block.y / 10:+.0f})cm is a normal 10cm sign after all - "
+                  f"votes {self._votes_text(block)}")
+        elif not block.modified:
+            for height in sorted(block.votes, key=lambda h: -block.votes[h]):
+                if height == STANDARD_HEIGHT_MM or not clear(height, rules.latch_votes):
+                    continue
+                block.modified = True
+                self._move_to_height(block, height)
+                print(f"[blocks] {block.color.name} sign at ({block.x / 10:+.0f}, "
+                      f"{block.y / 10:+.0f})cm is {height / 10:.0f}cm tall - "
+                      f"votes {self._votes_text(block)}")
+                break
+        block.settled = (not block.modified
+                         and clear(STANDARD_HEIGHT_MM, rules.settle_votes))
+        block.undecided = not block.modified and not block.settled
+
+    @staticmethod
+    def _move_to_height(block, height_mm):
+        block.height_mm = height_mm
+        estimate = block.estimates.get(height_mm)
+        if estimate is not None:
+            block.x, block.y = estimate[0], estimate[1]
+
+    @staticmethod
+    def _votes_text(block):
+        return " ".join(f"{height / 10:.0f}cm:{count}"
+                        for height, count in sorted(block.votes.items()))
 
     def _count_misses(self, pose, camera_x, camera_y, seen):
         """

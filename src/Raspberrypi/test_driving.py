@@ -14,6 +14,14 @@ compass and the start button.
     python test_driving.py --round final      ... with four pillars to dodge
     python test_driving.py --round final --pillars 6
     python test_driving.py --round final --trials 8 --sweep blocks.approach_mm 400,800,1200
+    python test_driving.py --round final --trials 24 --surprise 15
+                                              ... with one sign swapped for a
+                                              15cm one of the other colour, and
+                                              the surprise rule switched on
+    python test_driving.py --round final --trials 24 --surprise 5 --lidar-sees-short
+    python test_driving.py --round final --trials 24 --surprise none
+                                              the rule on, no modified sign:
+                                              every flip is a false one
 
 What it checks, per run:
     * did it complete the laps, and how long did it take
@@ -44,11 +52,13 @@ import time
 
 import numpy as np
 
-from classes.block_map import (BLOCK_SIZE_MM, MAX_MAPPING_RANGE_MM,
-                               camera_offset_behind_lidar)
+from classes.block_map import (BLOCK_HEIGHT_MM, BLOCK_SIZE_MM,
+                               MAX_MAPPING_RANGE_MM, camera_offset_behind_lidar)
 from classes.field_map import FieldMap
 from classes.navigation_manager import NavigationManager, Pose
-from classes.object_solver import WORKING_HORIZONTAL_FOV_DEG, DetectedObject
+from classes.object_solver import (DEG_PER_PX, MAX_DISTANCE_CM,
+                                   MIN_CONTOUR_AREA_PX, SURPRISE_MAX_DISTANCE_CM,
+                                   WORKING_HORIZONTAL_FOV_DEG, DetectedObject)
 from classes.parking import (NOMINAL_BAY_MM, WALL_THICKNESS_MM, along_axis_of,
                              bay_interior, section_of, wall_heading_of,
                              wall_rects)
@@ -353,13 +363,50 @@ PILLAR_BEARING_ERROR_DEG = 1.0
 PILLAR_DROPOUT_AT_RANGE = 0.4
 
 
+# ---- The surprise rule -----------------------------------------------------
+# What the camera's blob looks like, for the size check to work from. The
+# range error above already moves the HEIGHT; this is the extra error on the
+# width, in pixels, one sigma - contour edges land a pixel either way. AN
+# ASSUMPTION until the bench script (test_sign_sizer.py) has measured the real
+# spread of the ratio; the simulated results are only as good as it is.
+PILLAR_WIDTH_NOISE_PX = 1.0
+
+# How near the robot has to come for it to count as going past a sign, and
+# how far it has to get away again before the next time counts separately.
+PASS_WITHIN_MM = 450.0
+PASS_LEAVE_MM = 700.0
+
+
 class SimPillar:
     """One traffic sign on the mat, and how the run went past it."""
 
-    def __init__(self, x, y, color, progress):
+    def __init__(self, x, y, color, progress, height_mm=BLOCK_HEIGHT_MM,
+                 modified=False):
         self.x, self.y, self.color, self.progress = x, y, color, progress
+        # The surprise rule: `color` is always the colour the camera SEES. A
+        # modified sign is one that was swapped for the other colour and the
+        # wrong height, so it has to be passed as if it were the opposite of
+        # `color` - see required_side.
+        self.height_mm = float(height_mm)
+        self.modified = bool(modified)
         self.min_clearance_mm = float("inf")   # body to pillar face
         self.side = None                       # + = pillar passed on our right
+        # Every separate time the robot went past: [side, clearance, flipped],
+        # where flipped is whether the ROUND was treating it as the modified
+        # sign at that moment. The single closest approach above cannot tell
+        # lap 1 from lap 3, and the surprise rule is decided on lap 1.
+        self.passes = []
+        self._pass = None
+        self.first_reached_at = None
+
+    @property
+    def green_side(self):
+        """Passed like a green sign (on its left)? The ORIGINAL colour's rule."""
+        return (self.color is Color.GREEN) != self.modified
+
+    def correct(self, side):
+        """Was a pass with the pillar on this side of the robot legal?"""
+        return side > 0.0 if self.green_side else side < 0.0
 
     @property
     def passed_correctly(self):
@@ -372,9 +419,9 @@ class SimPillar:
         """
         if self.side is None:
             return None
-        return self.side > 0.0 if self.color is Color.GREEN else self.side < 0.0
+        return self.correct(self.side)
 
-    def observe(self, x, y, heading):
+    def observe(self, x, y, heading, now=0.0, flipped=None):
         """
         Closest approach and which side we were on when we got there.
 
@@ -390,13 +437,37 @@ class SimPillar:
         point.
         """
         offset_x, offset_y = self.x - x, self.y - y
-        clearance = math.hypot(offset_x, offset_y) - BLOCK_SIZE_MM / 2.0 - ROBOT_RADIUS_MM
+        distance = math.hypot(offset_x, offset_y)
+        clearance = distance - BLOCK_SIZE_MM / 2.0 - ROBOT_RADIUS_MM
+        radians = math.radians(heading)
+        # + when the pillar is off the robot's right shoulder.
+        side = offset_x * math.cos(radians) - offset_y * math.sin(radians)
+        ahead = offset_x * math.sin(radians) + offset_y * math.cos(radians) > 0.0
+        self._track_pass(distance, clearance, side, now, flipped, ahead)
         if clearance >= self.min_clearance_mm:
             return
         self.min_clearance_mm = clearance
-        radians = math.radians(heading)
-        # + when the pillar is off the robot's right shoulder.
-        self.side = offset_x * math.cos(radians) - offset_y * math.sin(radians)
+        self.side = side
+
+    def _track_pass(self, distance, clearance, side, now, flipped, ahead):
+        """
+        Splits the run into separate passes of this pillar. A pass is judged
+        at its own closest approach, and only counts if the robot actually
+        went by (the pillar ended up behind it) rather than backing away.
+        """
+        if self._pass is None:
+            # Coming up on it, not just standing near it: a sign beside or
+            # behind the robot where it was put down has not been met.
+            if distance <= PASS_WITHIN_MM and ahead:
+                self._pass = [side, clearance, flipped() if flipped else False]
+                if self.first_reached_at is None:
+                    self.first_reached_at = now
+            return
+        if clearance < self._pass[1]:
+            self._pass = [side, clearance, flipped() if flipped else False]
+        if distance >= PASS_LEAVE_MM:
+            self.passes.append(tuple(self._pass))
+            self._pass = None
 
 
 class SimCamera:
@@ -430,15 +501,25 @@ class SimObjectSolver:
 
     debug = False
 
-    def __init__(self, pillars, field_map, rng, max_range_mm, fov_deg=None):
+    def __init__(self, pillars, field_map, rng, max_range_mm, fov_deg=None,
+                 shape_rng=None):
         self.pillars = pillars
         self.map = field_map
         self.rng = rng
+        # A separate stream for the blob's width, so a run with the surprise
+        # rule off draws exactly the numbers it always did.
+        self.shape_rng = shape_rng or random.Random(0)
+        # ObjectSolver.set_surprise's setting: None = the plain solver.
+        self.surprise = None
         self.max_range_mm = float(max_range_mm)
         self.fov_deg = float(fov_deg or WORKING_HORIZONTAL_FOV_DEG)
         self.camera_offset_mm = camera_offset_behind_lidar()
         self.frames = 0
         self.reported = 0
+
+    def set_surprise(self, settings):
+        """Same contract as ObjectSolver.set_surprise."""
+        self.surprise = settings
 
     def show_debug(self):
         """No windows to paint - the round calls this when --debug is on."""
@@ -485,17 +566,148 @@ class SimObjectSolver:
             error = self.rng.gauss(0.0, PILLAR_RANGE_ERROR_AT_1M * metres ** 2 * distance)
             seen_at = max(BLOCK_SIZE_MM, distance + error)
             seen_bearing = bearing + self.rng.gauss(0.0, PILLAR_BEARING_ERROR_DEG)
-            self.reported += 1
-            detections.append(DetectedObject(
-                color=pillar.color,
-                # BlockMap adds the half-block back on, so this is the face.
-                distance_cm=(seen_at - BLOCK_SIZE_MM / 2.0) / 10.0,
-                bearing_deg=seen_bearing,
-                forward_cm=seen_at * math.cos(math.radians(seen_bearing)) / 10.0,
-                lateral_cm=seen_at * math.sin(math.radians(seen_bearing)) / 10.0,
-                pixel_center=(0, 0),
-                box_points=np.zeros((4, 2))))
+            if self.surprise is None and pillar.height_mm == BLOCK_HEIGHT_MM:
+                self.reported += 1
+                detections.append(DetectedObject(
+                    color=pillar.color,
+                    # BlockMap adds the half-block back on, so this is the face.
+                    distance_cm=(seen_at - BLOCK_SIZE_MM / 2.0) / 10.0,
+                    bearing_deg=seen_bearing,
+                    forward_cm=seen_at * math.cos(math.radians(seen_bearing)) / 10.0,
+                    lateral_cm=seen_at * math.sin(math.radians(seen_bearing)) / 10.0,
+                    pixel_center=(0, 0),
+                    box_points=np.zeros((4, 2))))
+                continue
+            blob = self._blob(pillar, seen_at, seen_bearing, distance, heading)
+            if blob is not None:
+                self.reported += 1
+                detections.append(blob)
         return detections
+
+    def _blob(self, pillar, seen_at, seen_bearing, distance, heading):
+        """
+        The detection the real solver would make of a sign that may not be
+        10cm tall: its height and width in pixels, and the range those give
+        when it is ASSUMED to be 10cm - which is what the real solver does.
+        A 5cm sign therefore reads twice as far as it is and a 15cm one two
+        thirds as far, until SignSizer says otherwise.
+
+        Returns None where the real solver would have dropped it: with the
+        surprise rule off, anything squat, tiny or past MAX_DISTANCE_CM; with
+        it on, only what SurpriseDetection still refuses.
+        """
+        face = max(1.0, seen_at - BLOCK_SIZE_MM / 2.0)
+        height_px = math.degrees(2.0 * math.atan(pillar.height_mm / 2.0 / face)) / DEG_PER_PX
+        # A 5cm square seen at angle a off its face is 5(|cos a| + |sin a|)cm
+        # wide, and the signs stand square to the walls.
+        sightline = math.radians(heading + seen_bearing)
+        across = BLOCK_SIZE_MM * (abs(math.cos(sightline)) + abs(math.sin(sightline)))
+        width_px = (math.degrees(2.0 * math.atan(across / 2.0 / distance)) / DEG_PER_PX
+                    + self.shape_rng.gauss(0.0, PILLAR_WIDTH_NOISE_PX))
+        width_px = max(1.0, width_px)
+
+        as_standard = face * BLOCK_HEIGHT_MM / pillar.height_mm     # mm, to the face
+        standard = pillar.height_mm == BLOCK_HEIGHT_MM
+        # A 10cm sign keeps the old model's behaviour, which never applied the
+        # solver's own limits; the odd ones get the real limits.
+        plain = standard or (height_px * width_px >= MIN_CONTOUR_AREA_PX
+                             and width_px <= height_px
+                             and as_standard / 10.0 <= MAX_DISTANCE_CM)
+        if self.surprise is None:
+            if not plain:
+                return None
+        elif not standard and (height_px * width_px < self.surprise.min_area_px
+                               or width_px > height_px * self.surprise.max_squat_ratio
+                               or as_standard / 10.0 > SURPRISE_MAX_DISTANCE_CM):
+            return None
+        return DetectedObject(
+            color=pillar.color,
+            distance_cm=as_standard / 10.0,
+            bearing_deg=seen_bearing,
+            forward_cm=as_standard * math.cos(math.radians(seen_bearing)) / 10.0,
+            lateral_cm=as_standard * math.sin(math.radians(seen_bearing)) / 10.0,
+            pixel_center=(0, 0),
+            box_points=np.zeros((4, 2)),
+            height_px=height_px,
+            width_px=width_px,
+            off_axis_deg=seen_bearing,
+            plain=plain)
+
+
+class SimSignLidar(SimLidar):
+    """
+    SimLidar that can also see the traffic signs - the ones tall enough to
+    reach its scan plane - for the surprise rule's lidar check.
+
+    The signs appear ONLY in get_scan_with_age(), which is what SignSizer
+    reads. get_scan() is still walls only, so the localizer and the front
+    backstop behave exactly as they always have in this simulator: putting
+    the signs in front of those two as well changes how the whole round
+    drives, and that is a different experiment from the one --surprise is for.
+
+    A sign shorter than `plane_mm`, the height of the scan plane off the mat,
+    is passed over. That height has not been measured on the robot;
+    --lidar-sees-short picks which side of 50mm it is on.
+    """
+
+    def __init__(self, field_map, pillars, plane_mm, seed=1, **kwargs):
+        super().__init__(field_map, seed=seed, **kwargs)
+        self.pillars = pillars
+        self.plane_mm = float(plane_mm)
+        # Its own stream, so asking for this scan does not shift the noise
+        # the localizer's scans get.
+        self._sign_rng = np.random.default_rng(seed + 100)
+
+    def get_scan_with_age(self, max_age_s=None):
+        """
+        Same contract as LidarManager's. The simulated scan is taken all at
+        once, so every slot is 0s old.
+        """
+        x, y, heading = self.origin
+        angles = np.radians(heading + np.arange(360.0))
+        ranges = self.map.raycast(x, y, angles)
+        dx, dy = np.sin(angles), np.cos(angles)
+        half = BLOCK_SIZE_MM / 2.0
+        for pillar in self.pillars:
+            if pillar.height_mm <= self.plane_mm:
+                continue
+            ranges = np.minimum(ranges, self.map._box_hit(
+                x, y, dx, dy, (pillar.x - half, pillar.y - half),
+                (pillar.x + half, pillar.y + half)))
+        ranges = ranges + self._sign_rng.normal(0.0, self.noise_mm, 360)
+        ranges[self._sign_rng.random(360) < self.dropout] = np.nan
+        return ranges, np.zeros(360)
+
+
+# The scan plane's height off the mat for the two cases of
+# surprise.lidar_sees_short: over a 5cm sign, or into it. Both under 10cm.
+LIDAR_PLANE_OVER_SHORT_MM = 70.0
+LIDAR_PLANE_HITS_SHORT_MM = 30.0
+
+
+def swap_one_sign(pillars, height_mm, rng, robot, path, direction):
+    """
+    Applies the surprise rule to the mat: one sign - never the first one the
+    robot will meet - becomes the opposite colour and `height_mm` tall.
+
+    Called on the first camera frame rather than when the pillars are placed,
+    because "the first one the robot meets" needs the way round the lap, and
+    the round only settles that in its own setup.
+
+    I/O:
+        return: the SimPillar that was swapped, or None if there was no
+                second sign to swap
+    """
+    here, _ = path.project(robot.x, robot.y, direction)
+    ahead = sorted(pillars, key=lambda p: path.gap(
+        here, path.project(p.x, p.y, direction)[0]) % path.length)
+    if len(ahead) < 2:
+        return None
+    chosen = rng.choice(ahead[1:])
+    chosen.color = Color.RED if chosen.color is Color.GREEN else Color.GREEN
+    chosen.height_mm = float(height_mm)
+    chosen.modified = True
+    return chosen
 
 
 def place_pillars(path, direction, count, rng):
@@ -598,7 +810,8 @@ class SimContext:
             self.camera = SimCamera(robot)
             self.object_solver = SimObjectSolver(
                 self.pillars, field_map, random.Random(seed + 3),
-                max_range_mm=camera_range_mm or MAX_MAPPING_RANGE_MM)
+                max_range_mm=camera_range_mm or MAX_MAPPING_RANGE_MM,
+                shape_rng=random.Random(seed + 5))
         else:
             # The obstacle round checks these before touching the camera.
             self.camera = None
@@ -697,10 +910,20 @@ def parked_state(robot, bay, field_map):
 
 def simulate(task_class, config, start, debug=False, window=False, timeout_s=180.0,
              seed=0, lag_s=STEER_LAG_S, rate_deg_s=STEER_RATE_DEG_S,
-             gain_error=STEER_GAIN_ERROR, pillars=0, bay=None):
+             gain_error=STEER_GAIN_ERROR, pillars=0, bay=None,
+             surprise_mm=None, lidar_sees_short=False):
     """
     Runs one round end to end. Returns a result dict; never raises for a
     driving failure, because "drove into the block" is a result, not an error.
+
+    I/O:
+        surprise_mm: None for the mat as it always was. 50 or 150 swaps one
+                     sign (never the first met) for one that tall and the
+                     other colour; 0 swaps nothing. Any of the three also
+                     lets the lidar see the signs, for the surprise rule's
+                     lidar check only - see SimSignLidar.
+        lidar_sees_short: whether the scan plane is low enough to hit a 5cm
+                          sign
     """
     field_map = FieldMap()
     # The bay goes on the TRUTH map only - what the lidar sees and what the
@@ -715,7 +938,13 @@ def simulate(task_class, config, start, debug=False, window=False, timeout_s=180
                      max_road_wheel_deg=config.get("pursuit.max_road_wheel_deg", 30.0),
                      max_steer_command=config.get("pursuit.max_steer_command", 80.0),
                      lag_s=lag_s, rate_deg_s=rate_deg_s, gain_error=gain_error)
-    lidar = SimLidar(field_map, seed=seed + 1)
+    signs = []
+    if surprise_mm is None:
+        lidar = SimLidar(field_map, seed=seed + 1)
+    else:
+        lidar = SimSignLidar(field_map, signs,
+                             LIDAR_PLANE_HITS_SHORT_MM if lidar_sees_short
+                             else LIDAR_PLANE_OVER_SHORT_MM, seed=seed + 1)
     compass = SimCompass(drift_deg=0.0, seed=seed + 2)
     lidar.set_pose(*robot.pose)
     compass.set_true_heading(robot.heading)
@@ -732,6 +961,7 @@ def simulate(task_class, config, start, debug=False, window=False, timeout_s=180
                    corner_radius_mm=config.get("path.corner_radius_mm"),
                    resolution_mm=config.get("path.resolution_mm", 20.0)),
         1, pillars, random.Random(seed + 4))
+    signs.extend(placed)
 
     context = SimContext(field_map, robot, lidar, compass, debug=debug, seed=seed,
                          pillars=placed, nav_map=nav_map,
@@ -740,6 +970,40 @@ def simulate(task_class, config, start, debug=False, window=False, timeout_s=180
 
     offsets = []
     frames = []
+    swapped = []
+
+    if surprise_mm and context.object_solver is not None:
+        # On the first frame, not before: which sign is "the first one met"
+        # depends on the way round, which the round's own setup decides.
+        real_detect = context.object_solver.detect
+
+        def detect_after_swap(frame, display_image=None):
+            if not swapped:
+                swapped.append(swap_one_sign(
+                    placed, surprise_mm, random.Random(seed + 6), robot,
+                    task.path, task.direction))
+            return real_detect(frame, display_image=display_image)
+
+        context.object_solver.detect = detect_after_swap
+
+    def flipped_now(pillar):
+        """Is the ROUND passing this sign as the modified one right now?"""
+        is_flipped = getattr(task, "_is_flipped", None)
+        if is_flipped is None:
+            return False
+        # The round's own frame can be the truth's turned by a multiple of
+        # 90 degrees - the field is symmetric, and startup.start_heading_deg
+        # says which way round the round believes it was put down. Its
+        # pillars are turned back into the truth's frame before comparing.
+        believed = context.nav.get_pose(max_age_s=None, extrapolate=False)
+        turn = math.radians(90.0 * round(
+            angle_difference(robot.heading, believed.heading) / 90.0))
+        for held in getattr(task, "_pillars", ()):
+            x = held.x * math.cos(turn) + held.y * math.sin(turn)
+            y = -held.x * math.sin(turn) + held.y * math.cos(turn)
+            if math.hypot(x - pillar.x, y - pillar.y) < 350.0 and is_flipped(held):
+                return True
+        return False
 
     def advance(seconds):
         """Called from inside the round's own sleep - see VirtualClock."""
@@ -750,7 +1014,8 @@ def simulate(task_class, config, start, debug=False, window=False, timeout_s=180
             _, lateral = task.path.project(robot.x, robot.y, task.direction)
             offsets.append(lateral)
         for pillar in placed:
-            pillar.observe(robot.x, robot.y, robot.heading)
+            pillar.observe(robot.x, robot.y, robot.heading, now=time.monotonic(),
+                           flipped=lambda pillar=pillar: flipped_now(pillar))
         if window and len(frames) % 4 == 0:
             frames.append(True)
 
@@ -762,6 +1027,7 @@ def simulate(task_class, config, start, debug=False, window=False, timeout_s=180
     truth = Pose(robot.x, robot.y, robot.heading)
     parking = (parked_state(robot, bay, field_map) if bay is not None else None)
     return {
+        "surprise": surprise_tally(placed, swapped[0] if swapped else None),
         "bay": bay,
         "parking": parking,
         "hit_bay": robot.hit_bay,
@@ -790,6 +1056,74 @@ def simulate(task_class, config, start, debug=False, window=False, timeout_s=180
     }
 
 
+def surprise_tally(pillars, swapped):
+    """
+    How the surprise rule went in one run, counted per PASS of a sign - three
+    laps is up to three passes of each, and lap 1 is the one that has to be
+    decided from nothing.
+
+        correct flips   the modified sign, passed on its original colour's side
+        missed flips    the modified sign, passed by the colour the camera sees
+        false flips     a NORMAL sign the round was treating as modified as it
+                        went past (whichever side it then ended up on)
+        other wrong     a normal sign passed on the wrong side with no flip
+                        involved - the driving, not the surprise rule
+
+    `first_was_swapped` marks a run where the swapped sign turned out to be
+    the first one the robot actually reached (the round changed its mind
+    about the way round after the swap was made). The rule says that cannot
+    happen, so such a run tests nothing and is left out of the totals.
+    """
+    tally = {"correct_flips": 0, "missed_flips": 0, "false_flips": 0,
+             "other_wrong": 0, "normal_passes": 0, "swapped": swapped,
+             "swapped_reached": False, "first_was_swapped": False,
+             "first_pass": None}
+    reached = [p for p in pillars if p.first_reached_at is not None]
+    if swapped is not None and reached:
+        tally["first_was_swapped"] = (
+            min(reached, key=lambda p: p.first_reached_at) is swapped)
+    for pillar in pillars:
+        for index, (side, _, flipped) in enumerate(pillar.passes):
+            right = pillar.correct(side)
+            if pillar.modified:
+                tally["swapped_reached"] = True
+                tally["correct_flips" if right else "missed_flips"] += 1
+                if index == 0:
+                    tally["first_pass"] = right
+            else:
+                tally["normal_passes"] += 1
+                if flipped:
+                    tally["false_flips"] += 1
+                elif not right:
+                    tally["other_wrong"] += 1
+    return tally
+
+
+def _surprise_summary(results):
+    """The surprise rule's totals over a set of runs - see surprise_tally."""
+    tallies = [r["surprise"] for r in results]
+    valid = [t for t in tallies if not t["first_was_swapped"]]
+    with_sign = [t for t in valid if t["swapped"] is not None]
+    total = {key: sum(t[key] for t in valid)
+             for key in ("correct_flips", "missed_flips", "false_flips",
+                         "other_wrong", "normal_passes")}
+    lines = [f"surprise rule     {len(valid)} runs counted"
+             + (f" ({len(tallies) - len(valid)} left out: the swapped sign "
+                f"was the first one reached)" if len(valid) != len(tallies) else "")]
+    if with_sign:
+        reached = [t for t in with_sign if t["swapped_reached"]]
+        first_right = sum(1 for t in reached if t["first_pass"])
+        lines.append(f"  modified sign   reached in {len(reached)}/{len(with_sign)} runs; "
+                     f"first pass correct in {first_right}/{len(reached)}")
+        lines.append(f"  correct flips   {total['correct_flips']} passes")
+        lines.append(f"  missed flips    {total['missed_flips']} passes")
+    lines.append(f"  false flips     {total['false_flips']} of "
+                 f"{total['normal_passes']} passes of a normal sign")
+    lines.append(f"  other wrong     {total['other_wrong']} passes of a normal sign "
+                 f"on the wrong side with no flip involved")
+    return "\n".join(lines)
+
+
 def describe(result, index=None):
     label = "" if index is None else f"#{index:<3} "
     start = result["start"]
@@ -809,6 +1143,13 @@ def describe(result, index=None):
         right = sum(1 for p in result["pillars"] if p.passed_correctly)
         line += (f"  pillars {right}/{len(result['pillars'])} correct"
                  f" closest {result['pillar_clearance_mm'] / 10:+.1f}cm")
+    tally = result["surprise"]
+    if tally["swapped"] is not None:
+        line += (f"  swapped {tally['swapped'].height_mm / 10:.0f}cm: "
+                 f"{tally['correct_flips']} ok {tally['missed_flips']} missed"
+                 f"{'  (FIRST REACHED - not counted)' if tally['first_was_swapped'] else ''}")
+    if tally["false_flips"]:
+        line += f"  FALSE FLIPS {tally['false_flips']}"
     if result["parking"]:
         gap = result["bay_clearance_mm"]
         line += (f"  bay {result['bay'][0]}@{result['bay'][1] / 10:+.0f}cm"
@@ -819,7 +1160,7 @@ def describe(result, index=None):
 
 
 def run_trials(task_class, config, count, seed, timeout_s, pillars=0, quiet=False,
-               parking=False):
+               parking=False, surprise=None, lidar_sees_short=False):
     rng = random.Random(seed)
     field_map = FieldMap()
     results = []
@@ -827,7 +1168,9 @@ def run_trials(task_class, config, count, seed, timeout_s, pillars=0, quiet=Fals
         start = random_placement(field_map, rng)
         bay = place_bay(start, field_map, rng) if parking else None
         result = simulate(task_class, config, start, timeout_s=timeout_s,
-                          seed=seed + index, pillars=pillars, bay=bay)
+                          seed=seed + index, pillars=pillars, bay=bay,
+                          surprise_mm=surprise_height(surprise, index),
+                          lidar_sees_short=lidar_sees_short)
         results.append(result)
         if not quiet:
             print(describe(result, index))
@@ -843,6 +1186,8 @@ def run_trials(task_class, config, count, seed, timeout_s, pillars=0, quiet=Fals
     print(f"  worst clearance   {min(clearances) / 10:+.1f}cm")
     if any(r["pillars"] for r in results):
         print(f"  pillars           {_pillar_summary(results)}")
+    if surprise is not None:
+        print("  " + _surprise_summary(results).replace("\n", "\n  "))
     if any(r["parking"] for r in results):
         parked = sum(1 for r in results if r["parking"]["parked"])
         bumped = sum(1 for r in results if r["hit_bay"])
@@ -859,6 +1204,20 @@ def run_trials(task_class, config, count, seed, timeout_s, pillars=0, quiet=Fals
         if result not in passed:
             print(f"  FAILED: {describe(result)}")
     return len(passed) == len(results)
+
+
+def surprise_height(surprise, index=0):
+    """
+    --surprise as a height in mm for run number `index`: None when the flag
+    was not given, 0 for "none", and alternating 50/150 for "mixed".
+    """
+    if surprise is None:
+        return None
+    if surprise == "none":
+        return 0
+    if surprise == "mixed":
+        return (50, 150)[index % 2]
+    return int(surprise) * 10
 
 
 def _pillar_summary(results):
@@ -947,6 +1306,20 @@ if __name__ == "__main__":
     parser.add_argument("--parking", action="store_true",
                         help="put a parking bay in the robot's start section and "
                              "require the round to end parked between its walls")
+    parser.add_argument("--surprise", default=None,
+                        choices=("5", "15", "mixed", "none"),
+                        help="final round: swap one sign (never the first met) for "
+                             "one 5cm or 15cm tall and the other colour, let the "
+                             "size check's lidar scan see the signs, and switch "
+                             "the surprise rule on. 'mixed' alternates 5 and 15 run by run; "
+                             "'none' swaps nothing, so any flip is a false one")
+    parser.add_argument("--lidar-sees-short", action="store_true",
+                        help="with --surprise: the lidar's scan plane is low enough "
+                             "to hit a 5cm sign (sets surprise.lidar_sees_short to "
+                             "match). Default: the beam passes over it")
+    parser.add_argument("--rule-off", action="store_true",
+                        help="with --surprise: leave surprise.enabled off, to see "
+                             "what the round does about the swapped sign without it")
     parser.add_argument("--sweep", nargs=2, default=None, metavar=("KEY", "VALUES"),
                         help="run the trials once per value and compare, e.g. "
                              "--sweep blocks.approach_mm 400,800,1200,1600")
@@ -959,7 +1332,11 @@ if __name__ == "__main__":
 
     # Reuse the round's real config loading, CLI overrides and all.
     args.corner_speed = None
+    surprise = args.surprise
+    args.surprise = surprise is not None and not args.rule_off
     config = load_config(TaskClass, args)
+    if surprise is not None:
+        config.set("surprise.lidar_sees_short", args.lidar_sees_short)
 
     # The obstacle round without pillars is not the obstacle round - it is the
     # qualification round with different speeds - so it gets some by default.
@@ -977,7 +1354,8 @@ if __name__ == "__main__":
 
     if args.trials > 1:
         ok = run_trials(TaskClass, config, args.trials, args.seed, args.timeout,
-                        pillars=pillars, parking=args.parking)
+                        pillars=pillars, parking=args.parking, surprise=surprise,
+                        lidar_sees_short=args.lidar_sees_short)
         raise SystemExit(0 if ok else 1)
 
     rng = random.Random(args.seed)
@@ -985,9 +1363,12 @@ if __name__ == "__main__":
     bay = place_bay(placement, FieldMap(), rng) if args.parking else None
     outcome = simulate(TaskClass, config, placement, window=args.window,
                        timeout_s=args.timeout, seed=args.seed, pillars=pillars,
-                       bay=bay)
+                       bay=bay, surprise_mm=surprise_height(surprise),
+                       lidar_sees_short=args.lidar_sees_short)
     print()
     print(describe(outcome))
+    if surprise is not None:
+        print(_surprise_summary([outcome]))
     if args.window:
         show_window(outcome)
     if outcome["pillars"]:

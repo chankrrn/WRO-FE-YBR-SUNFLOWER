@@ -39,6 +39,11 @@ def build_parser(description):
                         help="record the run to videos/videoN.mp4 - every frame the "
                              "round saw, with the detection overlay drawn on it. Costs "
                              "a full-frame copy per frame, so it is off by default")
+    parser.add_argument("--surprise", action="store_true",
+                        help="obstacle round: look for the surprise-rule sign (one "
+                             "sign of the opposite colour, 5cm or 15cm tall) and pass "
+                             "it on the other side. Same as surprise.enabled = true "
+                             "in config.toml")
     parser.add_argument("--no-camera", action="store_true",
                         help="skip the camera even if the task requires it")
     parser.add_argument("--no-drive", action="store_true",
@@ -77,6 +82,8 @@ def load_config(task_class, args):
     config.set("laps.goal", args.laps)
     config.set("speed.base", args.speed)
     config.set("speed.corner", args.corner_speed)
+    # getattr: the simulators build their own args and reuse this.
+    config.set("surprise.enabled", True if getattr(args, "surprise", False) else None)
     return config
 
 

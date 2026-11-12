@@ -189,21 +189,21 @@ timeout_s = 5.0
 
 [[finish.moves]]
 steer_deg = 83          # back in, tail swinging toward the bay
-distance_mm = 150
+distance_mm = 160
 reverse = true
 
 
 [[finish.moves]]
 steer_deg = 50          # back in, tail swinging toward the bay
-distance_mm = 60
+distance_mm = 80
 reverse = true
 
 [[finish.moves]]
 steer_deg = -100         # counter-steer to straighten up inside the bay
-distance_mm = 250
+distance_mm = 220
 reverse = true
 
 [[finish.moves]]
 steer_deg = 60           # small straight shuffle to centre
-distance_mm = 40
+distance_mm = 30
 reverse = false

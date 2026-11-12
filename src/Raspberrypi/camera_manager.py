@@ -26,7 +26,7 @@ from classes.context_manager import ContextManager
 # stops (-8.0 .. 8.0, 0.0 = libcamera's default, +1.0 = twice as bright).
 # Brighter frames move every colour's HSV value up, so re-check the
 # thresholds in utils/image_color_utils.py after changing it.
-EXPOSURE_EV = 1.3
+EXPOSURE_EV = 0.6
 
 class CameraManager:
 

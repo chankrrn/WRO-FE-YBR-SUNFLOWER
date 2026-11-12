@@ -35,7 +35,7 @@ import time
 # (MAX_MISSES), so tripling the frame rate would third the real time a block
 # survives being out of shot. Holding the old cadence keeps that tuning
 # meaningful; raise it deliberately, with MAX_MISSES, not by accident.
-DEFAULT_MIN_PERIOD_S = 1.0 / 15.0
+DEFAULT_MIN_PERIOD_S = 1.0 / 30.0
 
 # How long to sit out after a failed frame, so a camera that has gone away
 # does not spin a core re-raising the same exception thousands of times.

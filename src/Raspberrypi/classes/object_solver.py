@@ -39,7 +39,25 @@ CAPTURED_HORIZONTAL_FOV_DEG = 230.0
 # --headless): +6.6. A first single-frame reading had said 8.6. Re-measure
 # after anything moves the camera or its lens is refocused:
 #   python test_object_solver.py --place 50 0 --headless
-CAMERA_YAW_DEG = 6.6
+# RE-MEASURED 2026-11-12 against the lidar instead, over ~1400 frames of one
+# sign moved across the whole frame (test_sign_sizer.py --calibrate): every
+# part of the frame read ~13deg right of the lidar, i.e. this was wrong by
+# that much - the camera has turned on its mount, or the 6.6 was. The fit gave
+# -6.4 here and a bearing scale of 1.004 (left at 1.0), with ~3deg of scatter
+# left that does not grow toward the edges. The lidar is the better reference
+# for this than a tape: it measures bearing directly, to a degree.
+CAMERA_YAW_DEG = -6.4
+
+# How many degrees of real bearing one degree of PIXEL bearing is, across the
+# frame. 1.0 = DEG_PER_PX is right sideways too, which is what everything
+# assumed until 2026-11: ranges come from the HEIGHT in pixels and check out
+# against the lidar, but a bench run had a sign 11deg off near the middle of
+# the frame and dead on at 44deg, so the sideways map is not the same as the
+# vertical one. Kept separate from CAPTURED_HORIZONTAL_FOV_DEG so fixing the
+# bearing does not move every range. Fit it, with CAMERA_YAW_DEG, against the
+# lidar:
+#   python test_sign_sizer.py --calibrate --height 10
+CAMERA_BEARING_SCALE = 1.0
 
 # Full, UNCROPPED main-stream width that CAPTURED_HORIZONTAL_FOV_DEG was
 # measured against (see camera_manager.py's configure_camera/transform_image).
@@ -153,11 +171,9 @@ class DetectedObject:
     # short sign.
     plain: bool = True
     # Filled in by SignSizer: the face distance for each height it could be,
-    # {height_mm: cm}, the height this frame votes for (None = no opinion)
-    # and whether either cue alone said the sign is not standard.
+    # {height_mm: cm}, and the height this frame votes for (None = no opinion).
     candidates_cm: dict = None
     size_vote: int = None
-    size_suspect: bool = False
 
 
 def range_for_angular_height(angular_height_deg, height_cm=BOX_HEIGHT_CM):
@@ -439,7 +455,8 @@ class ObjectSolver:
 
     def _horizontal_pixel_to_angle(self, x):
         full_frame_x = x + self.horizontal_crop_offset_px
-        return (full_frame_x - CAPTURED_FRAME_WIDTH_PX / 2.0) * DEG_PER_PX + CAMERA_YAW_DEG
+        return ((full_frame_x - CAPTURED_FRAME_WIDTH_PX / 2.0) * DEG_PER_PX
+                * CAMERA_BEARING_SCALE + CAMERA_YAW_DEG)
 
     # ========================================================================
     # DEBUG VISUALIZATION

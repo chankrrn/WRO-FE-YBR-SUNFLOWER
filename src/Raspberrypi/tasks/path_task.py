@@ -599,6 +599,51 @@ DEFAULTS = {
     "unpark.relocalise_max_settle_s": 4.0,
     "unpark.reread_map": True,
     "unpark.restart_here": True,
+
+    # ---- Final round: the surprise rule. See classes/sign_sizer.py --------
+    # One sign (never the first one met) is swapped for the opposite colour
+    # and is 5cm or 15cm tall instead of 10cm; it must be passed on the side
+    # of its ORIGINAL colour. Off by default: with it off none of the keys
+    # below is read and the round behaves exactly as it did before the rule
+    # existed. --surprise turns it on for one run. Every key is explained in
+    # tasks/final/config.toml [surprise].
+    "surprise.enabled": False,
+    # DOES THE LIDAR'S SCAN PLANE HIT A 5cm SIGN? NOT MEASURED YET. False =
+    # the beam passes over it, so a short sign is "squat blob, no lidar
+    # return before the wall". True = the beam hits it, so a short sign is
+    # "squat blob, lidar return at the 5cm range".
+    "surprise.lidar_sees_short": False,
+    # "confirm" = shape and lidar must both say 5/15cm. "veto" = the shape
+    # decides, the lidar can only overrule it.
+    "surprise.lidar_role": "confirm",
+    # -- detection (classes/object_solver.py) --
+    "surprise.min_area_px": 30.0,
+    "surprise.max_squat_ratio": 1.6,
+    # -- the lidar check --
+    "surprise.lidar_window_deg": 12,
+    "surprise.lidar_tolerance_mm": 60.0,
+    "surprise.lidar_tolerance_fraction": 0.08,
+    "surprise.lidar_min_readings": 2,
+    "surprise.lidar_max_age_s": 0.3,
+    "surprise.wall_margin_mm": 150.0,
+    # -- the shape check --
+    "surprise.shape_min_range_mm": 200.0,
+    "surprise.shape_max_range_mm": 800.0,
+    "surprise.shape_max_off_axis_deg": 50.0,
+    "surprise.blob_pad_px": 0.0,
+    "surprise.short_max_ratio": 1.35,
+    "surprise.standard_min_ratio": 1.6,
+    "surprise.standard_max_ratio": 2.4,
+    "surprise.tall_min_ratio": 2.65,
+    # -- the vote, per tracked sign (classes/block_map.py) --
+    "surprise.latch_votes": 4,
+    "surprise.latch_fraction": 0.7,
+    "surprise.settle_votes": 4,
+    # -- the round (tasks/final/task.py) --
+    "surprise.slow_within_mm": 1300.0,
+    "surprise.slow_speed": None,
+    "surprise.suspect_hold_s": 0.8,
+    "surprise.log_path": "logs/surprise_sizer.csv",
 }
 
 

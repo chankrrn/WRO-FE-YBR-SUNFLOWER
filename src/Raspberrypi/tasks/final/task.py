@@ -5,6 +5,11 @@ side its colour dictates.
     GREEN -> the robot passes on the block's LEFT
     RED   -> the robot passes on the block's RIGHT
 
+With the surprise rule on ([surprise] in config.toml, or --surprise) one sign
+is the opposite colour and the wrong height, and is passed on the OTHER side
+- see classes/sign_sizer.py for how it is found and _is_flipped for the two
+rules that limit which sign it may be.
+
 This round used to work by bending the racing line sideways: a pillar produced
 a lateral offset, the offset was eased in and out with Beziers, and pure
 pursuit followed the bent line. The idea was sound and the arithmetic was
@@ -44,14 +49,16 @@ from pathlib import Path
 import cv2
 
 from classes.bay_park import BayPark
-from classes.block_map import BLOCK_SIZE_MM
+from classes.block_map import BLOCK_SIZE_MM, SizeVoting
 from classes.goal_planner import GoalPlanner, Obstacle
+from classes.object_solver import SurpriseDetection
 from classes.parking import (WALL_LENGTH_MM, WALL_THICKNESS_MM, BayFinder,
                              RelocaliseWalk, UnparkController, along_axis_of,
                              bay_interior, nearest_outer_wall, section_of,
                              travel_direction_beside_wall, wall_heading_of,
                              wall_rects)
 from classes.racing_line import RacingLine
+from classes.sign_sizer import SignSizer, SizerSettings
 from tasks.path_task import PathDrivingTask
 from utils.angle_utils import angle_difference
 from utils.enums import Color
@@ -76,7 +83,18 @@ CAMERA_EVERY_N_TICKS = 2
 # MAX_MISSES is six frames. That flicker lands on the approach, where the
 # pillar is furthest and the detection worst, and never on the exit, where it
 # is close and solid.
-Pillar = namedtuple("Pillar", "x y color last_seen")
+#
+# `modified` is the surprise rule's flag, carried from the Block (or the
+# RememberedPillar) it came from: the camera found this sign to be 5cm or 15cm
+# tall. It does NOT by itself mean the sign is passed on the other side - see
+# FinalTask._is_flipped. Always False with the surprise rule off.
+#
+# `uid` is the Block it was last refreshed from (None for one planned from
+# memory alone). With the surprise rule on a block can MOVE - a sign ranged
+# as 10cm and then found to be 15cm is half as far away again - and matching
+# by position would leave the old place in the plan as a second pillar.
+Pillar = namedtuple("Pillar", "x y color last_seen modified uid",
+                    defaults=(False, None))
 
 # THE MAT SAYS WHERE A PILLAR CAN STAND. Every straight section has six
 # traffic-sign seats (WRO Future Engineers General Rules, Figures 3 and 11):
@@ -175,6 +193,15 @@ class RememberedPillar:
         self.seen_this_pass = True
         self.missed_passes = 0
         self.armed = False              # has been well ahead since last pass
+        # The surprise rule: a Block here latched as 5cm or 15cm tall. Kept
+        # for the round, so laps 2 and 3 do not have to decide it again.
+        self.modified = False
+        # ...or the camera settled what size it is, either way - so the
+        # round does not slow down for it a second time.
+        self.sized = False
+        # The height the sightings averaged into x, y were ranged for. If the
+        # block is re-ranged, the average starts again - see _learn_pillars.
+        self.height_mm = None
 
 # How close to a parking space something has to be before it is not a pillar.
 # The field never puts one within this of a bay, so anything the map has there
@@ -254,6 +281,21 @@ class FinalTask(PathDrivingTask):
         # _start_point is moved to the rejoin point by unpark.restart_here,
         # so it cannot be relied on to still be inside the bay.
         self._bay_seed = None
+        # ---- The surprise rule - all of it idle unless surprise.enabled ----
+        self._sizer = None
+        # Where the first sign the robot met stands, (x, y). It is never the
+        # modified one, so it is never flipped - see _is_flipped.
+        self._first_sign = None
+        # Signs seen ahead and not yet passed, [x, y], for finding the first
+        # one - see _note_first_sign.
+        self._signs_ahead = []
+        # The ONE sign passed on the other side: {"x", "y", "evidence"}.
+        self._flip = None
+        # What the plan in hand was built believing, to replan when it changes.
+        self._planned_flip = None
+        # Blocks already warned about as a second modified sign, by uid, so
+        # the warning is said once rather than every frame.
+        self._warned_second = set()
     # ========================================================================
     # SETUP
     # ========================================================================
@@ -264,6 +306,7 @@ class FinalTask(PathDrivingTask):
             print("WARNING: no camera - the final round will drive the plain "
                   "racing line and ignore the pillars")
         self._apply_map_range()
+        self._setup_surprise()
 
         self.planner = GoalPlanner(
             self.context.nav.map, self.path,
@@ -366,6 +409,50 @@ class FinalTask(PathDrivingTask):
                   f"{reach:.0f}mm lookahead - raise it to at least "
                   f"{reach * 3.0:.0f} so the plan always reaches past where "
                   f"pure pursuit is aiming.")
+
+    def _setup_surprise(self):
+        """
+        Switches the surprise rule on, if the config asks for it: lets the
+        solver report odd-sized blobs, puts a SignSizer between the solver
+        and the block map, and tells the block map how to count its votes.
+
+        With surprise.enabled off NONE of the three is touched, so detection,
+        mapping and planning are exactly what they were.
+        """
+        if not self.setting("surprise.enabled"):
+            return
+        context = self.context
+        if context.object_solver is None:
+            print("WARNING: surprise.enabled is on but there is no camera")
+            return
+        if context.lidar is None:
+            if self.setting("surprise.lidar_role") == "veto":
+                print("WARNING: no lidar - with surprise.lidar_role = \"veto\" "
+                      "the shape alone now decides which sign is flipped")
+            else:
+                print("WARNING: surprise.enabled needs the lidar - without it no "
+                      "sign can be told apart by height, so none will be flipped")
+        nav = context.nav
+        self._sizer = SignSizer(
+            context.lidar, nav.map, nav.lidar_offset_mm,
+            nav.blocks.camera_offset_mm,
+            SizerSettings.from_settings(self.setting), debug=context.debug)
+        nav.blocks.size_voting = SizeVoting(
+            latch_votes=int(self.setting("surprise.latch_votes")),
+            latch_fraction=float(self.setting("surprise.latch_fraction")),
+            settle_votes=int(self.setting("surprise.settle_votes")))
+        context.object_solver.set_surprise(SurpriseDetection(
+            min_area_px=float(self.setting("surprise.min_area_px")),
+            max_squat_ratio=float(self.setting("surprise.max_squat_ratio"))))
+        # Last: from here on every frame goes through the sizer.
+        nav.sign_sizer = self._sizer
+        plane = ("hits" if self.setting("surprise.lidar_sees_short")
+                 else "passes over")
+        print(f"Surprise rule ON: looking for one 5cm or 15cm sign. The lidar "
+              f"{plane} a 5cm sign (surprise.lidar_sees_short); the shape "
+              f"decides and the lidar "
+              f"{'can veto' if self.setting('surprise.lidar_role') == 'veto' else 'must confirm'}"
+              f" (surprise.lidar_role).")
 
     def _apply_map_range(self):
         """
@@ -850,9 +937,19 @@ class FinalTask(PathDrivingTask):
         for block in self.context.nav.blocks.confirmed():
             if block.color not in SIDE_FOR_COLOR:
                 continue
-            index = self._remembered_index(block, kept)
+            self._note_size(block)
+            index = self._pillar_index(block, kept)
             if index is not None:
-                kept[index] = Pillar(block.x, block.y, block.color, now)
+                held = kept[index]
+                if held.modified and not block.modified:
+                    # A sign already known to be the odd one, on a track that
+                    # has not worked that out again yet (BlockMap dropped the
+                    # old one between laps). The new track is ranged as a 10cm
+                    # sign, which puts it in the wrong place - keep ours.
+                    kept[index] = held._replace(last_seen=now)
+                    continue
+                kept[index] = Pillar(block.x, block.y, block.color, now,
+                                     block.modified, block.uid)
                 continue
             # A pillar already behind the forget line is one just driven past.
             # BlockMap still has it and will keep offering it every tick, so
@@ -864,7 +961,8 @@ class FinalTask(PathDrivingTask):
                     block.x, block.y, self.direction)[0]) <= -FORGET_BEHIND_MM:
                 continue
             self._announce_pillar(block)
-            kept.append(Pillar(block.x, block.y, block.color, now))
+            kept.append(Pillar(block.x, block.y, block.color, now, block.modified,
+                               block.uid))
 
         # Everything learned on earlier passes, as soon as it is within the
         # plan's reach - live sightings above take precedence where they
@@ -881,11 +979,12 @@ class FinalTask(PathDrivingTask):
             if index is not None:
                 kept[index] = kept[index]._replace(last_seen=now)
                 continue
-            side = "LEFT" if SIDE_FOR_COLOR[memory.color] < 0 else "RIGHT"
+            pillar = Pillar(memory.x, memory.y, memory.color, now, memory.modified)
             print(f"{memory.color.name} pillar {gap:+.0f}mm ahead (remembered) - "
-                  f"passing on its {side}")
-            kept.append(Pillar(memory.x, memory.y, memory.color, now))
+                  f"passing on its {self._side_name(pillar)}")
+            kept.append(pillar)
         self._pillars = kept
+        self._note_first_sign()
 
     def _learn_pillars(self, pose):
         """
@@ -916,9 +1015,17 @@ class FinalTask(PathDrivingTask):
             index = self._remembered_index(block, self._memory)
             if index is None:
                 memory = RememberedPillar(block.x, block.y, block.color, block.hits)
+                memory.height_mm = block.height_mm
                 self._memory.append(memory)
             else:
                 memory = self._memory[index]
+                if memory.height_mm != block.height_mm:
+                    # The surprise rule re-ranged the block (it is a different
+                    # height than it was being placed as), so every sighting
+                    # averaged in so far was in the wrong place. Start again.
+                    if memory.height_mm is not None:
+                        memory.x, memory.y, memory.samples = block.x, block.y, 0
+                    memory.height_mm = block.height_mm
                 if block.color != memory.color:
                     if block.hits <= memory.hits:
                         continue    # the weaker of two colours at one spot
@@ -928,6 +1035,8 @@ class FinalTask(PathDrivingTask):
                 memory.x += weight * (block.x - memory.x)
                 memory.y += weight * (block.y - memory.y)
                 memory.hits = max(memory.hits, block.hits)
+            memory.modified = memory.modified or block.modified
+            memory.sized = memory.sized or block.modified or block.settled
             memory.seen_this_pass = True
             self._merge_memories(memory)
             if memory not in self._memory:
@@ -957,6 +1066,8 @@ class FinalTask(PathDrivingTask):
             keep.samples = min(total, int(1.0 / LEARN_SMOOTHING_FLOOR))
             keep.hits = max(keep.hits, drop.hits)
             keep.trusted = keep.trusted or drop.trusted
+            keep.modified = keep.modified or drop.modified
+            keep.sized = keep.sized or drop.sized
             keep.seen_this_pass = keep.seen_this_pass or drop.seen_this_pass
             self._memory.remove(drop)
             if drop is moved:
@@ -1060,12 +1171,197 @@ class FinalTask(PathDrivingTask):
                 best, best_distance = index, distance
         return best
 
+    def _pillar_index(self, block, pillars):
+        """
+        Which pillar in the plan this block refreshes: the one last refreshed
+        from this same block, wherever it has moved to, and failing that the
+        nearest - see _remembered_index.
+        """
+        if self._sizer is not None:
+            for index, pillar in enumerate(pillars):
+                if pillar.uid == block.uid:
+                    return index
+        return self._remembered_index(block, pillars)
+
     def _announce_pillar(self, block):
         gap = self.path.gap(self.progress,
                             self.path.project(block.x, block.y, self.direction)[0])
-        side = "LEFT" if SIDE_FOR_COLOR[block.color] < 0 else "RIGHT"
         print(f"{block.color.name} pillar {gap:+.0f}mm ahead - passing on its "
-              f"{side}")
+              f"{self._side_name(block)}")
+
+    # ========================================================================
+    # THE SURPRISE RULE
+    # ========================================================================
+
+    def _side_of(self, pillar):
+        """
+        Which side to pass a pillar on, as SIDE_FOR_COLOR gives it - times -1
+        for the one sign the surprise rule swapped, which is passed on the
+        side of the colour it USED to be.
+        """
+        side = SIDE_FOR_COLOR[pillar.color]
+        return -side if self._is_flipped(pillar) else side
+
+    def _side_name(self, pillar):
+        name = "LEFT" if self._side_of(pillar) < 0 else "RIGHT"
+        if self._is_flipped(pillar):
+            name += " (MODIFIED sign - the other side from its colour)"
+        return name
+
+    def _is_flipped(self, pillar):
+        """
+        Is this the sign to pass on the other side?
+
+        Being found the wrong height (pillar.modified) is not enough. Passing
+        a normal sign on the wrong side ends the attempt just as surely as
+        missing the modified one, so two things the rule itself guarantees
+        are held to here whatever the camera says:
+
+            NEVER THE FIRST SIGN the robot meets. Until one sign has been
+            passed nothing is flipped at all, and the one that was passed
+            first is never flipped on any later lap.
+
+            AT MOST ONE. self._flip is the single site with the strongest
+            evidence - see _note_size.
+        """
+        if not getattr(pillar, "modified", False):
+            return False
+        if self._flip is None or self._first_sign is None:
+            return False
+        if math.hypot(pillar.x - self._first_sign[0],
+                      pillar.y - self._first_sign[1]) < SAME_PILLAR_MM:
+            return False
+        return math.hypot(pillar.x - self._flip["x"],
+                          pillar.y - self._flip["y"]) < MEMORY_MERGE_MM
+
+    def _note_size(self, block):
+        """
+        Takes what BlockMap has decided about a block's height: marks the
+        memory of it, and, if it latched as modified, considers it for the
+        round's one flip.
+
+        Two blocks latching is a contradiction - there is one modified sign -
+        so only the one whose votes favour it most is kept
+        (Block.evidence), and it is said out loud, because one of the two was
+        a false alarm and the thresholds in [surprise] want looking at.
+        """
+        if self._sizer is None:
+            return
+        index = self._remembered_index(block, self._memory)
+        if index is not None and self._memory[index].color == block.color:
+            memory = self._memory[index]
+            if block.unlatched and not block.modified:
+                memory.modified = False
+            memory.modified = memory.modified or block.modified
+            memory.sized = memory.sized or block.modified or block.settled
+        if block.unlatched and not block.modified:
+            flip = self._flip
+            if flip is not None and math.hypot(
+                    block.x - flip["x"], block.y - flip["y"]) < MEMORY_MERGE_MM:
+                print(f"The modified sign at ({flip['x'] / 10:+.0f}, "
+                      f"{flip['y'] / 10:+.0f})cm reads as normal after all - "
+                      f"passing it by its colour again")
+                self._flip = None
+            return
+        if not block.modified:
+            return
+        if self._first_sign is not None and math.hypot(
+                block.x - self._first_sign[0],
+                block.y - self._first_sign[1]) < SAME_PILLAR_MM:
+            return                  # the first sign is never the one
+        flip = self._flip
+        if flip is not None and math.hypot(block.x - flip["x"],
+                                           block.y - flip["y"]) < MEMORY_MERGE_MM:
+            flip["x"], flip["y"] = block.x, block.y
+            flip["evidence"] = max(flip["evidence"], block.evidence)
+            return
+        if flip is not None and block.evidence <= flip["evidence"]:
+            if block.uid in self._warned_second:
+                return
+            self._warned_second.add(block.uid)
+            print(f"WARNING: a second sign reads as modified, at "
+                  f"({block.x / 10:+.0f}, {block.y / 10:+.0f})cm "
+                  f"(evidence {block.evidence}) - keeping the first, at "
+                  f"({flip['x'] / 10:+.0f}, {flip['y'] / 10:+.0f})cm "
+                  f"(evidence {flip['evidence']}). Only one can be.")
+            return
+        if flip is not None:
+            print(f"WARNING: a second sign reads as modified, more strongly "
+                  f"(evidence {block.evidence} against {flip['evidence']}) - "
+                  f"the flip MOVES from ({flip['x'] / 10:+.0f}, "
+                  f"{flip['y'] / 10:+.0f})cm")
+        self._flip = {"x": block.x, "y": block.y, "evidence": block.evidence}
+        print(f"MODIFIED sign: {block.color.name}, {block.height_mm / 10:.0f}cm "
+              f"tall, at ({block.x / 10:+.0f}, {block.y / 10:+.0f})cm - it will "
+              f"be passed as if it were "
+              f"{'RED' if block.color is Color.GREEN else 'GREEN'}")
+
+    def _note_first_sign(self):
+        """
+        Remembers which sign the robot met first: the first one in the plan
+        that it saw well ahead and then drove well past. Never flipped
+        afterwards - see _is_flipped.
+
+        "Well ahead, then well past" is PASS_HYSTERESIS_MM each way, the same
+        test _review_memory counts a pass with, and for the same reason: the
+        pose jitters, and while the round is still getting out of the bay it
+        jumps outright. A sign passed without ever being seen ahead is not
+        counted, so the NEXT one is taken as the first and protected instead.
+        That errs towards not flipping, which is the direction to err in.
+        """
+        if self._sizer is None or self._first_sign is not None:
+            return
+        if self._leaving_the_bay():
+            return
+        for pillar in self._pillars:
+            gap = self._gap_to(pillar)
+            seen_ahead = any(math.hypot(pillar.x - x, pillar.y - y) < MEMORY_MERGE_MM
+                             for x, y in self._signs_ahead)
+            if gap > PASS_HYSTERESIS_MM:
+                if not seen_ahead:
+                    self._signs_ahead.append((pillar.x, pillar.y))
+                continue
+            if not seen_ahead or gap > -PASS_HYSTERESIS_MM:
+                continue
+            self._first_sign = (pillar.x, pillar.y)
+            print(f"First sign met: {pillar.color.name} at ({pillar.x / 10:+.0f}, "
+                  f"{pillar.y / 10:+.0f})cm - never the modified one")
+            if self._flip is not None and math.hypot(
+                    pillar.x - self._flip["x"],
+                    pillar.y - self._flip["y"]) < SAME_PILLAR_MM:
+                print("  ...it had read as modified. It cannot be, so it is "
+                      "passed by its colour")
+                self._flip = None
+            return
+
+    def _flip_signature(self):
+        """What _is_flipped depends on, so a change in it forces a replan."""
+        if self._sizer is None:
+            return None
+        return tuple(self._is_flipped(pillar) for pillar in self._pillars)
+
+    def _undecided_sign_ahead(self):
+        """
+        Is a sign coming up whose height the camera has not settled yet?
+
+        Only signs within surprise.slow_within_mm - the sizes are settled
+        close up, so a sign two metres off being undecided is normal and not
+        worth slowing for - and never one the round already sized on an
+        earlier lap.
+        """
+        if self._sizer is None or self._sizer.lidar is None:
+            return False
+        within = float(self.setting("surprise.slow_within_mm"))
+        for block in self.context.nav.blocks.confirmed():
+            if not block.undecided or block.color not in SIDE_FOR_COLOR:
+                continue
+            if not 0.0 < self._gap_to(block) <= within:
+                continue
+            index = self._remembered_index(block, self._memory)
+            if index is not None and self._memory[index].sized:
+                continue
+            return True
+        return False
 
     def _obstacles(self):
         """
@@ -1088,7 +1384,7 @@ class FinalTask(PathDrivingTask):
             if any(math.hypot(x - other.x, y - other.y) < SEAT_MERGE_MM
                    for other in placed):
                 continue
-            placed.append(Obstacle(x, y, SIDE_FOR_COLOR[pillar.color]))
+            placed.append(Obstacle(x, y, self._side_of(pillar)))
         return placed
 
     # ========================================================================
@@ -1108,6 +1404,8 @@ class FinalTask(PathDrivingTask):
             return "no plan"
         if len(self._pillars) != self._planned_pillars:
             return "pillars changed"
+        if self._flip_signature() != self._planned_flip:
+            return "a sign changed sides"
         if self._plan.remaining_mm(pose.x, pose.y) < self._min_plan_ahead_mm():
             return "ran off the end"
         if self._plan.cross_track_mm(pose.x, pose.y) > float(
@@ -1131,6 +1429,7 @@ class FinalTask(PathDrivingTask):
     def _replan(self, pose, reason):
         self._plan = self.planner.plan(pose, self.direction, self._obstacles())
         self._planned_pillars = len(self._pillars)
+        self._planned_flip = self._flip_signature()
         self._plans_made += 1
         self._replan_reason = reason
         if self._plan.compromised and self._plans_made % 20 == 1:
@@ -1181,6 +1480,21 @@ class FinalTask(PathDrivingTask):
         speed = super()._choose_speed(pose)
         if self._plan is not None and self._plan.compromised:
             speed = min(speed, int(self.setting("speed.compromised")))
+        # The surprise rule: a sign close ahead whose height is not settled
+        # is a sign whose side is not settled. Slow, so the decision arrives
+        # with room left to act on it - and slow from the FIRST frame either
+        # cue suspects anything, because a 5cm sign has no block at all until
+        # both agree, which is too late to start slowing.
+        if self._sizer is not None:
+            suspect = (time.monotonic() - self._sizer.last_suspect_at
+                       <= float(self.setting("surprise.suspect_hold_s")))
+            if suspect or self._undecided_sign_ahead():
+                slow = self.setting("surprise.slow_speed")
+                if slow is None:
+                    slow = self.setting("speed.compromised")
+                speed = min(speed, int(slow))
+            # For the sizer's lidar motion correction - see SignSizer._scan.
+            self._sizer.speed_mm_s = self.speed_mm_per_s(speed)
         return speed
 
     # ========================================================================
@@ -1577,6 +1891,8 @@ class FinalTask(PathDrivingTask):
                 f"  {self._park_gate_status()}  {self._plan_status()}")
         if self.context.vision is not None:
             line = f"{line}  {self.context.vision.status_line()}"
+        if self._sizer is not None:
+            line = f"{line}  {self._sizer.status_line()}"
         return line
 
     def _park_gate_status(self):

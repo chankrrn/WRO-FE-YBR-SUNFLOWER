@@ -259,6 +259,11 @@ class NavigationManager:
         self.blocks = block_map or BlockMap(
             field_map=self.map, debug=debug,
             camera_offset_mm=camera_offset_behind_lidar(self.lidar_offset_mm))
+        # The surprise rule's SignSizer (classes/sign_sizer.py), or None. When
+        # set, every frame is sized and re-ranged on its way into the block
+        # map - see observe_blocks. The obstacle round sets it, and only when
+        # surprise.enabled is on.
+        self.sign_sizer = None
 
         self._rng = np.random.default_rng(seed)
 
@@ -931,8 +936,12 @@ class NavigationManager:
         # update - predict/correct/resample, all mutating the particle arrays -
         # concurrently with the control loop doing the same thing. The block
         # map wants the last MEASURED pose anyway, not a freshly computed one.
-        return self.blocks.observe(
-            self.get_pose(max_age_s=None, extrapolate=False), detections)
+        pose = self.get_pose(max_age_s=None, extrapolate=False)
+        # Read once: the round may set it from the control thread.
+        sizer = self.sign_sizer
+        if sizer is not None:
+            detections = sizer.size(pose, detections)
+        return self.blocks.observe(pose, detections)
 
     def lidar_position(self, x, y, heading_deg):
         """

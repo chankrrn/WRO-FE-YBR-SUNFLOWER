@@ -339,6 +339,29 @@ class LidarManager:
             distances[(time.monotonic() - updated_at) > cutoff] = np.nan
         return distances
 
+    def get_scan_with_age(self, max_age_s=None):
+        """
+        get_scan(), plus how old each slot is.
+
+        The scan is a rolling snapshot, so on a moving robot a slot read a
+        rotation ago is a range from somewhere else. Anything comparing a
+        lidar range against another sensor's - SignSizer comparing it with a
+        camera range - needs to know by how much.
+
+        I/O:
+            return: (distances_mm, ages_s), both 360-element arrays indexed by
+                    whole degrees; np.nan where get_scan() would have one
+        """
+        with self._lock:
+            distances = self._distances.copy()
+            updated_at = self._updated_at.copy()
+
+        ages = time.monotonic() - updated_at
+        cutoff = self.stale_after_s if max_age_s is None else max_age_s
+        if cutoff is not None and cutoff != math.inf:
+            distances[ages > cutoff] = np.nan
+        return distances, ages
+
     def get_distance(self, bearing_deg, window_deg=0.0, max_age_s=None):
         """
         Distance in mm at a bearing, or np.nan if nothing was seen there.
