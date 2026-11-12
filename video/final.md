@@ -1,8 +1,8 @@
 ## Final Video
 ### Challenge 1 (Open Challenge):
 
-- [**TODO**] add link
+- https://youtu.be/SlxmnO9ZnVM?si=7TLQcImkOCNDJs5n
 
 ### Challenge 2 (Obstacle Challenge):
 
-- [**TODO**] add link
+- https://youtu.be/5n_M14UXSpM?si=iSTkrHQxrhAiyLdt
