@@ -57,6 +57,12 @@ DEFAULTS = {
     "speed.corner": 60,            # sharpest part of a corner
     "speed.lost": 50,              # pose not trustworthy
     "speed.minimum": 40,           # never crawl slower than this while driving
+    # Eases the motor up when the round starts driving, rather than writing the
+    # full speed to it from a standstill, which just spins the wheels. Starts
+    # at start_ramp_from and reaches the wanted speed after start_ramp_s
+    # seconds. 0 = no ramp.
+    "speed.start_ramp_s": 0.0,
+    "speed.start_ramp_from": 100,
 
     # WHERE THE LIDAR IS. The pose every part of the round reads - the point
     # pure pursuit, the odometry, the planner's body sweep and the park are
@@ -631,6 +637,7 @@ class PathDrivingTask(Task):
         self._stop_reason = None
         self._blocked_since = None
         self._reversing_until = None
+        self._ramp_started_at = None     # first tick the start ramp applied
         self.calibrator = None
         self._steer_rate_limit = None    # units/s, resolved at setup
         self._debug_view = None
@@ -728,8 +735,14 @@ class PathDrivingTask(Task):
         """
         What the drive motor is set to at the end of setup, before the first
         tick. Zero holds the robot still until a manoeuvre takes the wheels.
+
+        With a start ramp this is the bottom of the ramp. Writing speed.base
+        here would put full duty on the motor before step() ever got to ease it.
         """
-        return int(self.setting("speed.base"))
+        base = int(self.setting("speed.base"))
+        if float(self.setting("speed.start_ramp_s")) > 0.0:
+            return min(base, int(self.setting("speed.start_ramp_from")))
+        return base
 
     def _wait_for_localization(self):
         """
@@ -926,6 +939,9 @@ class PathDrivingTask(Task):
         cap, _ = self.parking_caps()
         if cap is not None:
             self.speed = min(self.speed, int(cap))
+        # Last, because _choose_speed floors at speed.minimum and the ramp has
+        # to be able to start below that.
+        self.speed = self._ramp_from_standstill(self.speed, now)
         # One serial message for both, and none at all when neither moved -
         # see MotorManager.drive().
         context.motor.drive(self.steer_command, self.speed)
@@ -1168,6 +1184,10 @@ class PathDrivingTask(Task):
             if now < self._reversing_until:
                 self.speed = -int(self.setting("safety.reverse_speed"))
                 self.context.motor.drive(-self.steer_command, self.speed)
+                # The wheels are on the mirrored angle, so that is what the
+                # odometry has to turn on. pursuit.steering() recorded the
+                # unmirrored one, which made the pose yaw the wrong way.
+                self.pursuit.set_road_wheel_command(-self.steer_command)
                 return True
             self._reversing_until = None
             self._blocked_since = None
@@ -1274,6 +1294,26 @@ class PathDrivingTask(Task):
             return base
         sharpness = clamp(curvature * self.path.corner_radius, 0.0, 1.0)
         return base + (corner - base) * sharpness
+
+    def _ramp_from_standstill(self, speed, now):
+        """
+        Holds `speed` under the start ramp for the first speed.start_ramp_s of
+        driving, so the wheels grip instead of spinning.
+
+        Only ever lowers the speed, so a stop from the lidar backstop still
+        stops. The clock starts on the first tick that gets here rather than in
+        setup(), so time spent localizing or leaving a bay does not use it up.
+        """
+        ramp_s = float(self.setting("speed.start_ramp_s"))
+        if ramp_s <= 0.0:
+            return speed
+        if self._ramp_started_at is None:
+            self._ramp_started_at = now
+        fraction = (now - self._ramp_started_at) / ramp_s
+        if fraction >= 1.0:
+            return speed
+        start = float(self.setting("speed.start_ramp_from"))
+        return min(speed, int(round(start + (speed - start) * fraction)))
 
     def _front_clearance_mm(self):
         """

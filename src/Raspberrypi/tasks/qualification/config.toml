@@ -46,18 +46,24 @@ goal = 3
 # Pulls the finish line back by this many millimetres, so the round can be
 # stopped short of the last bit of track without touching goal itself.
 # 0 = finish at the full laps.goal x path length, as before.
-stop_early_mm = 150.0
+stop_early_mm = 550.0
 
 [speed]
 # The two that matter. `base` is the straights; `corner` is the sharpest part
 # of a corner, blended in as the path curves. Raise base first, and only raise
 # corner once the robot stops running wide.
-base = 150
-corner = 150
+base = 255
+corner = 255
 # Used when the localizer is not confident. Deliberately slow: a bad pose
 # means pure pursuit is chasing a point that may not be where it thinks.
-lost = 120
-minimum = 120
+lost = 150
+minimum = 150
+# Eases the motor up at the start instead of going straight to `base`, which
+# spins the wheels from a standstill. Starts at start_ramp_from and reaches full
+# speed after start_ramp_s seconds. Still spinning: lower start_ramp_from or
+# raise start_ramp_s. 0 = no ramp.
+start_ramp_s = 1.0
+start_ramp_from = 120
 
 [path]
 # How far the straights sit off the outer wall. Leave unset to centre the loop
@@ -83,8 +89,8 @@ minimum = 120
 #
 # 230: comfortably past the cliff, and the straights still run 770mm from the
 # centre block. Push it back toward 200 to hug the wall again, but not below
-# 180.
-wall_margin_mm = 290.0
+# 180. (That table predates this value: 550 is copied from the final round.)
+wall_margin_mm = 320.0
 #
 # Corner radius. Leave unset for the biggest that still clears the centre
 # block, and keep it above the robot's turning circle (setup warns if not).
@@ -96,8 +102,8 @@ wall_margin_mm = 290.0
 # same 870mm and the wall by the same 130mm but shortens the lap by 292mm and
 # opens the corners out. That is very likely an improvement, but it is a
 # change to a round that is already tuned, so it is left as a deliberate
-# choice: delete this line to take it.
-corner_radius_mm = 630.0
+# choice: delete this line to take it. (650 is copied from the final round.)
+corner_radius_mm = 700.0
 resolution_mm = 20.0
 
 [pursuit]
@@ -107,7 +113,7 @@ wheelbase_mm = 165.0
 # Lookahead = base + per_speed * speed, clamped. This is THE tuning knob:
 # raise it if the robot weaves down the straights, lower it if it runs wide in
 # the corners.
-lookahead_base_mm = 500.0
+lookahead_base_mm = 560.0
 lookahead_per_speed_mm = 3.0
 lookahead_min_mm = 400.0
 lookahead_max_mm = 800.0
@@ -119,7 +125,10 @@ lookahead_max_mm = 800.0
 # bend's radius, which is what stops the robot cutting the apex and then
 # running wide correcting. Lower it if it still cuts; raise it if it weaves.
 # Measured on the sim: 0.9 -> 2.1cm corner error, 0.7 -> 1.2cm, off -> 4.2cm.
-corner_lookahead_fraction = 0.8
+corner_lookahead_fraction = 0.68
+
+# Steers off where the robot will be, not where it is. Same as the final round.
+lag_compensation_s = 0.2
 
 # THE SERVO IS NOT A VALUE, IT IS AN ACTUATOR. Time constant of the steering,
 # from `test_steering.py --lag`: ~0.35s to 63%. Everything that dead-reckons
@@ -138,11 +147,11 @@ corner_lookahead_fraction = 0.8
 servo_lag_s = 0.35
 
 # DFR0604 build: the linkage reaches its stop at command 90 (= MAX_STEER_DEG
-# in motor_manager). 22deg is ESTIMATED - arcs gave ~12.6deg at command 50
-# (120mm wheelbase) and the wheels turn ~10deg further to the stop. Replace it
-# with a protractor reading at command 90 (average of the two front wheels).
-max_road_wheel_deg = 22.0
-max_steer_command = 90.0
+# in motor_manager). test_circle.py, replacement DFR0592: 60cm outer-rear-wheel
+# circle at command +/-80 and speed 90, the same both ways -> 34.5deg -> 38.8
+# at full lock. Same as the final round; see its config for the full history.
+max_road_wheel_deg = 38.8
+max_steer_command = 66.0
 
 # Distance from the pose reference back to the rear axle. The pose IS the
 # rear axle (see [robot]), so this stays at 0.
@@ -178,8 +187,8 @@ lost_timeout_s = 4.0
 
 # Lidar backstop, independent of the path. Slows from front_slow_mm and stops
 # at front_stop_mm, measured in a +/-front_sector_deg cone off the nose.
-front_slow_mm = 450.0
-front_stop_mm = 220.0
+front_slow_mm = 350.0
+front_stop_mm = 250.0
 front_sector_deg = 25.0
 
 [startup]

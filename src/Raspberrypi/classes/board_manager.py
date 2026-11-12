@@ -96,9 +96,15 @@ class BoardManager:
         Servo.move() maps 0-180 onto 500-2500us; this lets a caller keep its
         own mapping. The board takes duty in 0.1% steps, which at 50Hz is 20us
         - about 2 servo degrees - so that is the finest it can resolve.
+
+        Rounded to the NEAREST step here because set_pwm_duty() truncates. Left
+        to it, every pulse landed up to 20us short, and on the steering a
+        shorter pulse is further left: an average of 2 command units of left on
+        every command, which pure pursuit has no integral term to take out. It
+        reads as a clockwise lap turning less than a counter-clockwise one.
         """
         self.create_servo()
-        duty = 100.0 * pulse_us / SERVO_FRAME_US
+        duty = round(100.0 * pulse_us / SERVO_FRAME_US, 1)
         with self._lock:
             self.board.set_pwm_duty(channel, duty)
 

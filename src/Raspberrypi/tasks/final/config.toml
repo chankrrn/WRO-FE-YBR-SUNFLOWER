@@ -42,8 +42,8 @@ stop_early_mm = 320.0
 # the value goes to analogWrite unchanged. These are the figures measured
 # AFTER the 16:28 reduction was fitted (see startup.mm_per_s_at_full): 60 is
 # about 24% duty and around 234mm/s.
-base = 125
-corner = 115
+base = 255
+corner = 200
 lost = 105
 minimum = 105
 # While the planner reports a pass it could not give full clearance to. Every
