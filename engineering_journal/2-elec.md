@@ -4,10 +4,14 @@
 > **Scope:** Power distribution, controller interfaces, sensing electronics, propulsion and steering circuits, engineering calculations, measured supply voltages, schematics, and MATLAB modeling.  
 > **Implementation:** Modular Raspberry Pi HATs and independent regulated power supplies, with commercial wiring/distribution hardware rather than a custom printed circuit board.
 
-[← Project README](../README.md) 
+[← Project README](../README.md)
+
 [← Engineering Overview](0-overview.md)
+
 [← Mobility and Mechanical Design](1-mech.md)
+
 [← Software Architecture and Obstacle Strategy](3-software.md)
+
 [← Build and Reproduction Guide](4-build.md)
 
 ---

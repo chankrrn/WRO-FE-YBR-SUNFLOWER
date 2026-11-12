@@ -4,9 +4,13 @@
 > **Current robot:** V2.4, developed through the V2.1–V2.4 overhaul. V1.1–V1.3 describe the first generation.
 
 [← Project README](../README.md) 
+
 [← Engineering Overview](0-overview.md)
+
 [← Power and Sensor Architecture](2-elec.md)
+
 [← Software Architecture and Obstacle Strategy](3-software.md)
+
 [← Build and Reproduction Guide](4-build.md)
 
 ---

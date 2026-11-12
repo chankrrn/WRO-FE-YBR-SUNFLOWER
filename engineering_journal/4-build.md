@@ -6,10 +6,14 @@ Its purpose is different from the subsystem engineering documentation.
 
 The subsystem documents explain **why** the robot was designed as it is:
 
-[← Project README](../README.md) 
+[← Project README](../README.md)
+
 [← Engineering Overview](0-overview.md)
+
 [← Mobility and Mechanical Design](1-mech.md)
+
 [← Power and Sensor Architecture](2-elec.md)
+
 [← Software Architecture and Obstacle Strategy](3-software.md)
 
 This document explains **how to reproduce the final robot**.

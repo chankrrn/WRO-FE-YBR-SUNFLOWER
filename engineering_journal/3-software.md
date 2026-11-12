@@ -6,10 +6,14 @@ The central design decision is to treat navigation as a **pose–plan–control*
 
 > **Terminology.** In the software, `qualification` is the WRO **Open Challenge**, and `final` is the **Obstacle Challenge**. The term *simulation* denotes results produced without an actual competition attempt; implementation details do not, by themselves, demonstrate a successful physical run.
 
-[← Project README](../README.md) 
+[← Project README](../README.md)
+
 [← Engineering Overview](0-overview.md)
+
 [← Mobility and Mechanical Design](1-mech.md)
+
 [← Power and Sensor Architecture](2-elec.md)
+
 [← Build and Reproduction Guide](4-build.md)
 
 ---
