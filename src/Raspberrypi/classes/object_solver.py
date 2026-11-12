@@ -1,6 +1,6 @@
 import math
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import cv2
 import numpy as np
@@ -65,6 +65,18 @@ MIN_CONTOUR_AREA_PX = 100        # ignore specks smaller than this (noise)
 MAX_DISTANCE_CM = 150.0         # ignore solves further than this (noise / grazing angle)
 MIN_ANGULAR_HEIGHT_DEG = 0.05   # avoid a division by ~0 on a 1px-tall contour
 
+# THE SURPRISE RULE. One sign per obstacle round may be 5cm or 15cm tall
+# instead of BOX_HEIGHT_CM. Nothing in this file decides which one: with
+# set_surprise() switched on it only stops throwing the odd one away, and
+# still ranges every box as if it were BOX_HEIGHT_CM. classes/sign_sizer.py
+# works out the height and re-ranges it (see rerange).
+SHORT_SIGN_HEIGHT_CM = 5.0
+TALL_SIGN_HEIGHT_CM = 15.0
+# A 5cm sign ranged as a 10cm one reads twice as far as it really is, so a
+# short sign right at MAX_DISTANCE_CM reads at this. The cut-off is applied
+# again, to the re-ranged distance, once the height is known.
+SURPRISE_MAX_DISTANCE_CM = MAX_DISTANCE_CM * BOX_HEIGHT_CM / SHORT_SIGN_HEIGHT_CM
+
 TARGET_COLORS = (Color.GREEN, Color.RED)
 
 # The parking bay's walls. Found separately from the pillars, and deliberately:
@@ -122,6 +134,65 @@ class DetectedObject:
     box_points: np.ndarray  # 4 corners of the detected box, for drawing
     height_px: float = 0.0  # the rect's long side - what distance_cm is solved from
 
+    # ---- The surprise rule - only ever set while set_surprise() is on -------
+    # The rect's other side. With the surprise rule on, height_px is the
+    # side nearer VERTICAL and this the one nearer horizontal, rather than
+    # long and short: a 5cm cube seen corner-on is wider than it is tall.
+    width_px: float = 0.0
+    # The height distance_cm was solved for. rerange() changes it.
+    assumed_height_cm: float = BOX_HEIGHT_CM
+    # Bearing off the LENS axis, without CAMERA_YAW_DEG - how far from the
+    # middle of the frame, which is where the shape is worth trusting.
+    off_axis_deg: float = 0.0
+    # The blob touches an edge of the frame, so part of it is cut off and its
+    # shape says nothing about the sign's.
+    clipped: bool = False
+    # Would the solver have reported this with the surprise rule off? False
+    # for the squat, the tiny and the far ones it lets through for SignSizer
+    # to look at - which SignSizer drops again unless it finds them to be a
+    # short sign.
+    plain: bool = True
+    # Filled in by SignSizer: the face distance for each height it could be,
+    # {height_mm: cm}, the height this frame votes for (None = no opinion)
+    # and whether either cue alone said the sign is not standard.
+    candidates_cm: dict = None
+    size_vote: int = None
+    size_suspect: bool = False
+
+
+def range_for_angular_height(angular_height_deg, height_cm=BOX_HEIGHT_CM):
+    """
+    Straight-line distance to a sign of a known height from the angle it
+    spans. Linear in height_cm, which is what lets rerange() rescale a
+    distance rather than solve it again.
+    """
+    return (height_cm / 2.0) / math.tan(math.radians(angular_height_deg / 2.0))
+
+
+def rerange(detection, height_cm):
+    """
+    A copy of `detection` with every range solved for a sign `height_cm` tall
+    instead of the one it was solved for. The bearing is unchanged: it comes
+    from the pixel column, which does not care how tall the sign is.
+    """
+    scale = height_cm / detection.assumed_height_cm
+    return replace(detection,
+                   distance_cm=round(detection.distance_cm * scale, 1),
+                   forward_cm=round(detection.forward_cm * scale, 1),
+                   lateral_cm=round(detection.lateral_cm * scale, 1),
+                   assumed_height_cm=height_cm)
+
+
+@dataclass
+class SurpriseDetection:
+    """
+    What the solver lets through while the surprise rule is on - see
+    ObjectSolver.set_surprise. Both numbers come from tasks/final/config.toml
+    [surprise].
+    """
+    min_area_px: float       # smallest blob still worth a look
+    max_squat_ratio: float   # widest blob, as width / height, still a sign
+
 
 class ObjectSolver:
     """
@@ -157,6 +228,9 @@ class ObjectSolver:
                                           if horizontal_crop_offset_px is None
                                           else horizontal_crop_offset_px)
         self._last_parking = []
+        # None = the surprise rule is off and every blob is judged exactly as
+        # it always was. See set_surprise.
+        self.surprise = None
 
         # Debug canvases drawn by detect() and waiting to be put on screen.
         # detect() runs on VisionManager's thread (classes/vision_manager.py)
@@ -172,6 +246,24 @@ class ObjectSolver:
 
     def set_debug(self, enabled):
         self.debug = enabled
+
+    def set_surprise(self, settings):
+        """
+        Switches the surprise rule's detection on (a SurpriseDetection) or off
+        (None).
+
+        On, three things the plain solver throws away are let through: blobs
+        wider than they are tall (a 5cm cube is square face-on and wider than
+        tall corner-on), blobs smaller than MIN_CONTOUR_AREA_PX (a 5cm cube is
+        under it past ~0.8m), and blobs that range past MAX_DISTANCE_CM as a
+        10cm sign (a 5cm one reads twice as far). They are marked plain=False,
+        and nothing downstream sees them unless SignSizer decides they are a
+        short sign.
+
+        One attribute, read once per frame by detect() on the vision thread,
+        so it is safe to set from the control thread.
+        """
+        self.surprise = settings
 
     def detect(self, hsv_image, display_image=None):
         """
@@ -228,6 +320,9 @@ class ObjectSolver:
         return marks
 
     def _find_objects_in_mask(self, mask, color):
+        surprise = self.surprise
+        if surprise is not None:
+            return self._find_signs_in_mask(mask, color, surprise)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         objects = []
         for cnt in contours:
@@ -242,7 +337,50 @@ class ObjectSolver:
                 objects.append(obj)
         return objects
 
-    def _solve_position(self, rect, color):
+    def _find_signs_in_mask(self, mask, color, surprise):
+        """
+        _find_objects_in_mask with the surprise rule on: the same blobs, plus
+        the ones a 5cm sign makes, each marked with whether the plain solver
+        would have kept it. See set_surprise.
+        """
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        rows, cols = mask.shape[:2]
+        objects = []
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area < surprise.min_area_px:
+                continue
+            box_x, box_y, box_w, box_h = cv2.boundingRect(cnt)
+            if box_w > box_h * surprise.max_squat_ratio:
+                # Even a 5cm cube corner-on is only ~1.4x wider than tall.
+                continue
+            obj = self._solve_position(cv2.minAreaRect(cnt), color, upright=True,
+                                       max_distance_cm=SURPRISE_MAX_DISTANCE_CM)
+            if obj is None:
+                continue
+            obj.plain = (area >= MIN_CONTOUR_AREA_PX and box_w <= box_h
+                         and obj.distance_cm <= MAX_DISTANCE_CM)
+            obj.clipped = (box_x <= 0 or box_y <= 0
+                           or box_x + box_w >= cols or box_y + box_h >= rows)
+            objects.append(obj)
+        return objects
+
+    @staticmethod
+    def _upright_sides(box_points):
+        """
+        (height, width) of a rotated rect: the side nearer vertical, then the
+        other one. Not (long, short) - a 5cm cube seen corner-on is wider
+        than it is tall, and its long side is its width.
+        """
+        first = box_points[1] - box_points[0]
+        second = box_points[2] - box_points[1]
+        first_len = float(np.hypot(*first))
+        second_len = float(np.hypot(*second))
+        first_upright = abs(first[1]) * second_len >= abs(second[1]) * first_len
+        return (first_len, second_len) if first_upright else (second_len, first_len)
+
+    def _solve_position(self, rect, color, upright=False,
+                        max_distance_cm=MAX_DISTANCE_CM):
         box_points = cv2.boxPoints(rect)
         center_x, center_y = rect[0]
 
@@ -252,7 +390,12 @@ class ObjectSolver:
         # reading correct when the box appears tilted in frame - a tilted
         # upright box has a taller bounding box than it does an actual height,
         # which would otherwise read as closer than it really is.
-        height_px = max(rect[1])
+        # With the surprise rule on that stops being true of every sign (a 5cm
+        # one is square), so the side nearer vertical is the height instead.
+        if upright:
+            height_px, width_px = self._upright_sides(box_points)
+        else:
+            height_px, width_px = max(rect[1]), min(rect[1])
 
         # A fisheye maps ANGLE FROM THE LENS AXIS linearly to pixels, but only
         # along the radius. Across it - which, for a pillar off to the side,
@@ -274,8 +417,8 @@ class ObjectSolver:
         # to 99.6cm. (The old 160 deg lens behaved the other way - height gave
         # distance AHEAD - and reading this lens that way put every pillar off
         # to the side ~1/cos(bearing) too far: that one at 133cm.)
-        distance_cm = (BOX_HEIGHT_CM / 2.0) / math.tan(math.radians(angular_height_deg / 2.0))
-        if not (0 < distance_cm <= MAX_DISTANCE_CM):
+        distance_cm = range_for_angular_height(angular_height_deg, BOX_HEIGHT_CM)
+        if not (0 < distance_cm <= max_distance_cm):
             return None
         bearing_deg = self._horizontal_pixel_to_angle(center_x)
         forward_cm = distance_cm * math.cos(math.radians(bearing_deg))
@@ -290,6 +433,8 @@ class ObjectSolver:
             pixel_center=(int(center_x), int(center_y)),
             box_points=np.intp(box_points),
             height_px=round(height_px, 1),
+            width_px=round(width_px, 1),
+            off_axis_deg=round(math.degrees(off_axis_rad), 1),
         )
 
     def _horizontal_pixel_to_angle(self, x):
