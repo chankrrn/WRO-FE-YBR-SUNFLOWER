@@ -85,7 +85,7 @@ The new layout places surrounding components below the LiDAR scan plane where pr
 | Steering servo | SURPASS Hobby S0017M |
 | Front bearings | 8 × 14 × 4 mm, quantity 2 |
 | Rear bearings | 8 × 16 × 5 mm, quantity 3 |
-| Wheels | Four LEGO wheel/tire assemblies with 49.5 mm outside-diameter tires |
+| Wheels | Four LEGO Tires 49.5 x 20 (56145 / 15413) |
 | Printed models | 26 STL files with matching previews |
 
 Component specifications and quantities are listed in the [build BOM](4-build.md#3-bill-of-materials).
@@ -98,8 +98,7 @@ Component specifications and quantities are listed in the [build BOM](4-build.md
 | Wheelbase | $L$ | 165 mm |
 | Front track | $t_f$ | 115 mm |
 | Rear track | $t_r$ | 120 mm |
-| Tire outside diameter | $d_w$ | 49.5 mm, supplied tire specification |
-| Nominal tire radius | $r_{nom}$ | 24.75 mm, calculated from diameter |
+| Tire outside diameter | $d_w$ | 49.5 mm|
 | Ground clearance | $h_g$ | 5 mm |
 | Front overhang | $o_f$ | 53 mm |
 | Rear overhang | $o_r$ | 30 mm |
