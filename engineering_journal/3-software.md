@@ -336,7 +336,7 @@ The WRO field model contains the outer perimeter and a square central island. `F
 ```math
 \mathbf{q}=\begin{bmatrix}x&y&\psi\end{bmatrix}^{\mathsf T},
 \qquad
-\hat r_i(\mathbf q)=\operatorname{Raycast}(\mathbf q,\theta_i,\mathcal M),
+\hat r_i(\mathbf q)=\mathrm{Raycast}(\mathbf q,\theta_i,\mathcal M),
 ```
 
 where `\mathcal M` is the field geometry, `\theta_i` is an observed scan bearing, and `\hat r_i` is the corresponding predicted range. This is a model-based estimate, not recognition of a colored floor line.
@@ -437,7 +437,7 @@ These are **software configuration values**, not independent measurements of phy
 The reference-point search uses a lookahead distance that varies with speed and is bounded by configurable limits. A simplified expression is:
 
 ```math
-L_d=\operatorname{clip}\left(L_0+k_v|u|,\ L_{d,\min},\ L_{d,\max}\right).
+L_d=\mathrm{clip}\left(L_0+k_v|u|,\ L_{d,\min},\ L_{d,\max}\right).
 ```
 
 Additional corner-dependent caps prevent the controller from targeting too far beyond a tight bend. Short lookahead tends to increase tracking sensitivity; long lookahead can smooth steering but may cut a corner. Neither is universally optimal without accounting for speed, steering lag and track clearance.
@@ -454,7 +454,7 @@ A target point is selected ahead of the rear axle in the vehicle's direction of 
 The calculated physical angle is converted into a calibrated signed steering-command range:
 
 ```math
-u_{\mathrm{steer}}=\operatorname{clip}\left(
+u_{\mathrm{steer}}=\mathrm{clip}\left(
 \frac{\delta}{\delta_{\max}}u_{\max},-u_{\max},u_{\max}\right).
 ```
 
@@ -1131,4 +1131,5 @@ flowchart TD
 - [PythonRobotics / Atsushi Sakai — Dubins path-planning reference](https://github.com/AtsushiSakai/PythonRobotics), acknowledged in the repository's `dubins.py` license comments.
 
 The source, geometric assumptions, configuration and test evidence together define how YBR-SUNFLOWER's software makes autonomous decisions on the WRO Future Engineers field.
+
 
