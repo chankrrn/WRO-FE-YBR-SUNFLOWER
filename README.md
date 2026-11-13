@@ -25,7 +25,7 @@ This repository shares the robot's design, source code, calculations, simulation
 | Robot | Four-wheeled autonomous car with controlled steering and driven wheels |
 | Main controller | Raspberry Pi 5 (8 GB) |
 | Perception | LiDAR and fisheye camera |
-| Current stage | International-final robot revision in development; final assembly and validation pending |
+| Current stage | International-final robot revision in development; final assembly and validation completed |
 | Engineering modeling | Offline MATLAB electrical-system calculations and simulations, with published source code and figures |
 
 ---
@@ -36,13 +36,13 @@ The five linked journals cover the project from overall system architecture to f
 
 | Engineering record | What it covers |
 |:---|:---|
-| **[0 Project Overview](engineering_journal/0-overview.md)** | Project scope, operating challenges, subsystem relationships, engineering progress, and evidence map. **Overview update in progress.** |
-| **[1 Mobility and Mechanical Design](engineering_journal/1-mech.md)** | Chassis, drivetrain, steering geometry, mechanical iterations, CAD, fabrication, assembly, and verification plans. **Mechanical work in progress.** |
+| **[0 Project Overview](engineering_journal/0-overview.md)** | Project scope, operating challenges, subsystem relationships, engineering progress, and evidence map. |
+| **[1 Mobility and Mechanical Design](engineering_journal/1-mech.md)** | Chassis, drivetrain, steering geometry, mechanical iterations, CAD, fabrication, assembly, and verification plans. |
 | **[2 Power and Sensor Architecture](engineering_journal/2-elec.md)** | Power distribution, schematics, wiring, component selection, electronic interfaces, sensor considerations, electrical measurements, and MATLAB modeling. |
 | **[3 Software Architecture and Obstacle Strategy](engineering_journal/3-software.md)** | Onboard Python architecture, perception, localization, motion planning, obstacle handling, control, parking, and simulation/testing interfaces. |
 | **[4 Build and Reproduction Guide](engineering_journal/4-build.md)** | Bill of materials, printed parts, physical assembly, electrical checks, software setup, configuration, startup procedures, and verification checklists. |
 
-For direct access to implementation and assets, see [Raspberry Pi source](src/Raspberrypi/), [3D-printable CAD models](models/CAD/), [schematics](schemes/), and the [MATLAB source scripts](other/matlab/).
+For direct access to implementation and assets, see [Raspberry Pi source](src/Raspberrypi/), [3D-printable CAD models](models/CAD/), [schematics](schemes/), and the [MATLAB source scripts](engineering_journal/matlab/figures/).
 
 ---
 
@@ -85,7 +85,7 @@ Robot photographs: [`v-photos/`](v-photos/).
 | Version | Short description | Status |
 |:---|:---|:---|
 | **[1.0](history/history_README.md)** | Robot used in the **WRO Thailand 2026 Future Engineers National Final**. | Completed |
-| **2.0** | Redesigned robot for the **WRO 2026 Future Engineers International Final**. | In progress |
+| **2.0** | Redesigned robot for the **WRO 2026 Future Engineers International Final**. | Completed |
 
 | Ver 1.0 | Ver 2.0 |
 |---|---|
@@ -113,10 +113,10 @@ Our main principle was to design the robot around the LiDAR sensor and aim for a
 
 | Challenge | Status / reference |
 |---|---|
-| Open Challenge | **Pending recording and publication** — no video link available yet |
-| Obstacle Challenge | **Pending recording and publication** — no video link available yet |
+| Open Challenge | [LINK](https://youtu.be/SlxmnO9ZnVM?si=7TLQcImkOCNDJs5n) |
+| Obstacle Challenge | [LINK](https://youtu.be/5n_M14UXSpM?si=iSTkrHQxrhAiyLdt) |
 
-Video records: [final challenge video index](video/final.md) and [run-test index](video/runtest.md). These pages may also contain pending entries until the demonstrations are available. **A future video link should be added here only after the video has been recorded, reviewed, and published.**
+Video records: [final challenge video index](video/final.md) and [run-test index](video/runtest.md). 
 
 ---
 
@@ -188,7 +188,7 @@ The technical records explain **why** decisions were made; the source and suppor
 | Competition records | [`history/history_README.md`](history/history_README.md) |
 | Robot CAD/STL models and previews | [`models/`](models/) |
 | MATLAB source scripts | [`other/matlab/`](other/matlab/) |
-| Published MATLAB figures | [`engineering_journal/visualization/`](engineering_journal/visualization/) |
+| Published MATLAB figures | [`engineering_journal/matlab/visualization/`](engineering_journal/matlab/visualization/) |
 | Supporting resources | [`other/`](other/) |
 | Circuit and wiring diagrams | [`schemes/`](schemes/) |
 | Raspberry Pi source and configuration | [`src/Raspberrypi/`](src/Raspberrypi/) |

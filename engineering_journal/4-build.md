@@ -20,12 +20,6 @@ This document explains **how to reproduce the final robot**.
 
 ---
 
-[← Project README](../README.md) · [← Engineering Overview](0-overview.md)
-
-[← Software Architecture and Obstacle Strategy](3-software.md)
-
----
-
 # Contents
 
 1. [Reproduction Overview](#1-reproduction-overview)

@@ -351,7 +351,7 @@ The **4.80 V** design reference and **4.63 V** nominal undervoltage-warning refe
 | MATLAB 07 | [`figure07_12v_input_headroom.m`](../engineering_journal/matlab/figures/figure07_12v_input_headroom.m) | Battery equivalent-circuit scenario |
 | MATLAB 08 | [`figure08_5v_wiring_sensitivity.m`](../engineering_journal/matlab/figures/figure08_5v_wiring_sensitivity.m) | Pi supply-path resistance sensitivity |
 
-To reproduce a plot, execute its full `.m` program in MATLAB and use the generated PNG in `engineering_journal/visualization/`. Other exploratory electrical simulations are available in the same script directory, but the four shown here directly support the design and reliability discussion.
+To reproduce a plot, execute its full `.m` program in MATLAB and use the generated PNG in `engineering_journal/matlab/visualization/`. Other exploratory electrical simulations are available in the same script directory, but the four shown here directly support the design and reliability discussion.
 
 ## 9. Schematic and pictorial wiring documentation
 
@@ -679,7 +679,7 @@ The architecture is evaluated as a connected system: the power budget relates to
 | E-03C — Sensors, Motor and Steering | [`schemes/sensors_motor_steering.svg`](../schemes/sensors_motor_steering.svg) |
 | E-03 — Combined three-sheet EasyEDA schematic | [`schemes/schematic_diagram.pdf`](../schemes/schematic_diagram.pdf) |
 | E-04 — Pictorial wiring diagram | [`schemes/wiring_diagram.png`](../schemes/wiring_diagram.png) |
-| MATLAB Figures 01, 02, 07 and 08 | [`visualization/`](visualization/) |
+| MATLAB Figures 01, 02, 07 and 08 | [`matlab/visualization/`](matlab/visualization/) |
 | Electrical MATLAB source code | [`engineering_journal/matlab/figures`](../engineering_journal/matlab/figures/) |
 | Completed-robot construction photos | [`4-build.md`](4-build.md) and [`other/Pic/Build/`](../other/Pic/Build/) |
 | Current Raspberry Pi interfaces and motor-control code | [`src/Raspberrypi/`](../src/Raspberrypi/) |
