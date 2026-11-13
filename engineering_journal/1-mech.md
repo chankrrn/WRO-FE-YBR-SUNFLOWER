@@ -236,8 +236,8 @@ Each STL below has a matching preview. The catalog includes the unused wing conc
 | [`Base.stl`](../models/CAD/Base.stl) | <img src="../models/pic/Base_p.PNG" width="180" alt="Base CAD preview"> | Main chassis mounting structure |
 | [`bottom_buck.stl`](../models/CAD/bottom_buck.stl) | <img src="../models/pic/bottom_buck_p.PNG" width="180" alt="bottom buck CAD preview"> | Covers and holds the buck converter |
 | [`buck_spacer.stl`](../models/CAD/buck_spacer.stl) | <img src="../models/pic/buck_spacer_p.PNG" width="180" alt="buck spacer CAD preview"> | Converter-stack spacer |
-| [`elec_base.stl`](../models/CAD/elec_base.stl) | <img src="../models/pic/elec_base_p.PNG" width="180" alt="elec base CAD preview"> | Mounts converters and wiring |
 | [`top_buck.stl`](../models/CAD/top_buck.stl) | <img src="../models/pic/top_buck_p.PNG" width="180" alt="top buck CAD preview"> | Buck-converter mounting component |
+| [`elec_base.stl`](../models/CAD/elec_base.stl) | <img src="../models/pic/elec_base_p.PNG" width="180" alt="elec base CAD preview"> | Mounts converters and wiring |
 | [`top_plate.stl`](../models/CAD/top_plate.stl) | <img src="../models/pic/top_plate_p.PNG" width="180" alt="top plate CAD preview"> | Mounts LiDAR and controls |
 | [`IMU_plate.stl`](../models/CAD/IMU_plate.stl) | <img src="../models/pic/IMU_plate_p.PNG" width="180" alt="IMU plate CAD preview"> | IMU mounting plate |
 | [`cam_holder.stl`](../models/CAD/cam_holder.stl) | <img src="../models/pic/cam_holder_p.PNG" width="180" alt="cam holder CAD preview"> | Camera support |
