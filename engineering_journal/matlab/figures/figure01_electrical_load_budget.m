@@ -41,6 +41,7 @@ inputs.twelveV = 12.0;            % DFR1208 published output nominal [V]
 inputs.threeV3 = 3.3;             % DFR0604 I/O breakout nominal [V]
 inputs.eta5 = 0.90;               % MODEL assumption, not guaranteed at load
 inputs.eta12 = 0.90;              % MODEL assumption, not guaranteed at load
+inputs.figureID = '01/08';
 
 % The HAT's servo PWM positive rail is taken as 5 V nominal only when
 % DFR0604 external VP supply is NOT connected. The assembled VP state is
@@ -183,6 +184,28 @@ annotation(fig,'textbox',[0.065 0.102 0.88 0.05], ...
     'Interpreter','none');
 
 %% 4. Save figure and source inputs; print metrics to Command Window
+scriptDir = fileparts(mfilename('fullpath'));
+if isempty(scriptDir)
+    error('Run the complete saved .m script from its figures folder.');
+end
+
+% The output folder is a sibling of figures/, independent of Current Folder.
+outDir = fullfile(fileparts(scriptDir), 'visualization');
+if ~exist(outDir, 'dir')
+    [ok, message] = mkdir(outDir);
+    if ~ok
+        error('Cannot create output folder: %s', message);
+    end
+end
+
+figurePath = fullfile(outDir, '01_assumed_load_budget.png');
+inputPath = fullfile(outDir, '01_simulation_inputs.mat');
+exportgraphics(fig, figurePath, 'Resolution', 240, 'BackgroundColor', 'white');
+save(inputPath, ...
+    'inputs', 'items', 'powerW', 'power5OutputW', ...
+    'power12OutputW', 'powerBatteryApproxW', 'batteryCurrentApproxA');
+fprintf('SAVED INPUTS: %s\n', inputPath);
+
 sourceDir=fileparts(mfilename('fullpath'));
 if isempty(sourceDir), sourceDir=pwd; end
 outDir=fullfile(sourceDir,'results');
@@ -193,7 +216,7 @@ save(fullfile(outDir,'simulation_inputs.mat'),'inputs','items', ...
     'powerW','power5OutputW','power12OutputW', ...
     'powerBatteryApproxW','batteryCurrentApproxA');
 
-fprintf('\nYBR-SUNFLOWER | FIGURE 01/11 | ELECTRICAL LOAD BUDGET\n');
+fprintf('\nYBR-SUNFLOWER | FIGURE 01/08 | ELECTRICAL LOAD BUDGET\n');
 fprintf('Evidence: supplier figures + explicit design assumptions; not measured.\n');
 fprintf('5 V branch including idealized 3.3 V subload: %.3f W\n',power5OutputW);
 fprintf('12 V motor branch at supplier rated-current upper bound: %.3f W\n',power12OutputW);

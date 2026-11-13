@@ -122,6 +122,8 @@ Video records: [final challenge video index](video/final.md) and [run-test index
 
 ## MATLAB Modeling — MathWorks Modeling Award (Future Engineers)
 
+All detailed information about our use of MathWorks tools can be found in the [MATLAB README](matlab/README.md).
+
 ### Engineering problem and modeling strategy
 
 Our robot uses a **4S 15.2 V nominal LiHV battery**, a DFR1202 5 V regulator for computing and sensing loads, and a DFR1208 12 V regulator for the motor supply. We used **MATLAB as an offline engineering-analysis tool** to investigate the electrical load budget, converter input-voltage limits, illustrative battery behavior, and potential Raspberry Pi supply-path voltage drop.

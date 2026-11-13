@@ -34,7 +34,7 @@ clearvars; close all; clc;
 
 %% 1. Inputs -- synchronized to Electrical Figures 01, 04, 05 and 06
 p.project = 'YBR-SUNFLOWER | WRO 2026 Future Engineers';
-p.figureID = '07/11';
+p.figureID = '07/08';
 p.evidenceClass = 'Manufacturer input limit + illustrative battery simulation';
 p.cells = 4;
 p.capacityAh = 1.30;                 % GNB product nameplate [Ah]
@@ -229,18 +229,31 @@ annotation(fig,'textbox',[0.066 0.177 0.89 0.053], ...
     'Color',ink,'LineStyle','none','Interpreter','none');
 
 %% 6. Save ONLY the figure intended for the electrical journal
-scriptDir=fileparts(mfilename('fullpath'));
-if isempty(scriptDir),scriptDir=pwd;end
-outDir=fullfile(scriptDir,'results');
-if ~exist(outDir,'dir'),mkdir(outDir);end
-figurePath=fullfile(outDir,'07_12v_input_headroom.png');
-exportgraphics(fig,figurePath,'Resolution',240,'BackgroundColor','white');
-save(fullfile(outDir,'simulation_inputs.mat'), ...
-    'p','runs','nominalHeadroomV','firstCrossingMinutes', ...
-    'P5_W','P12_W','PconverterInput_W','PdirectNom_W', ...
-    'PtotalNom_W','IbatNom_A','plotEndMinutes');
+scriptDir = fileparts(mfilename('fullpath'));
+if isempty(scriptDir)
+    error('Run the complete saved .m script from its figures folder.');
+end
 
-fprintf('\nYBR-SUNFLOWER | ELECTRICAL FIGURE 07 | 12 V INPUT HEADROOM\n');
+% The output folder is a sibling of figures/, independent of Current Folder.
+outDir = fullfile(fileparts(scriptDir), 'visualization');
+if ~exist(outDir, 'dir')
+    [ok, message] = mkdir(outDir);
+    if ~ok
+        error('Cannot create output folder: %s', message);
+    end
+end
+
+figurePath = fullfile(outDir, '07_12v_input_headroom.png');
+inputPath = fullfile(outDir, '07_simulation_inputs.mat');
+exportgraphics(fig, figurePath, 'Resolution', 240, 'BackgroundColor', 'white');
+save(inputPath, ...
+    'p', 'runs', 'nominalHeadroomV', 'firstCrossingMinutes', ...
+    'P5_W', 'P12_W', 'PconverterInput_W', 'PdirectNom_W', ...
+    'PtotalNom_W', 'IbatNom_A', 'plotEndMinutes');
+fprintf('SAVED INPUTS: %s\n', inputPath);
+
+
+fprintf('\nYBR-SUNFLOWER | ELECTRICAL FIGURE 07/08 | 12 V INPUT HEADROOM\n');
 fprintf('GNB published nominal: %.2f V; DFR1208 min VIN: %.2f V\n', ...
     p.nominalPackV,p.converter12MinInputV);
 fprintf('Nameplate-only nominal input margin: +%.2f V\n',nominalHeadroomV);

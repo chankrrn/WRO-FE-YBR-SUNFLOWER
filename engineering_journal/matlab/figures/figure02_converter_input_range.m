@@ -22,7 +22,7 @@ clearvars; close all; clc;
 
 %% 1. USER INPUTS -- published limits and explicit visualization choices
 inputs.project = 'YBR-SUNFLOWER | WRO 2026 Future Engineers';
-inputs.figureID = '02/11';
+inputs.figureID = '02/08';
 inputs.dataClass = 'Published component limits + illustrative voltage sweep';
 
 inputs.packCells = 4;              % GNB product: 4S1P
@@ -232,17 +232,31 @@ annotation(fig,'textbox',[0.066 0.155 0.89 0.055], ...
     'LineStyle','none','Interpreter','none');
 
 %% 7. Save PNG and model inputs; no CSV or text-summary files
-scriptDir=fileparts(mfilename('fullpath'));
-if isempty(scriptDir), scriptDir=pwd; end
-outDir=fullfile(scriptDir,'results');
-if ~exist(outDir,'dir'), mkdir(outDir); end
-figurePath=fullfile(outDir,'02_input_range_screen.png');
-exportgraphics(fig,figurePath,'Resolution',240,'BackgroundColor','white');
-save(fullfile(outDir,'simulation_inputs.mat'), ...
-    'inputs','vin','within5V','within12V','margin5V','margin12V', ...
-    'nominalMargin5V','nominalMargin12V','fullReferenceMargin12V');
+scriptDir = fileparts(mfilename('fullpath'));
+if isempty(scriptDir)
+    error('Run the complete saved .m script from its figures folder.');
+end
 
-fprintf('\nYBR-SUNFLOWER | ELECTRICAL FIGURE 02/11\n');
+% The output folder is a sibling of figures/, independent of Current Folder.
+outDir = fullfile(fileparts(scriptDir), 'visualization');
+if ~exist(outDir, 'dir')
+    [ok, message] = mkdir(outDir);
+    if ~ok
+        error('Cannot create output folder: %s', message);
+    end
+end
+
+figurePath = fullfile(outDir, '02_input_range_screen.png');
+inputPath = fullfile(outDir, '02_simulation_inputs.mat');
+exportgraphics(fig, figurePath, 'Resolution', 240, 'BackgroundColor', 'white');
+save(inputPath, ...
+    'inputs', 'vin', 'within5V', 'within12V', ...
+    'margin5V', 'margin12V', 'nominalMargin5V', 'nominalMargin12V', ...
+    'fullReferenceMargin12V');
+fprintf('SAVED INPUTS: %s\n', inputPath);
+
+
+fprintf('\nYBR-SUNFLOWER | ELECTRICAL FIGURE 02/08\n');
 fprintf('DFR1202 published input: %.1f to %.1f V (5 V nominal output)\n', ...
     inputs.buck5MinV,inputs.buck5MaxV);
 fprintf('DFR1208 published input: %.1f to %.1f V (12 V nominal output)\n', ...

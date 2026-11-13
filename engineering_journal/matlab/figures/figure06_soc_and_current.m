@@ -29,7 +29,7 @@ clearvars; close all; clc;
 
 %% 1. Source-backed ratings and explicit model parameters
 p.project = 'YBR-SUNFLOWER | WRO 2026 Future Engineers';
-p.figureID = '05/11';
+p.figureID = '06/08';
 p.evidenceClass = 'Calculated sensitivity study, NOT measured discharge';
 p.cells = 4;
 p.capacityAh = 1.30;                 % GNB nameplate (Ah)
@@ -234,17 +234,30 @@ annotation(fig,'textbox',[0.066 0.133 0.89 0.046], ...
     'LineStyle','none','Interpreter','none');
 
 %% 5. Save exactly one figure and model inputs
-scriptDir=fileparts(mfilename('fullpath'));
-if isempty(scriptDir),scriptDir=pwd;end
-outDir=fullfile(scriptDir,'results');
-if ~exist(outDir,'dir'),mkdir(outDir);end
-figurePath=fullfile(outDir,'06_soc_and_current.png');
-exportgraphics(fig,figurePath,'Resolution',240,'BackgroundColor','white');
-save(fullfile(outDir,'simulation_inputs.mat'), ...
-    'p','runs','P5_W','P12_W','PconverterInput_W', ...
-    'PdirectNom_W','PtotalNom_W','IbatNom_A');
+scriptDir = fileparts(mfilename('fullpath'));
+if isempty(scriptDir)
+    error('Run the complete saved .m script from its figures folder.');
+end
 
-fprintf('\nYBR-SUNFLOWER | FIGURE 06/11 | BATTERY SOC AND CURRENT\n');
+% The output folder is a sibling of figures/, independent of Current Folder.
+outDir = fullfile(fileparts(scriptDir), 'visualization');
+if ~exist(outDir, 'dir')
+    [ok, message] = mkdir(outDir);
+    if ~ok
+        error('Cannot create output folder: %s', message);
+    end
+end
+
+figurePath = fullfile(outDir, '06_soc_and_current.png');
+inputPath = fullfile(outDir, '06_simulation_inputs.mat');
+exportgraphics(fig, figurePath, 'Resolution', 240, 'BackgroundColor', 'white');
+save(inputPath, ...
+    'p', 'runs', 'P5_W', 'P12_W', ...
+    'PconverterInput_W', 'PdirectNom_W', 'PtotalNom_W', 'IbatNom_A');
+fprintf('SAVED INPUTS: %s\n', inputPath);
+
+
+fprintf('\nYBR-SUNFLOWER | FIGURE 06/08 | BATTERY SOC AND CURRENT\n');
 fprintf('Model sources: GNB pack 15.2 V nominal, %.2f Ah; all SOC/OCV points assumed.\n',p.capacityAh);
 fprintf('Figure 01 budget: P5 = %.4f W; P12 = %.4f W\n',P5_W,P12_W);
 fprintf('Figure 05 constant-power model: regulated input demand = %.4f W at 1.0x\n',PconverterInput_W);

@@ -30,7 +30,7 @@ clearvars; close all; clc;
 
 %% 1. USER INPUTS -- identify every evidence class
 p.project = 'YBR-SUNFLOWER | WRO 2026 Future Engineers';
-p.figureID = '08 (final electrical MATLAB figure)';
+p.figureID = '08/08 (final electrical MATLAB figure)';
 p.modelType = 'Illustrative resistive load-step model; NOT physical measurements';
 
 % Published equipment references, not claimed measurements:
@@ -204,19 +204,36 @@ annotation(fig,'textbox',[0.066 0.174 0.88 0.051], ...
     'Color',ink,'LineStyle','none','Interpreter','none');
 
 %% 7. Export exactly one PNG and the reproducible input file
-scriptDir=fileparts(mfilename('fullpath'));
-if isempty(scriptDir),scriptDir=pwd;end
-resultDir=fullfile(scriptDir,'results');
-if ~exist(resultDir,'dir'),mkdir(resultDir);end
-pngPath=fullfile(resultDir,'08_transient_timeline.png');
-exportgraphics(fig,pngPath,'Resolution',240,'BackgroundColor','white');
+scriptDir = fileparts(mfilename('fullpath'));
+if isempty(scriptDir)
+    error('Run the complete saved .m script from its figures folder.');
+end
+
+% The output folder is a sibling of figures/, independent of Current Folder.
+outDir = fullfile(fileparts(scriptDir), 'visualization');
+if ~exist(outDir, 'dir')
+    [ok, message] = mkdir(outDir);
+    if ~ok
+        error('Cannot create output folder: %s', message);
+    end
+end
+
+pngPath = fullfile(outDir, '08_transient_timeline.png');
+inputPath = fullfile(outDir, '08_simulation_inputs.mat');
+exportgraphics(fig, pngPath, 'Resolution', 240, 'BackgroundColor', 'white');
+save(inputPath, ...
+    'p', 'scenarioName', 'scenarioUSBohm', 'scenarioCommonOhm', ...
+    'I3v3EquivalentAt5A', 't', 'IpiA', 'IservoA', ...
+    'IusbA', 'Vpi', 'minimumV');
+fprintf('SAVED INPUTS: %s\n', inputPath);
+
 
 % Save only data that explain/reproduce this sensitivity study.
 save(fullfile(resultDir,'simulation_inputs.mat'), ...
     'p','scenarioName','scenarioUSBohm','scenarioCommonOhm', ...
     'I3v3EquivalentAt5A','t','IpiA','IservoA','IusbA','Vpi','minimumV');
 
-fprintf('\nYBR-SUNFLOWER | ELECTRICAL FIGURE 08 | FINAL MATLAB VISUAL\n');
+fprintf('\nYBR-SUNFLOWER | ELECTRICAL FIGURE 08/08 | FINAL MATLAB VISUAL\n');
 fprintf('Evidence: spec voltages + scenario currents/resistances; NOT measurements.\n');
 fprintf('DFR1202 nominal output: %.2f V; tolerance +/-%.2f V\n', ...
     p.converterNominalOutputV,p.converterPublishedToleranceV);

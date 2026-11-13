@@ -13,6 +13,7 @@
 clearvars; close all; clc;
 
 %% 1. USER INPUTS -- same inventory and conditions as Figure 01
+p.figureID = '03/08';
 p.packNominalV = 15.2;          % GNB 4S LiHV: nominal [V], manufacturer label
 p.packFullReferenceV = 17.4;    % 4 x 4.35 V LiHV reference; NOT measured
 p.buck5MinInputV = 6.0;        % DFR1202: manufacturer VIN minimum [V]
@@ -196,21 +197,33 @@ annotation(fig,'textbox',[0.066 0.164 0.89 0.052], ...
     'Color',ink,'LineStyle','none','Interpreter','none');
 
 %% 6. Save result, saved model inputs, and Command Window summary
-scriptDir=fileparts(mfilename('fullpath'));
-if isempty(scriptDir),scriptDir=pwd;end
-outDir=fullfile(scriptDir,'results');
-if ~exist(outDir,'dir'),mkdir(outDir);end
-figurePath=fullfile(outDir,'03_estimated_input_current.png');
-exportgraphics(fig,figurePath,'Resolution',240, ...
-    'BackgroundColor','white');
-save(fullfile(outDir,'simulation_inputs.mat'), ...
-    'p','vin','valid','P5normalW','P5highW','P12W', ...
-    'PdirectW','PconverterNormalW','PconverterHighW', ...
-    'PbatNormalW','PbatHighW', ...
-    'IbatNormalA','IbatHighA','InomNormalA','InomHighA', ...
-    'IfullNormalA','IfullHighA');
+scriptDir = fileparts(mfilename('fullpath'));
+if isempty(scriptDir)
+    error('Run the complete saved .m script from its figures folder.');
+end
 
-fprintf('\nYBR-SUNFLOWER | ELECTRICAL FIGURE 03/11\n');
+% The output folder is a sibling of figures/, independent of Current Folder.
+outDir = fullfile(fileparts(scriptDir), 'visualization');
+if ~exist(outDir, 'dir')
+    [ok, message] = mkdir(outDir);
+    if ~ok
+        error('Cannot create output folder: %s', message);
+    end
+end
+
+figurePath = fullfile(outDir, '03_estimated_input_current.png');
+inputPath = fullfile(outDir, '03_simulation_inputs.mat');
+exportgraphics(fig, figurePath, 'Resolution', 240, 'BackgroundColor', 'white');
+save(inputPath, ...
+    'p', 'vin', 'valid', 'P5normalW', ...
+    'P5highW', 'P12W', 'PdirectW', 'PconverterNormalW', ...
+    'PconverterHighW', 'PbatNormalW', 'PbatHighW', 'IbatNormalA', ...
+    'IbatHighA', 'InomNormalA', 'InomHighA', 'IfullNormalA', ...
+    'IfullHighA');
+fprintf('SAVED INPUTS: %s\n', inputPath);
+
+
+fprintf('\nYBR-SUNFLOWER | ELECTRICAL FIGURE 03/08\n');
 fprintf('Model: Ibatt(V) = (P5/eta5 + P12/eta12)/V + Ivoltmeter.\n');
 fprintf('Published/regulator scenario: DFR1208 VIN >= %.1f V.\n', ...
     p.buck12MinInputV);

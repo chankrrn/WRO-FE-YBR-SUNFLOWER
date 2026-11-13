@@ -25,7 +25,7 @@ clearvars; close all; clc;
 
 %% 1. USER INPUTS -- source-based pack ratings vs hypothetical OCV shape
 p.project = 'YBR-SUNFLOWER | WRO 2026 Future Engineers';
-p.figureID = '04/11';
+p.figureID = '04/08';
 p.evidenceClass = 'Published battery ratings + illustrative OCV/SOC knots';
 
 p.cells = 4;                       % GNB product: 4S1P pack
@@ -157,16 +157,29 @@ annotation(fig,'textbox',[0.066 0.168 0.89 0.048], ...
 
 %% 6. Save figure and calculation inputs; display numeric results
 scriptDir = fileparts(mfilename('fullpath'));
-if isempty(scriptDir), scriptDir = pwd; end
-outDir = fullfile(scriptDir,'results');
-if ~exist(outDir,'dir'), mkdir(outDir); end
-figurePath = fullfile(outDir,'04_assumed_voltage_vs_soc.png');
-exportgraphics(fig,figurePath,'Resolution',240,'BackgroundColor','white');
-save(fullfile(outDir,'simulation_inputs.mat'), ...
-    'p','socFraction','socPercent','packOCV','packKnotVoltages', ...
-    'nominalEnergyWh');
+if isempty(scriptDir)
+    error('Run the complete saved .m script from its figures folder.');
+end
 
-fprintf('\nYBR-SUNFLOWER | FIGURE 04/11 | LiHV OCV vs SOC\n');
+% The output folder is a sibling of figures/, independent of Current Folder.
+outDir = fullfile(fileparts(scriptDir), 'visualization');
+if ~exist(outDir, 'dir')
+    [ok, message] = mkdir(outDir);
+    if ~ok
+        error('Cannot create output folder: %s', message);
+    end
+end
+
+figurePath = fullfile(outDir, '04_assumed_voltage_vs_soc.png');
+inputPath = fullfile(outDir, '04_simulation_inputs.mat');
+exportgraphics(fig, figurePath, 'Resolution', 240, 'BackgroundColor', 'white');
+save(inputPath, ...
+    'p', 'socFraction', 'socPercent', 'packOCV', ...
+    'packKnotVoltages', 'nominalEnergyWh');
+fprintf('SAVED INPUTS: %s\n', inputPath);
+
+
+fprintf('\nYBR-SUNFLOWER | FIGURE 04/08 | LiHV OCV vs SOC\n');
 fprintf('GNB label: %dS1P, %.2f V nominal, %.2f Ah\n', ...
     p.cells,p.nominalPackV,p.capacityAh);
 fprintf('Nominal nameplate energy: %.2f Wh\n',nominalEnergyWh);
