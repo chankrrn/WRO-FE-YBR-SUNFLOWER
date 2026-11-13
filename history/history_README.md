@@ -34,13 +34,6 @@ In our second appearance at the WRO international round in 2011, our team achiev
   <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/4f6da85a84eba3a23efff243b5df138958d818ed/history/pic/Second%20International%20Round.jpg" width="500"/>
 </p>
 
-### 20XX — Latest International Round Achievement
-
-<p align="center">
-  <img src="" width="500"/>
-</p>
-
-
 ---
 
 Currently in 2026, we are part of the **YB Robot Team**. Our senior helped bring this team name to global recognition, and we aim to continue the legacy and make them proud.

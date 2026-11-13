@@ -33,7 +33,7 @@ The central design decision is to treat navigation as a **pose–plan–control*
 11. [Fault handling and safety](#11-fault-handling-and-safety)
 12. [Testing, simulation and calibration](#12-testing-simulation-and-calibration)
 13. [Software metrics and validation evidence](#13-software-metrics-and-validation-evidence)
-14. [Engineering development and trade-offs](#14-engineering-development-and-trade-offs)
+14. [Engineering decisions and trade-offs](#14-engineering-decisions-and-trade-offs)
 15. [Implementation boundaries and engineering limitations](#15-implementation-boundaries-and-engineering-limitations)
 16. [Installation, operation and reproducibility](#16-installation-operation-and-reproducibility)
 17. [Architecture summary and references](#17-architecture-summary-and-references)
@@ -52,7 +52,7 @@ The system answers three questions continuously:
 | **Where should I go?** | `RacingLine` for the Open Challenge; `GoalPlanner` plus remembered traffic signs for the Obstacle Challenge | Ordered, geometrically constrained path |
 | **How should I steer?** | `PurePursuit` and actuator controls in `MotorManager` | Steering command and propulsion speed |
 
-The software is written in Python and runs on a **Raspberry Pi 5**. The earlier national-round Arduino UNO R4 controller was removed: its propulsion and steering functions were replaced by the **DFR0592 DC motor-driver HAT** and **DFR0604 I/O expansion HAT**, each with its own I²C address. The Raspberry Pi performs perception, localization, planning, control, lap tracking and competition sequencing.
+The software is written in Python and runs on a **Raspberry Pi 5**. Propulsion and steering are controlled through the **DFR0592 DC motor-driver HAT** and **DFR0604 I/O expansion HAT**, each with its own I²C address. The Raspberry Pi performs perception, localization, planning, control, lap tracking and competition sequencing.
 
 ## 1.1 System-level signal flow
 
@@ -88,9 +88,9 @@ flowchart TD
 
 The same underlying localization and steering architecture is used in both tasks. This reduces duplication and makes the difference between the two challenges explicit in the planner and task logic rather than in completely separate low-level control code.
 
-## 1.3 Evidence and reproducibility
+## 1.3 Software, models and physical evidence
 
-Descriptions of algorithms and constants in this chapter are grounded in the repository source files, notably [`main.py`](../src/Raspberrypi/main.py), [`tasks/path_task.py`](../src/Raspberrypi/tasks/path_task.py), [`tasks/final/task.py`](../src/Raspberrypi/tasks/final/task.py), and the round-specific TOML configuration files. Explicitly reported measurements in code comments are differentiated from **configuration values**, **mathematical derivations**, and **simulation output**. Physical performance is to be established by actual competition recordings and logged tests, not by the presence of a source-code feature.
+Algorithm descriptions refer to [`main.py`](../src/Raspberrypi/main.py), [`tasks/path_task.py`](../src/Raspberrypi/tasks/path_task.py), [`tasks/final/task.py`](../src/Raspberrypi/tasks/final/task.py), and the round-specific TOML files. Parameter tables describe software settings. Equations describe mathematical models, while figures are labeled as simulation output or conceptual illustrations. [Physical run recordings](#134-physical-run-recordings) show the vehicle operating on the field.
 
 ---
 
@@ -165,13 +165,12 @@ src/Raspberrypi/
 │   ├── racing_line.py             # Rounded-square reference route
 │   ├── pure_pursuit.py            # Geometric steering controller
 │   ├── object_solver.py           # Red/green and parking-color detection
+│   ├── sign_sizer.py              # Optional Surprise-rule size classification
 │   ├── vision_manager.py          # Asynchronous camera mapping
 │   ├── block_map.py               # Tracked sign observations
 │   ├── goal_planner.py            # Goal-based clearance-aware planner
 │   ├── dubins.py                  # Curvature-bounded path primitives
-│   ├── parking.py                 # BayFinder and UnparkController
-│   ├── bay_park.py                # Alternative in-round parking sequence
-│   └── veloz_parking.py           # Separate parking-test algorithm
+│   └── parking.py                 # BayFinder and UnparkController
 ├── lidar_park/
 │   ├── run.py                     # Dedicated after-round LiDAR parking
 │   ├── scan_analysis.py           # Wall/bay extraction from scans
@@ -183,6 +182,7 @@ src/Raspberrypi/
 ├── test_goal_planner.py          # Planner experiments
 ├── test_plan_view.py             # Route visualization
 ├── test_object_solver.py         # Camera geometry and object-ranging tests
+├── test_sign_sizer.py             # Surprise-rule perception diagnostics
 ├── test_steering.py              # Travel-distance and steering tests
 ├── test_step_response.py         # Steering dynamics
 ├── test_motor_rotation.py        # Encoder and finite-rotation tests
@@ -191,7 +191,7 @@ src/Raspberrypi/
 └── uv.lock                       # Locked package versions
 ```
 
-The directory includes compatibility modules, debugging utilities and alternative control implementations. The active competition entry points and configuration determine the algorithms used for an official round; not every module present in `classes/` runs in every task.
+The competition entry points select the round behavior, while shared modules provide device management, perception, planning and control. Configuration files define the parameters used by each task.
 
 ## 3.2 Layered responsibility table
 
@@ -199,7 +199,7 @@ The directory includes compatibility modules, debugging utilities and alternativ
 |---|---|---|
 | Entry and scheduling | `main.py`, `tasks/cli.py`, `tasks/base_task.py` | Parse options, build task context, enforce runtime, call completion hooks |
 | Device management | `TaskContext`, `BoardManager`, `MotorManager`, `LidarManager`, `CompassManager` | Device communication, startup and safe shutdown |
-| Perception | `CameraManager`, `ObjectSolver`, `VisionManager` | Capture image, classify color, infer object bearing/range |
+| Perception | `CameraManager`, `ObjectSolver`, `VisionManager`, optional `SignSizer` | Capture image, classify color, infer bearing/range and evaluate altered sign height |
 | Localization | `NavigationManager`, `FieldMap`, `BlockMap` | Estimate rear-axle pose and store environmental information |
 | Planning | `RacingLine`, `GoalPlanner`, `dubins.py` | Construct reference route and obstacle-passing path |
 | Motion control | `PurePursuit`, `PathDrivingTask` | Compute steering, speed and lap progress |
@@ -251,21 +251,20 @@ This is a *target*, not a measured guarantee. Actual timing depends on computati
 
 `PathDrivingTask` obtains the recent robot pose, updates lap progress, chooses a lookahead target, computes steering and selects a speed subject to the current safety conditions. It estimates travelled distance between observations, advances the steering-lag model and reports motion to the localizer. The task then applies a single drive/steering command through `MotorManager`.
 
-```text
-Motor/speed-based motion estimate
-       ↓
-Particle-filter pose and confidence
-       ↓
-Progress along racing line / lap count
-       ↓
-Target path (Open) or planned route (Obstacle)
-       ↓
-Pure Pursuit + steering rate/lag handling
-       ↓
-Speed profile + front-LiDAR backstop
-       ↓
-DFR0592 propulsion / DFR0604 steering
+```mermaid
+flowchart TD
+    N["Pose and motion estimate"] --> P["Route progress and lap distance"]
+    P --> R{"Round"}
+    R -->|Open| O["Reference route"]
+    R -->|Obstacle| G["GoalPlanner route"]
+    O --> U["Pure Pursuit and steering limits"]
+    G --> U
+    U --> S["Speed selection and safety checks"]
+    L["Live front LiDAR range"] --> S
+    S --> A["Motor and steering commands"]
 ```
+
+*Figure S-03. Shared navigation tick. Route selection differs between rounds; both branches use the same steering and command-safety layer.*
 
 The Obstacle Challenge can temporarily hand control to its **unparking controller**, **relocalization walk**, or **parking controller**. These handoffs are explicit, so Pure Pursuit does not issue competing commands during a maneuver.
 
@@ -302,7 +301,7 @@ The I²C addresses are specified explicitly to avoid the default-address conflic
 
 ## 5.2 Drive command scaling and motor feedback
 
-`MotorManager` accepts the historical **0–255 speed-command scale** inherited from the previous low-level controller, then converts it to the percentage format expected by the DFR0592 driver library. Consequently, a speed configuration such as `125` is **not 125% of full motor output**.
+`MotorManager` accepts a **0–255 speed-command scale**, then converts it to the percentage format expected by the DFR0592 driver library. Consequently, a speed configuration such as `125` is **not 125% of full motor output**.
 
 ```math
 D_{\%}=100\frac{|u|}{255},\qquad 0\le |u|\le255,
@@ -310,7 +309,7 @@ D_{\%}=100\frac{|u|}{255},\qquad 0\le |u|\le255,
 
 where `u` is a signed drive command and `D_%` is the requested PWM duty in percent before hardware dynamics and supply effects. Motor direction is selected separately. Code calibration still distinguishes the geared motor's internal **19:1** reduction from the external drivetrain gearing documented in [Mobility and Mechanical Design](1-mech.md).
 
-The motor-driver library reports encoder-derived rotational **speed**, not raw accumulated quadrature edges. `MotorManager` polls that information in a worker and integrates it into an output-shaft position estimate for finite rotations and distance moves. Its constants include `ENCODER_PPR = 11`, `GEAR_RATIO = 19`, a sign convention and a calibration multiplier. This shaft-angle estimate is a software integration and is not equivalent to a separate hardware counter with lossless edge history.
+The motor-driver library reports encoder-derived rotational **speed**, not raw accumulated quadrature edges. `MotorManager` polls that information in a worker and integrates it into an output-shaft position estimate for finite rotations and distance moves. Its constants include `ENCODER_PPR = 11`, `GEAR_RATIO = 19`, a sign convention and a calibration multiplier. The drive channel is **`DRIVE_MOTOR = MotorBoard.M2`**. This shaft-angle estimate is a software integration and is not equivalent to a separate hardware counter with lossless edge history.
 
 ## 5.3 Steering interface
 
@@ -358,6 +357,18 @@ where `\bar w_j` denotes normalized particle weight. The actual implementation a
 
 The software reports pose reliability using a confidence threshold of **0.35**. Low confidence is handled as a distinct navigation condition rather than being accepted as a precise position.
 
+### Visual interpretation of the particle cloud
+
+![Simulated particle filter with dispersed pose hypotheses](../other/Pic/software/localization_scattered.png)
+
+*Figure S-04. Simulation with a dispersed particle cloud and low pose confidence. `TRUTH` identifies the simulator's reference pose.*
+
+![Simulated particle filter with concentrated pose hypotheses and wall returns](../other/Pic/software/localization_converged.png)
+
+*Figure S-05. Simulation with concentrated particles and scan returns aligned with the modeled walls. These two images illustrate separate localization states at different reference positions.*
+
+The useful comparison is the **distribution of plausible poses**. A scattered cloud represents uncertainty; a concentrated cloud represents agreement with the supplied model and observations. The small errors printed in a simulation image are not measured localization accuracy on the physical vehicle.
+
 ## 6.3 LiDAR and IMU heading fusion
 
 Because the field repeats after a 90° rotation, LiDAR ranges alone can leave a quadrant ambiguity. The BNO055 gives a coarse heading reference while line orientations measured from the LiDAR refine the angle relative to field walls. The heading procedure resolves fine orientation modulo 90° and uses the coarse reference to select the correct quadrant.
@@ -386,6 +397,10 @@ The path-driving motion estimate uses configured speed-to-distance calibration a
 
 `get_pose()` returns field coordinates, heading, confidence and reliability. The navigation debug renderer can display field geometry, particles, LiDAR points, robot pose, known blocks and available error statistics. The same visualization can be exercised against a simulated ground-truth pose when actual hardware is not present.
 
+![Animated navigation simulation showing the estimated pose moving around the field](../other/Pic/software/navigation_simulation.gif)
+
+*Figure S-06. Animated localization simulation showing the reference marker, estimated pose, particles and wall returns. `TRUTH` and error values refer to the simulated field.*
+
 ---
 
 # 7. Racing-line generation and Pure Pursuit
@@ -399,15 +414,23 @@ The active round configurations are **not identical**:
 | Setting | Open Challenge | Obstacle Challenge |
 |---|---:|---:|
 | Lap goal | 3 | 3 |
-| Reference wall margin | 290 mm | 550 mm |
-| Corner radius | 630 mm | 650 mm |
+| Reference wall margin | 320 mm | 550 mm |
+| Corner radius | 700 mm | 650 mm |
 | Wheelbase parameter | 165 mm | 165 mm |
-| Maximum modeled road-wheel angle | 22.0° | 38.8° |
+| Maximum modeled road-wheel angle | 38.8° | 38.8° |
 | Path sample resolution | 20 mm | 20 mm |
-| Base speed command | 150 | 125 |
-| Corner speed command | 150 | 115 |
+| Base speed command | 255 | 130 |
+| Corner speed command | 255 | 120 |
+| Maximum steering-command magnitude | 66 | 90 |
+| Base lookahead | 560 mm | 160 mm |
+| Lookahead bounds before corner cap | 400–800 mm | 100–400 mm |
+| Lap-distance stop offset | 550 mm | 320 mm |
 
-These are **software configuration values**, not independent measurements of physical steering angle or vehicle speed. The differing modeled steering limits are therefore important when interpreting simulated turning radii and planned clearances.
+These are **software configuration values**, not independent measurements of physical steering angle or vehicle speed. Both rounds use the same maximum modeled road-wheel angle; their command limits, lookahead settings and speed settings differ. The Open configuration also ramps from command **120** over **1.0 s** at startup. A command of 255 requests the top of the software scale, not a measured speed in millimeters per second.
+
+![Rounded-square racing-line illustration with field geometry and sampled reference route](../other/Pic/software/racing_line_illustration.png)
+
+*Figure S-07. Conceptual rounded-square reference route. The printed radius and lap length are example values; the round parameters are listed in the table above.*
 
 ## 7.2 Lookahead point
 
@@ -437,6 +460,10 @@ u_{\mathrm{steer}}=\operatorname{clip}\left(
 
 `PurePursuit` contains the implementation, including steering-lag representation. `PathDrivingTask` adds rate handling, speed selection and safety checks around the requested command.
 
+![Conceptual Pure Pursuit lookahead target relative to the vehicle and waypoints](../other/Pic/software/pure_pursuit_concept.png)
+
+*Figure S-08. Pure Pursuit lookahead geometry. Steering depends on the target point's position relative to the vehicle.*
+
 ## 7.4 Turning-radius feasibility
 
 A bicycle-model estimate for the minimum rear-axle turning radius is:
@@ -445,13 +472,21 @@ A bicycle-model estimate for the minimum rear-axle turning radius is:
 R_{\min}=\frac{L}{\tan|\delta_{\max}|}.
 ```
 
-For `L=165 mm`, a **38.8°** model angle gives approximately **205 mm**; a **22.0°** model angle gives approximately **408 mm**. These are *model outputs* based on different task settings, not proof that the physical chassis has two different steering mechanisms. A real corner must also account for front overhang, the vehicle's width, collision margin and speed-dependent tire effects.
+For the **165 mm** wheelbase parameter and **38.8°** modeled angle used by both active round configurations, the ideal minimum radius is approximately **205 mm**. This is a derived rear-axle radius, not a measured turning circle or the clearance required by the whole body. The obstacle configuration also applies `blocks.turn_radius_margin = 1.05` when establishing its planning radius. Front overhang, vehicle width, collision margins and speed-dependent tire effects remain relevant.
 
 ## 7.5 Lap progress and speed control
 
 Lap progress is found by projecting the current pose onto the closed route, then accounting for wrap-around and travel direction. Speed is selected from straight/corner settings and reduced under specific conditions, including low pose confidence and a LiDAR front-clearance backstop. For the Obstacle Challenge, a plan flagged as *compromised* can cap speed at `speed.compromised`.
 
 The localization system and physical sensors are not interchangeable with a virtual path: the path tells the robot where it should go, while the obstacle checks and live distance readings constrain whether that action is safe.
+
+The source completion condition is:
+
+```math
+s_{\mathrm{driven}}\geq N_{\mathrm{laps}}\,S_{\mathrm{route}}-s_{\mathrm{offset}},
+```
+
+where the configured lap goal is `N_laps = 3`, `S_route` is the generated route length, and `s_offset` is `laps.stop_early_mm`. Its configured values are **550 mm** for Open and **320 mm** for Obstacle. This records the actual software stopping criterion; an official lap-completion outcome is assessed from the physical run.
 
 ---
 
@@ -461,7 +496,7 @@ The localization system and physical sensors are not interchangeable with a virt
 
 The OV5647 fisheye camera is accessed through Picamera2. `CameraManager` prepares images for `ObjectSolver`, which uses HSV color segmentation and contour filtering to identify **red** and **green** traffic signs. Each accepted detection carries a color and an estimated bearing/range. The same detector also supports **pink/magenta parking-wall marks** for parking-related implementations.
 
-HSV segmentation separates hue from saturation and brightness, making it more practical than a single raw-RGB threshold for objects photographed under varying illumination. It does not remove dependence on exposure, white balance, shadows or lens calibration; these are checked through the color and object-solver test tools.
+HSV segmentation separates hue from saturation and brightness, making it more practical than a single raw-RGB threshold for objects photographed under varying illumination. It does not remove dependence on exposure, white balance, shadows or lens calibration; the color and object-solver tools support calibration under the operating conditions.
 
 ## 8.2 Fisheye image geometry and range estimation
 
@@ -476,25 +511,28 @@ r\approx\frac{H}{2\tan(\theta_h/2)},
 
 where `H` is the assumed sign height, `h_px` is its detected pixel height and `s` is the calibrated angular scale. The active conventional traffic-sign height constant is **10 cm**, and the detector rejects very small contours or ranges outside its configured validity bounds. Wide-angle distortion, segmentation errors and altered sign heights can introduce substantial range bias.
 
+![Synthetic object-solver illustration showing colored rectangles and their top-down bearing and range](../other/Pic/software/object_solver_synthetic.png)
+
+*Figure S-09. Synthetic object-solver example linking image detections to bearing and range in a top-down view. The image annotations are illustrative; calibration values are defined in Section 8.2.*
+
 ## 8.3 Field-coordinate block map
 
 `BlockMap` combines a camera observation with a reliable rear-axle pose and sensor offsets, then transforms it into field coordinates. Repeated sightings within an association radius are merged into persistent objects. `BlockMap` uses confidence, hit counts, out-of-map checks and visibility-aware miss tracking to avoid treating every detection as an independent, permanent obstacle.
 
 Conceptually:
 
-```text
-Image pixels and HSV mask
-          ↓
-Color, bearing, approximate range
-          ↓
-Camera position derived from rear-axle pose
-          ↓
-Field-coordinate detection
-          ↓
-Association with known pillar / confirmation
-          ↓
-Block map and round-level memory
+```mermaid
+flowchart TD
+    C["HSV detections and image geometry"] --> T["Transform to field coordinates"]
+    P["Reliable rear-axle pose"] --> T
+    O["Calibrated camera offset"] --> T
+    T --> A["Associate repeated observations"]
+    A --> B["BlockMap tracks"]
+    B --> M["Confirmed round-level sign memory"]
+    M --> G["GoalPlanner"]
 ```
+
+*Figure S-10. Mapping combines visual observations with pose and sensor geometry before a sign can influence a field-coordinate plan.*
 
 The Obstacle Challenge adds `RememberedPillar` storage in `FinalTask`. Instead of forgetting a pillar once its current camera track expires, the round can retain information across subsequent laps and plan earlier on return passes. The code also snaps detections toward legal traffic-sign seat geometry, within configured tolerances, to reduce the effect of visual ranging errors.
 
@@ -509,11 +547,11 @@ In the task's travel-relative lateral convention:
 
 This rule is implemented through `SIDE_FOR_COLOR` in [`tasks/final/task.py`](../src/Raspberrypi/tasks/final/task.py). The sign refers to lateral position relative to the vehicle's direction of travel, so left/right remains consistent for clockwise and counter-clockwise routes.
 
-## 8.5 Why the planner changed
+## 8.5 Goal-pose planning and feasibility
 
-An earlier obstacle strategy shifted the racing line sideways with a smooth lateral offset. Although continuity was preserved, the requested offset could exceed the actual corridor width. Clamping the shift made an unsafe pass look like a successful plan unless the reduced clearance was explicitly detected downstream.
+A smooth lateral offset can preserve path continuity while demanding more space than the corridor provides. Legal passing therefore requires checking both the requested position and the vehicle's reachable curvature and body clearance.
 
-The international-round planner instead defines **goal poses** beside each obstacle, including orientation. `GoalPlanner` connects those poses with **Dubins paths** that respect a minimum curvature radius. It checks the vehicle's swept footprint along candidate routes against walls, the central island, the traffic signs and parking-bay keep-out geometry.
+The international-round planner defines **goal poses** beside each obstacle, including orientation. `GoalPlanner` connects those poses with **Dubins paths** that respect a minimum curvature radius. It checks the vehicle's swept footprint along candidate routes against walls, the central island, the traffic signs and parking-bay keep-out geometry.
 
 ```mermaid
 flowchart TD
@@ -531,7 +569,7 @@ flowchart TD
     J --> K[Speed and safety checks]
 ```
 
-*Figure S-03. Traffic-sign goal planning and feasibility screening. A compromised plan is reported to the controller rather than silently presented as a fully clear route.*
+*Figure S-11. Traffic-sign goal planning and feasibility screening. A compromised plan is reported to the controller rather than silently presented as a fully clear route.*
 
 ## 8.6 Dubins paths and robot-body clearance
 
@@ -559,11 +597,48 @@ These settings are **requests and limits**, not measured clearances achieved by 
 
 The implementation separates several hazards: insufficient localization confidence, a sign mapped inside an impossible wall region, a sign track disappearing before passage, a physically unreachable passing gate, a nearby parking-wall exclusion, a lidar-observed obstruction without a corresponding color observation, and a candidate path requiring more steering curvature than the vehicle model permits. The control loop may slow or replan; it cannot guarantee a safe solution for every randomized arrangement.
 
+## 8.9 Optional Surprise-rule sign interpretation
+
+The source includes [`SignSizer`](../src/Raspberrypi/classes/sign_sizer.py) and round-level logic for the altered-height, altered-color sign scenario implemented by the team. The default configuration has **`surprise.enabled = false`**. Running `main.py final --surprise` enables the feature for that invocation; standard obstacle mode retains the normal color-to-passing-side mapping.
+
+A single height-based range estimate cannot distinguish a short nearby object from a taller distant object. `SignSizer` considers **50 mm**, **100 mm** and **150 mm** height hypotheses, uses the detected height-to-width ratio with a viewing-angle correction, and compares their predicted ranges with LiDAR observations expressed from the LiDAR's own position. Its geometry includes the camera-to-LiDAR offset and the age of rolling scan readings.
+
+| Configuration setting | Value | Role |
+|---|---:|---|
+| `surprise.enabled` | `false` | Enable explicitly for the altered-sign scenario |
+| `surprise.lidar_role` | `"veto"` | Image shape proposes a height; contradictory LiDAR evidence can reject it |
+| `surprise.lidar_sees_short` | `false` | Model assumes the scan plane can pass above a 50 mm sign |
+| Shape-use range | 200–800 mm | Restricts where the shape cue is trusted |
+| Maximum off-axis angle | 50° | Limits severe peripheral-view distortion |
+| `surprise.latch_votes` | 4 | Minimum evidence count for the tracked-sign decision |
+| `surprise.latch_fraction` | 0.7 | Required support fraction for a height decision |
+
+In **veto** mode, missing LiDAR evidence does not by itself block a shape-based vote. This differs from the alternative **confirm** mode, which requires agreement from both cues. `BlockMap` accumulates per-sign evidence, and `FinalTask` applies two additional restrictions: **the first passed sign is never inverted**, and **at most one sign location receives an inverted passing-side interpretation**. A changed height can also require re-estimating the sign's mapped position rather than retaining a range calculated for a 100 mm sign.
+
+```mermaid
+flowchart TD
+    A["Detected sign"] --> B{"Surprise mode enabled?"}
+    B -->|No| N["Normal color rule"]
+    B -->|Yes| C["Shape cue and candidate ranges"]
+    L["LiDAR cue and scan age"] --> D["Apply configured cue policy"]
+    C --> D
+    D --> E["Tracked-sign evidence and height decision"]
+    E --> F{"Eligible modified sign?"}
+    F -->|No| N
+    F -->|Yes| I["Invert passing side for one sign"]
+    N --> G["GoalPlanner"]
+    I --> G
+```
+
+*Figure S-12. Optional Surprise-mode interpretation. Eligibility includes the first-sign exclusion and single-sign restriction. This diagram describes implemented logic, not a measured detection success rate.*
+
+The source provides [`test_sign_sizer.py`](../src/Raspberrypi/test_sign_sizer.py) for examining the cues. The [team's Surprise-mode field recording](https://youtu.be/SZ7-qe57g4k) is physical evidence for a particular test; it does not establish accuracy across all lighting, sign positions or camera perspectives.
+
 ---
 
 # 9. Unparking, parking and final-round integration
 
-The international-round source contains several parking controllers. **The final-round configuration determines which one is actually executed.** In the checked configuration, **unparking is enabled**, the final task's internal `BayPark` is **disabled**, and the separate **post-round LiDAR parking module is enabled**. These are distinct stages with different sensors, state logic and tuning files.
+The final-round configuration enables **starting-bay departure** and **post-round LiDAR parking**. The in-round parking branch is disabled through `parking.enabled = false`. Departure, navigation and final parking use distinct control stages and tuning parameters.
 
 ## 9.1 Parking system map
 
@@ -572,11 +647,9 @@ The international-round source contains several parking controllers. **The final
 | `UnparkController` | `classes/parking.py` | **Enabled** for starting inside a bay |
 | `RelocaliseWalk` | `classes/parking.py` | **Enabled** after departure |
 | `BayFinder` | `classes/parking.py` | Provides bay/field geometry functions where invoked |
-| `BayPark` | `classes/bay_park.py` | Alternative in-round parking; **not selected** by `parking.enabled = false` |
-| `VelozParking` | `classes/veloz_parking.py` | Used by the isolated `tasks/parking_test/` task |
 | `lidar_park` | `lidar_park/run.py`, `scan_analysis.py`, `scan_match.py` | **Selected after a completed Obstacle Challenge** |
 
-This distinction is important: a state machine can be implemented and tested in a repository without being the one selected in the competition task.
+The selected parking sequence uses the same LiDAR, motor driver and start-button resources as the driving task. Control is handed to the parking routine before those resources are released.
 
 ## 9.2 Starting-bay departure: UnparkController
 
@@ -625,7 +698,7 @@ flowchart TD
     I --> Z
 ```
 
-*Figure S-04. Active post-round LiDAR parking sequence selected by `lidar_park.enabled = true`.*
+*Figure S-13. Active post-round LiDAR parking sequence selected by `lidar_park.enabled = true`.*
 
 ### Phase A — Scan and geometric interpretation
 
@@ -637,7 +710,7 @@ The configured target is **300 mm forward clearance** and **330 mm from the oute
 
 ### Phase C — Position relative to the bay blade
 
-The `to_bay` phase uses detected blade position and scan-based travel estimation to approach a configured stopping position. Its active `blade_stop_x_mm` is **−150 mm**, with a speed setting of **50**. Scan matching and distance consistency checks help separate actual translation from changing visibility of wall or sign returns. If the bay geometry cannot be established, behavior is governed by the module's `park.require_bay`, search and timeout settings; no assumption of successful bay detection is implicit.
+The `to_bay` phase uses detected blade position and scan-based travel estimation to approach a configured stopping position. Its active `blade_stop_x_mm` is **−150 mm**, with a speed setting of **50**. Scan matching and distance consistency checks help separate actual translation from changing visibility of wall or sign returns. The configuration sets **`park.require_bay = false`**: the module does not impose a mandatory initial bay-detection gate. The enabled bay-search phase and its motion/time bounds still govern subsequent behavior. Bay search remains subject to scan validity, travel limits and timeouts.
 
 ### Phase D — Configured finish movement sequence
 
@@ -645,10 +718,10 @@ The final phase executes explicit steering-and-distance instructions from `[[fin
 
 | Move | Steering **command** | Distance | Direction |
 |---|---:|---:|---|
-| 1 | +83 | 150 mm | Reverse |
-| 2 | +50 | 60 mm | Reverse |
-| 3 | −100 | 250 mm | Reverse |
-| 4 | +60 | 40 mm | Forward |
+| 1 | +83 | 160 mm | Reverse |
+| 2 | +50 | 80 mm | Reverse |
+| 3 | −100 | 220 mm | Reverse |
+| 4 | +60 | 30 mm | Forward |
 
 Positive steering points **toward the detected bay side** in this parking module's convention; these values are command units, not direct road-wheel angles. The configuration also includes a **25 mm finish obstacle-stop setting**, a **5 s finish-stage timeout**, and scan-matching quality thresholds. These numbers define the programmed maneuver, not a claim that the final parked pose passed judging checks.
 
@@ -656,11 +729,11 @@ Positive steering points **toward the detected bay side** in this parking module
 
 Ordinary racing-line following assumes a reasonably localized car traveling through the main corridor. Parking places the robot near projecting bay walls, may require reversing, and depends on the geometry of a confined opening. Dubins forward-only obstacle paths and lookahead steering do not solve this final placement problem by themselves. A parking-specific procedure can therefore use scans, short measured moves and independent stopping conditions without mixing those commands into normal lap navigation.
 
-## 9.6 Alternative parking implementations and experimental tests
+## 9.6 Parking-mode selection and control ownership
 
-`classes/bay_park.py` implements a **FIND → SETTLE → BACK → TURN_IN → DRIVE_IN → optional WIGGLE → DONE** sequence. It follows the outer wall, detects a bay blade and then uses staged reverse and forward maneuvers. This is a code-supported alternative but is not the final-round method selected by the present TOML flags.
+`parking.enabled` selects the in-round parking branch, while `lidar_park.enabled` selects the separate post-round routine. The configured combination is `parking.enabled = false` and `lidar_park.enabled = true`. `unpark.enabled = true` independently selects the starting-bay departure maneuver.
 
-`classes/veloz_parking.py` implements a different **SEARCHING → APPROACH → REVERSING → STRAIGHTENING → CENTERING → DONE** sequence. The dedicated `tasks/parking_test/` entry point exercises this algorithm in isolation. Its presence and test harness do not establish that it is the algorithm used after the competition laps.
+During the post-round routine, the navigation task has stopped issuing driving commands and the camera worker is stopped. The parking controller owns the steering and propulsion sequence until it finishes or receives a stop request. The shared hardware context then performs shutdown.
 
 ## 9.7 Parking observation and stop conditions
 
@@ -681,6 +754,25 @@ The LiDAR parking subsystem includes stop-request monitoring, invalid-distance t
 | Field geometry | Expected walls, track layout and legal sign seats | May not contain a particular temporary object until it is mapped |
 
 The system does **not** fuse every sensor into a single uniform signal. Each source supplies the information it can observe reliably. LiDAR and IMU support the pose estimate; camera observations are transformed into that pose's field frame; and the resulting map supports path planning. Live LiDAR front-range checks remain a separate safety input that can override a theoretically acceptable path.
+
+```mermaid
+flowchart TD
+    L["S2L wall ranges"] --> N["NavigationManager"]
+    I["BNO055 relative heading"] --> N
+    N --> P["Pose and confidence"]
+    C["Camera worker"] --> V["Color, bearing and range"]
+    P --> B["BlockMap"]
+    V --> B
+    B --> M["FinalTask sign memory"]
+    P --> G["Reference or obstacle route"]
+    M --> G
+    G --> U["Pure Pursuit"]
+    U --> A["Speed and safety arbitration"]
+    L -->|Front range| A
+    A --> H["Motor and servo HATs"]
+```
+
+*Figure S-14. Current sensor responsibilities. Geometry, color perception, stored objects and the immediate front-distance guard retain distinct roles. The camera worker and the navigation/control loop need not update at the same instant.*
 
 ## 10.2 Asynchronous information lifetimes
 
@@ -706,7 +798,7 @@ A geometric route does not guarantee immediate physical clearance. If a planned 
 
 ## 11.2 Timeouts and missed deadlines
 
-The ordinary competition task defaults to a **180 s** software time limit. The scheduler records tick overruns and corrects timing drift; it does not simply issue extra ticks to compensate for a pause. The separate LiDAR parking routine and its stages have dedicated timeouts and stop conditions.
+The ordinary competition task defaults to a **180 s** software time limit. The scheduler records tick overruns and corrects timing drift; it does not simply issue extra ticks to compensate for a pause. The separate LiDAR parking routine and its stages have dedicated timeouts and stop conditions. The normal task's 180 s limit does **not** include the subsequent `after_round()` hook; it is therefore not a shared driving-plus-parking deadline.
 
 ## 11.3 Localization confidence loss
 
@@ -732,9 +824,9 @@ A curvature-bounded goal may be unreachable because the corridor is too narrow, 
 
 # 12. Testing, simulation and calibration
 
-## 12.1 Tests without energized propulsion
+## 12.1 Test levels and actuation requirements
 
-The codebase supports several levels of checking before a live run:
+The codebase provides configuration checks, simulation and physical test utilities. Configuration-only checks and simulation do not require energized propulsion; motor, steering and distance-calibration utilities can actuate the robot.
 
 | Level | Example | What is tested |
 |---|---|---|
@@ -744,8 +836,8 @@ The codebase supports several levels of checking before a live run:
 | Planner geometry | `test_goal_planner.py`, `test_plan_view.py` | Goal poses, Dubins routes, body sweep and clearance logic |
 | Sensor/actuator bench tests | `test_lidar.py`, `test_motor_rotation.py` | Hardware communication and rotation feedback |
 | Physical steering/distance calibration | `test_steering.py`, `test_step_response.py`, `test_circle.py` | Motion calibration, lag and turning geometry |
-| Vision calibration | `test_object_solver.py`, `test_color_picker.py` | Fisheye bearing/ranging and HSV thresholds |
-| Parking-specific | `lidar_park.run --scan-only`, `test_parking.py`, `tasks.parking_test` | Bay geometry and selected parking controllers |
+| Vision calibration | `test_object_solver.py`, `test_color_picker.py`, `test_sign_sizer.py` | Fisheye bearing/ranging, HSV thresholds and optional altered-height cues |
+| Parking-specific | `lidar_park.run --scan-only`, `test_parking.py` | Scan geometry, bay analysis and parking utilities |
 
 A passing simulator test verifies the chosen model and software path; it is not evidence that the robot completed the same obstacle arrangement on a physical field.
 
@@ -779,11 +871,9 @@ The CLI provides `--dry-run` for configuration construction, and `--no-drive` fo
 
 The LiDAR parking module supports a **scan-only** mode, recorded scan images, and save/load of scan arrays for repeatable geometry analysis. `scan_analysis.py` and `scan_match.py` can be studied separately from wheel motion. Controlled tests should use one bay location and one verified chassis orientation, then vary only one parameter at a time: wall-distance target, bay-blade stop position, steering-command sequence, or stopping threshold.
 
-The isolated `tasks/parking_test` task tests `VelozParking`, not the active post-round `lidar_park` sequence; therefore its success or failure must not be attributed automatically to the selected final parking implementation.
+## 12.7 Interpreting test results
 
-## 12.7 Evidence provenance
-
-Configuration comments include numerical results from simulated trial sweeps and some physical steering, tape-distance and parking experiments. Their provenance remains the corresponding code comments and test utilities unless separate run logs or videos are provided. Numbers from these sources should be labeled **simulated**, **code-reported physical observation**, or **derived** rather than presented as independently audited competition statistics.
+Simulation provides a known reference pose and controlled geometry for evaluating localization and planning. Physical tests evaluate the effects of the real chassis, sensors, surface and lighting. Derived quantities, such as the bicycle-model turning radius, describe the mathematical model. Keeping these result types distinct makes their engineering meaning clear.
 
 ---
 
@@ -806,57 +896,80 @@ Configuration comments include numerical results from simulated trial sweeps and
 
 Clearance estimates based on the planner footprint are not equivalent to actual measured margins: both localization and motor dynamics can contribute to error.
 
-## 13.2 Code-reported physical calibration examples
+## 13.2 Configuration and calibration values
 
-The active code documents a **165 mm wheelbase configuration**, a **0.35 s** steering time constant, a **6.6° camera-yaw correction** fitted from image observations, and travel-distance calibration examples in the competition TOML files. These values refer to specific test conditions and code revisions. They should be reproduced or cross-checked when the mechanical gear ratio, steering linkage, camera mount or motor driver changes.
+The software uses a **165 mm wheelbase parameter**, a **0.35 s** steering time constant and a **6.6° camera-yaw correction**. Travel-distance calibration is defined in the competition TOML files. These parameters connect the motion and perception models to the installed steering linkage, drivetrain and sensor mounts.
 
 ## 13.3 Simulated evidence
 
 Examples recorded in the source include configuration sweeps of wall margin and corner radius, localization recovery experiments and multi-trial obstacle-passing simulations. Such results are useful for selecting parameters and rejecting obviously infeasible routes. They are not an official WRO run score or a statistically measured physical success rate.
 
-## 13.4 Recommended physical test record
+## 13.4 Physical run recordings
 
-For a comparable test, preserve: source commit, round name, field layout, sign positions/colors, start heading, battery state or voltage, tuning-file snapshot, start and finish time, lap count, contacts, minimum observed clearance, parking outcome and camera/LiDAR diagnostic output if available. A single recorded competition attempt can establish what occurred in that attempt; repeated tests are needed to characterize reliability.
+The recordings below show Open and Obstacle Challenge driving, parking and the Surprise-rule scenario. Vehicle configuration and test purpose are identified for each recording.
+
+| Recording | Hardware/test context | Evidence role |
+|---|---|---|
+| [Open Challenge performance](https://youtu.be/SlxmnO9ZnVM) | Current vehicle; standard Open run | Physical route following and stopping behavior |
+| [Open speed test](https://youtu.be/CYVkDdoaMsE) | Latest vehicle; speed test | Additional physical driving example, separate from the performance run |
+| [Obstacle Challenge performance](https://youtu.be/5n_M14UXSpM) | Current vehicle; standard obstacle run | Physical sign navigation and parking sequence |
+| [Obstacle Challenge with Surprise rule](https://youtu.be/SZ7-qe57g4k) | Current vehicle; altered-sign test | Physical example of the team's Surprise-mode scenario |
+| [Obstacle speed test, clockwise](https://youtu.be/MPv1s5uWH2Q) | Vehicle without cover or parking | Obstacle-driving speed test |
+| [Obstacle speed test, counterclockwise](https://youtu.be/YH1zq7tGzv8) | Vehicle without cover or parking | Obstacle-driving speed test in the other direction |
+
+The physical recordings and simulation figures are separate evidence sources. Simulation readouts are not telemetry from the linked videos.
+
+## 13.5 Physical test record
+
+For a comparable test, preserve: source commit, round name, field layout, sign positions/colors, start heading, battery state or voltage, tuning-file settings, start and finish time, lap count, contacts, minimum observed clearance, parking outcome and camera/LiDAR diagnostic output if available. A single recorded competition attempt can establish what occurred in that attempt; repeated tests are needed to characterize reliability.
 
 ---
 
-# 14. Engineering development and trade-offs
+# 14. Engineering decisions and trade-offs
 
-## 14.1 From camera-reactive steering to field-localized navigation
+## 14.1 Field-localized navigation
 
 A reactive camera strategy directly adjusts steering from visible obstacles or wall features. It is simple but cannot fully reason about objects that are outside the current image. The adopted architecture uses LiDAR/IMU localization against a known field and an explicit reference path. The extra computational cost is exchanged for a more persistent environmental representation.
 
-## 14.2 From Raspberry Pi/Arduino separation to Raspberry Pi/HAT control
+## 14.2 Raspberry Pi and HAT control
 
-The national-round system used an Arduino for actuator commands and encoder measurements, with text commands over USB serial. The international-round system uses I²C motor/expansion boards and a Pi GPIO start input. This removes the separate USB command protocol and transfers more timing, command scaling and fault handling to Raspberry Pi software. The trade-off is tighter coupling between onboard Linux scheduling and low-level actuator-control requests.
+The Raspberry Pi communicates directly with the I²C motor and expansion HATs and reads the start input through GPIO. One host coordinates perception, navigation, actuator commands and fault handling. This reduces inter-controller communication while making command timing dependent on Linux scheduling and device-interface latency.
 
-## 14.3 From racing-line deformation to pose-goal planning
+![Conceptual diagram of LiDAR, IMU and camera responsibilities](../other/Pic/software/legacy_sensor_roles.png)
 
-The early obstacle strategy eased in a lateral racing-line offset. On tight corners or when pillars were close to a boundary, the requested lateral position could be clamped to an unsafe value. The final planner formulates legal passing as a **pose-constrained geometric problem**, enumerates curvature-bounded candidates and checks the swept chassis footprint before commanding motion. The result is more computationally involved but gives the controller an explicit compromised-clearance signal.
+*Figure S-15. Conceptual sensor responsibilities. The diagram labels its LiDAR as C1; the vehicle uses **RPLIDAR S2L**. The functional roles are geometry, heading and color perception.*
 
-## 14.4 Camera execution moved to a worker
+## 14.3 Pose-goal planning and clearance
+
+A lateral offset is simple to construct, but tight corners and signs near boundaries can leave insufficient room for the vehicle. `GoalPlanner` formulates legal passing as a **pose-constrained geometric problem**, enumerates curvature-bounded candidates and checks the swept chassis footprint. This requires more computation but provides an explicit compromised-clearance signal when the requested margin is unavailable.
+
+![Conceptual smooth lateral-offset path illustration](../other/Pic/software/legacy_lateral_offset.png)
+
+*Figure S-16. Conceptual lateral-offset geometry with illustrative dimensions. This figure describes path shape; its red-sign placement is not an example of the passing rule in Section 8.4.*
+
+## 14.4 Asynchronous camera worker
 
 Running camera capture synchronously in the steering tick introduces latency exactly when the control system needs regular pose and speed updates. `VisionManager` isolates acquisition/detection and updates the field map asynchronously. The trade-off is that the consumer must reason about observation age, object persistence and occasional missed frames.
 
 ## 14.5 Steering calibration and motion-model reference
 
-The physical steering mechanism does not jump instantaneously to a requested road-wheel angle. The software therefore represents steering lag and controls command rate. Changing the pose origin from an offset sensor position to the rear axle also makes the bicycle model, planned path and swept-body geometry refer to the same point, avoiding artificial lateral motion caused by the LiDAR moving around the axle during turns.
+The physical steering mechanism does not jump instantaneously to a requested road-wheel angle. The software therefore represents steering lag and controls command rate. Using the rear axle as the pose origin makes the bicycle model, planned path and swept-body geometry refer to the same point, avoiding artificial lateral motion caused by the LiDAR moving around the axle during turns.
 
 ## 14.6 Parking as a dedicated subsystem
 
-A competition run and a parking maneuver have different geometric and sensing requirements. The codebase includes in-round and post-round approaches, with the active selection made through configuration rather than through code presence. The enabled LiDAR parking mode uses a scan-geometric procedure and calibrated short moves after the driving task has ended. This makes the parking phase independently testable and permits stop/detection parameters different from ordinary lap following.
+A competition run and a parking maneuver have different geometric and sensing requirements. The parking mode is selected through configuration. The enabled LiDAR parking mode uses a scan-geometric procedure and calibrated short moves after the driving task has ended. This makes the parking phase independently testable and permits stop/detection parameters different from ordinary lap following.
 
 ## 14.7 Why simulation and physical tests are both needed
 
-Simulation is useful for varying corner radius, sign placement and steering response over many controlled cases, but robot slip, imperfect sensor mounting and short-distance parking geometry must be checked on the physical field. The software includes dedicated tests for both kinds of evidence so that parameters can be calibrated without mixing mathematical feasibility and actual measured performance.
+Simulation is useful for varying corner radius, sign placement and steering response over many controlled cases, but robot slip, imperfect sensor mounting and short-distance parking geometry are evaluated on the physical field. The software includes dedicated tests for both kinds of evidence so that parameters can be calibrated without mixing mathematical feasibility and actual measured performance.
 
 ---
 
 # 15. Implementation boundaries and engineering limitations
 
-## 15.1 What an implemented feature proves
+## 15.1 Operating assumptions
 
-The source verifies that the described algorithms, configuration keys and safety checks exist in the examined commit. It does not by itself prove that the robot completed every randomized field, met all clearance criteria, or parked successfully within an official time limit. Actual testing supplies those claims.
+The navigation model uses known field geometry, calibrated sensor offsets and a defined vehicle envelope. Planning assumes that the steering and propulsion system can follow the modeled curvature within the available clearance. Physical performance depends on the quality of those assumptions and the sensor observations supplied during each run.
 
 ## 15.2 Localization limits
 
@@ -864,11 +977,11 @@ The map's rotational symmetry creates a real heading ambiguity. A wrong start-he
 
 ## 15.3 Vision and traffic-sign limits
 
-HSV thresholding depends on illumination and color reproduction. Fisheye ranging assumes a calibrated angular mapping and a sign of known physical height. The standard 100 mm-height model does not automatically identify the original color or true distance of an altered-height/altered-color competition object. The public code does not establish a general solution to all possible altered-sign cases.
+HSV thresholding depends on illumination and color reproduction. Standard ranging assumes a 100 mm sign. Optional Surprise mode adds shape and LiDAR cues, evidence accumulation and a restricted passing-side inversion, as described in Section 8.9. The configured veto policy can accept shape evidence without a confirming LiDAR cue, so repeated segmentation or perspective errors remain important failure modes. The feature addresses the implemented altered-sign scenario; it does not establish a general solution to all possible object modifications.
 
 ## 15.4 Vehicle-model limits
 
-The geometric steering and collision model assumes a wheelbase, effective maximum steering angle, body envelope and finite response time. Tire scrub, axle play, drivetrain slip and steering asymmetry can change the actual trajectory. The two round configurations contain different modeled maximum road-wheel angles, so each must be validated against the installed steering system before comparing curvature-based results.
+The geometric steering and collision model assumes a wheelbase, effective maximum steering angle, body envelope and finite response time. Tire scrub, axle play, drivetrain slip and steering asymmetry can change the actual trajectory. Both round configurations use a 38.8° maximum modeled road-wheel angle and a 165 mm wheelbase parameter. Their command limits and lookahead settings differ, and model parameters remain distinct from independent physical measurements.
 
 ## 15.5 Parking limits
 
@@ -885,8 +998,6 @@ Linux is not a hard real-time operating system, and the target 50 Hz cadence can
 ## 16.1 Host and software environment
 
 The target computer is a Raspberry Pi 5 with a 64-bit Raspberry Pi OS environment, camera support, I²C access, UART configured for the S2L and permissions for relevant devices. The Python project declares **Python 3.11 or newer** in [`pyproject.toml`](../src/Raspberrypi/pyproject.toml), while exact resolved package versions are recorded in [`uv.lock`](../src/Raspberrypi/uv.lock). Raspberry Pi-specific libraries, camera drivers and OS interfaces must be configured on the physical host; running a dry-run command alone does not validate those peripherals.
-
-The repository contains a Pi initialization helper at [`setup_pi.sh`](../src/Raspberrypi/setup_pi.sh). Its comments and device-check examples must be reconciled with the present Pi-only/HAT-plus-S2L architecture before using every historical instruction literally; the authoritative hardware connections are the [electrical](2-elec.md) and [build](4-build.md) chapters.
 
 ## 16.2 Repository location and dependency management
 
@@ -919,6 +1030,14 @@ uv run python main.py final
 ```
 
 The task is configured in [`tasks/final/config.toml`](../src/Raspberrypi/tasks/final/config.toml). Its default path includes the enabled bay-departure configuration, goal-based traffic-sign avoidance and eligible post-round LiDAR parking. A successful program return and a successful official competition score are different observations.
+
+For the implemented Surprise-rule scenario, enable the additional sign-size logic explicitly:
+
+```bash
+uv run python main.py final --surprise
+```
+
+The flag overrides `surprise.enabled` for the selected invocation; it is not enabled by the default Obstacle configuration.
 
 ## 16.5 Debugging and controlled operation
 
@@ -953,15 +1072,11 @@ uv run python -m lidar_park.run --load-scan parking_scan.npy --image parking_sca
 
 The standalone executable also supports a drive-inhibited mode and start/stop-button handling. Its independent settings live in [`lidar_park/config.toml`](../src/Raspberrypi/lidar_park/config.toml). The enabled final-round hook invokes the parking function directly against the existing hardware context; it does not require a separate shell command between laps and parking.
 
-## 16.7 Reproduction and identification
+## 16.7 Configuration and reproducibility
 
-A reproducible record consists of the exact Git commit, the hardware layout, both round configurations, the LiDAR parking configuration, camera calibration, motor/steering calibration, and documented observations from physical testing. For the source snapshot used in this chapter, the repository identifies commit:
+The operating configuration consists of the hardware layout, the [Open Challenge parameters](../src/Raspberrypi/tasks/qualification/config.toml), the [Obstacle Challenge parameters](../src/Raspberrypi/tasks/final/config.toml), the [LiDAR parking settings](../src/Raspberrypi/lidar_park/config.toml), and the camera, motor and steering calibrations.
 
-```text
-e1890a8b293351e0f7f433588c72bb3bb83e2d70
-```
-
-Reproduction should use that commit or a deliberately recorded successor rather than relying on whichever files happen to be on `main` at a later date.
+A comparable test record associates these settings with the source version, field arrangement and physical observations. This connects each result to the software and hardware that produced it.
 
 ---
 
@@ -971,40 +1086,21 @@ Reproduction should use that commit or a deliberately recorded successor rather 
 
 The software implements a consistent high-level architecture:
 
-```text
-                      Raspberry Pi 5
-                            │
-         ┌──────────────────┼────────────────────┐
-         │                  │                    │
-     RPLIDAR S2L         BNO055              Pi Camera
-       UART              I²C                  CSI
-         │                  │                    │
-         └─────────┬────────┘              VisionManager
-                   │                             │
-         NavigationManager                 ObjectSolver
-       (pose + confidence)                      │
-                   │                         BlockMap
-                   │                             │
-                   ├───────────┬─────────────────┤
-                   │           │                 │
-             RacingLine    Qualification     FinalTask
-                   │       (open route)     (goal planning)
-                   │           │                 │
-                   └───────────┴────────┬────────┘
-                                        │
-                                    PurePursuit
-                                        │
-                              Speed / safety arbitration
-                                        │
-                             DFR0592 drive / DFR0604 PWM
-                                        │
-                              DC motor / steering servo
-
-        FinalTask after-round: LiDAR scan → bay geometry
-                              → parking move sequence → stop
+```mermaid
+flowchart TD
+    C["Shared hardware context"] --> R{"Selected task"}
+    R -->|Open| O["QualificationTask"]
+    R -->|Obstacle| D["Unpark and relocalize"]
+    D --> F["FinalTask obstacle navigation"]
+    O --> S["Stop driving task"]
+    F --> S
+    S --> P{"Eligible post-round parking?"}
+    P -->|Yes| L["LiDAR parking sequence"]
+    P -->|No| X["Release hardware context"]
+    L --> X
 ```
 
-*Figure S-05. Consolidated software architecture. The parking hook operates after the driving task and before the shared hardware context is released.*
+*Figure S-17. Competition responsibilities and hardware lifetime. The parking hook operates after the driving task and before the shared hardware context is released; Open runs do not select that hook.*
 
 ## 17.2 Software decisions in one table
 
@@ -1015,8 +1111,9 @@ The software implements a consistent high-level architecture:
 | Shared Pure Pursuit | Uses one route follower for both challenges | `pure_pursuit.py`, `path_task.py` |
 | Goal-based Dubins planning | Rejects unreachable or colliding obstacle-passing paths | `goal_planner.py`, `dubins.py` |
 | Persistent traffic-sign map | Retains information beyond a single camera frame | `block_map.py`, `final/task.py` |
+| Optional altered-sign interpretation | Evaluates height evidence and applies a restricted passing-side inversion | `sign_sizer.py`, `block_map.py`, `final/task.py` |
 | Separate camera worker | Protects control-loop timing from capture latency | `vision_manager.py` |
-| Pi + I²C HAT architecture | Centralizes control without the former Arduino serial layer | `motor_manager.py`, `board_manager.py` |
+| Pi + I²C HAT architecture | Centralizes sensing, actuator commands and device ownership | `motor_manager.py`, `board_manager.py` |
 | Dedicated LiDAR parking | Allows scan-based close-range parking after the normal laps | `lidar_park/` |
 
 ## 17.3 Primary source references
@@ -1026,11 +1123,12 @@ The software implements a consistent high-level architecture:
 - [Open Challenge](../src/Raspberrypi/tasks/qualification/task.py) and its [configuration](../src/Raspberrypi/tasks/qualification/config.toml).
 - [Obstacle Challenge](../src/Raspberrypi/tasks/final/task.py) and its [configuration](../src/Raspberrypi/tasks/final/config.toml).
 - [Navigation](../src/Raspberrypi/classes/navigation_manager.py), [field model](../src/Raspberrypi/classes/field_map.py), [racing line](../src/Raspberrypi/classes/racing_line.py) and [Pure Pursuit](../src/Raspberrypi/classes/pure_pursuit.py).
-- [Vision worker](../src/Raspberrypi/classes/vision_manager.py), [object solver](../src/Raspberrypi/classes/object_solver.py), [block map](../src/Raspberrypi/classes/block_map.py), [goal planner](../src/Raspberrypi/classes/goal_planner.py) and [Dubins primitive](../src/Raspberrypi/classes/dubins.py).
-- [Unparking controller](../src/Raspberrypi/classes/parking.py), [BayPark alternative](../src/Raspberrypi/classes/bay_park.py), [VelozParking test controller](../src/Raspberrypi/classes/veloz_parking.py), [LiDAR parking module](../src/Raspberrypi/lidar_park/run.py) and [LiDAR parking configuration](../src/Raspberrypi/lidar_park/config.toml).
+- [Vision worker](../src/Raspberrypi/classes/vision_manager.py), [object solver](../src/Raspberrypi/classes/object_solver.py), [Surprise sign sizer](../src/Raspberrypi/classes/sign_sizer.py), [block map](../src/Raspberrypi/classes/block_map.py), [goal planner](../src/Raspberrypi/classes/goal_planner.py) and [Dubins primitive](../src/Raspberrypi/classes/dubins.py).
+- [Unparking controller](../src/Raspberrypi/classes/parking.py), [LiDAR parking module](../src/Raspberrypi/lidar_park/run.py) and [LiDAR parking configuration](../src/Raspberrypi/lidar_park/config.toml).
 - [Motor/HAT control](../src/Raspberrypi/classes/motor_manager.py), [expansion HAT](../src/Raspberrypi/classes/board_manager.py), [LiDAR driver](../src/Raspberrypi/classes/lidar_manager.py), and [start button](../src/Raspberrypi/classes/start_button.py).
 - [Simulation/testing code](../src/Raspberrypi/test_driving.py), [steering tests](../src/Raspberrypi/test_steering.py), [vision tests](../src/Raspberrypi/test_object_solver.py) and [parking tests](../src/Raspberrypi/test_parking.py).
 - [WRO Association — competition regulations and season resources](https://wro-association.org/competition/2026-season/).
 - [PythonRobotics / Atsushi Sakai — Dubins path-planning reference](https://github.com/AtsushiSakai/PythonRobotics), acknowledged in the repository's `dubins.py` license comments.
 
 The source, geometric assumptions, configuration and test evidence together define how YBR-SUNFLOWER's software makes autonomous decisions on the WRO Future Engineers field.
+
