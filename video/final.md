@@ -1,8 +1,9 @@
-## Final Video
-### Challenge 1 (Open Challenge):
+# Final Performance Videos
 
-- https://youtu.be/SlxmnO9ZnVM?si=7TLQcImkOCNDJs5n
+| Recording | Context |
+|---|---|
+| [Open Challenge performance](https://youtu.be/SlxmnO9ZnVM?si=7TLQcImkOCNDJs5n) | Current-vehicle Open Challenge recording |
+| [Obstacle Challenge performance](https://youtu.be/5n_M14UXSpM?si=iSTkrHQxrhAiyLdt) | Current-vehicle Obstacle Challenge recording |
+| [Surprise-mode field test](**TODO** add link) | Team-identified altered-sign scenario; see the [Surprise Rule guide](../engineering_journal/surprise-rule.md) |
 
-### Challenge 2 (Obstacle Challenge):
-
-- https://youtu.be/5n_M14UXSpM?si=iSTkrHQxrhAiyLdt
+These links provide access to physical performance recordings submitted by the team. Speed-focused test runs and recordings of non-final robot versions are documented separately in the [Run Test Index](../video/runtest.md).
