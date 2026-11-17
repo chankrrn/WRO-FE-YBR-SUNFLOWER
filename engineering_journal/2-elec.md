@@ -732,4 +732,3 @@ Reproducibility depends on preserving both the schematic's named electrical nets
 - **[R17]** [PCT-214 lever splicing connector — 1-in/3-out commercial terminal](https://evelta.com/pct-214-splicing-connector-terminal-1-in-3-out-lever-splicing-connector/).
 
 ---
-
