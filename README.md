@@ -41,6 +41,7 @@ The five linked journals cover the project from overall system architecture to f
 | **[2 Power and Sensor Architecture](engineering_journal/2-elec.md)** | Power distribution, schematics, wiring, component selection, electronic interfaces, sensor considerations, electrical measurements, and MATLAB modeling. |
 | **[3 Software Architecture and Obstacle Strategy](engineering_journal/3-software.md)** | Onboard Python architecture, perception, localization, motion planning, obstacle handling, control, parking, and simulation/testing interfaces. |
 | **[4 Build and Reproduction Guide](engineering_journal/4-build.md)** | Bill of materials, printed parts, physical assembly, electrical checks, software setup, configuration, startup procedures, and verification checklists. |
+| **[5 Surprise Rule companion](engineering_journal/5-surprise_rule.md)** | Analysis of the altered sign-height scenario, including sign classification, passing-side selection, software adaptations, and supporting tests. |
 
 For direct access to implementation and assets, see [Raspberry Pi source](src/Raspberrypi/), [3D-printable CAD models](models/CAD/), [schematics](schemes/), and the [MATLAB source scripts](engineering_journal/matlab/figures/).
 

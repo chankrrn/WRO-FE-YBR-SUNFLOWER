@@ -1,14 +1,16 @@
 # Surprise Rule — Sign Interpretation and Obstacle Strategy
 
-**YBR-SUNFLOWER · WRO 2026 Future Engineers**
+[← Project README](../README.md)
 
-[Overview](0-overview.md)
+[← Engineering Overview](0-overview.md)
 
-[Software architecture](3-software.md#89-optional-surprise-rule-sign-interpretation)
+[← Mobility and Mechanical Design](1-mech.md)
 
-[Build guide](4-build.md)
+[← Power and Sensor Architecture](2-elec.md)
 
-[Performance recordings](../video/final.md)
+[← Software Architecture and Obstacle Strategy](3-software.md)
+
+[← Build and Reproduction Guide](4-build.md)
 
 This guide connects the official extra task to the team's implemented perception and planning logic. Configuration values describe software settings; the test procedures describe how to evaluate them. They are not measured success rates.
 
