@@ -6,6 +6,14 @@ Its purpose is different from the subsystem engineering documentation.
 
 The subsystem documents explain **why** the robot was designed as it is:
 
+- [`mech.md`](1-mech.md) — mechanical design and mobility
+- [`elec.md`](2-elec.md) — power, electrical and sensor architecture
+- [`software.md`](3-software.md) — software and autonomous navigation
+
+This document explains **how to reproduce the final robot**.
+
+---
+
 [← Project README](../README.md)
 
 [← Engineering Overview](0-overview.md)
@@ -15,8 +23,6 @@ The subsystem documents explain **why** the robot was designed as it is:
 [← Power and Sensor Architecture](2-elec.md)
 
 [← Software Architecture and Obstacle Strategy](3-software.md)
-
-This document explains **how to reproduce the final robot**.
 
 ---
 
@@ -101,8 +107,6 @@ The recommended workflow is:
 
 rather than powering the complete robot immediately after wiring.
 
----
-
 ## 1.1 Reproduction Evidence Map
 
 | Reproduction Requirement | Primary Resource |
@@ -136,8 +140,6 @@ The build requires basic experience with:
 - Linux terminal commands
 - and basic Git usage
 
----
-
 ## 2.2 Important Safety Notes
 
 ### LiPo Battery
@@ -160,8 +162,6 @@ Always measure converter outputs with a multimeter **before connecting the Raspb
 During the first motor test **Lift the driven wheels off the ground.**
 
 This prevents an incorrect motor direction or steering command from causing the robot to move unexpectedly.
-
----
 
 ## 2.3 Recommended Build Order
 
@@ -203,8 +203,6 @@ Where possible, the exact model used by our team is listed together with the ori
 
 > Some purchasing links may become unavailable over time. The important reproduction information is the component model and specification.
 
----
-
 ## 3.1 Main Electronic Components
 
 | Category | Component | Qty | Notes | Purchase Link |
@@ -227,7 +225,6 @@ Where possible, the exact model used by our team is listed together with the ori
 
 **Note:** The seller lists the ground distribution connector as **CT-214**, but the component used by our team is identified as **PCT-214**. Both names refer to the same connector in our documentation. We consistently use **PCT-214** throughout the engineering journal, wiring diagrams, and electrical schematics to avoid confusion.
 
----
 
 ## 3.2 Mechanical Components
 
@@ -242,7 +239,6 @@ Where possible, the exact model used by our team is listed together with the ori
 | Structural Pillars | 7 | M3x30 | [Shopee](https://th.shp.ee/fPzjk2dR) |
 | Custom 3D-Printed Parts | 1 set | See mechanical CAD files | [`models/`](../models/CAD) |
 
----
 
 ## 3.3 Wiring and Consumables
 
@@ -253,7 +249,6 @@ Where possible, the exact model used by our team is listed together with the ori
 | Heat-Shrink Tubing | As required | Electrical insulation |  |
 | Solder | As required | Electrical assembly |  |
 
----
 
 ## 3.4 3D Printing Materials
 
@@ -302,7 +297,6 @@ Detailed material reasoning is documented in:
 
 [`1-mech.md`](1-mech.md)
 
----
 
 ## 5.1 Final Printed-Part Preparation
 
@@ -318,7 +312,6 @@ Before printing:
 8. clean mounting holes
 9. test-fit mating parts before final assembly
 
----
 
 ## 5.2 Final Printed Parts
 
@@ -348,8 +341,6 @@ Important final components include:
 - [ ] Cap
 
 
----
-
 ## 5.3 Final Printing Settings
 
 
@@ -376,7 +367,6 @@ The wiring diagram explains the **physical connections**.
 
 Do not reproduce the electrical system only from photographs.
 
----
 
 ## 6.1 Main Power Distribution
 
@@ -406,7 +396,6 @@ Negative / ground distribution uses:
 PCT-214
 ```
 
----
 
 ## 6.2 Wire the Main Switch
 
@@ -419,7 +408,6 @@ PCT-214
 
 Soder the XT60H-M to a 14AWG wire and soder the positive wire to the power switch and use a shrinking tube to short circuit.
 
----
 
 ## 6.3 Soder the Buck converter
 
@@ -429,7 +417,6 @@ Soder the 12V buck to a one output to the DC Motor Driver HAT.
 
 Soder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR).
 
----
 
 ## 6.4 OLED Voltmeter
 
@@ -437,13 +424,11 @@ Soder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR).
 
 Soder the positive wire to the **V** and **V+** and the negative to the **G**.
 
----
 
 ## 6.5 Ground Distribution
 
 Connect the required negative / ground paths to the PCT-214 distribution. Maintain a common electrical reference for signals shared between subsystems. Before powering the system, use a multimeter to check the ground connections for continuity.
 
----
 
 ## 6.6 LiDAR UART port
 
@@ -451,7 +436,6 @@ Connect the required negative / ground paths to the PCT-214 distribution. Mainta
 
 Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in the [wiring diagram](../schemes/wiring_diagram.png).
 
----
 
 ## 6.7 Connect to other components
 
@@ -488,7 +472,6 @@ Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in
        UART
 
 
----
 
 ## 6.8 Cable Management
 
@@ -511,7 +494,6 @@ This is one of the most important stages of reproduction.
 
 Do **not** connect the Raspberry Pi or other sensitive loads until converter voltages are verified.
 
----
 
 ## 7.1 Power Verification Sequence
 
@@ -549,7 +531,6 @@ Turn Main Switch ON
 Connect Electronics
 ```
 
----
 
 ## 7.2 Multimeter Checklist
 
@@ -565,7 +546,6 @@ Before connecting electronics:
 - [ ] no exposed conductor contacting chassis / PCB
 - [ ] connectors mechanically secure
 
----
 
 ## 7.3 First Powered Electrical Test
 
@@ -608,7 +588,6 @@ Sensor-placement reasoning is documented in:
 [`2-elec.md`](2-elec.md)
 
 
----
 
 ## 8.1 Assemble Steerng System
 
@@ -642,7 +621,7 @@ After assembly:
 
    Then, install the PCT-214 Quick Connector in the Elec Plate.
 
----
+
 
 ## 8.3 Assemble Top Plate
 
@@ -652,7 +631,7 @@ After assembly:
    First install the LiDAR, Oled Voltmeter, and the Power Switch (the Start Button will be install later).
    
 
----
+
 
 ## 8.4 Assemble Drivetrain
 
@@ -681,7 +660,7 @@ The 18T and 28T gears should:
 
 Incorrect gear mesh can cause excessive current draw, increased drivetrain noise, gear wear, and reduced speed.
 
----
+
 
 ## 8.5 Assemble Everything
 
@@ -718,7 +697,7 @@ Before finishing:
    
    <img src="../other/Pic/Build/18.png" height="660" />  
    
----
+
 
 ## 8.6 Mechanical Inspection
 
@@ -758,7 +737,7 @@ Python packages are managed with:
 uv
 ```
 
----
+
 
 ## 9.1 Prepare Raspberry Pi OS
 
@@ -770,7 +749,6 @@ Using Raspberry [Pi Imager](https://www.raspberrypi.com/software/):
 4. enable SSH
 5. boot the Raspberry Pi
 
----
 
 ## 9.2 Clone the Repository
 
@@ -786,7 +764,6 @@ For exact competition reproduction, the final tagged release should eventually b
 
 See Section 16.
 
----
 
 ## 9.3 Run Setup Script
 
@@ -812,7 +789,7 @@ sudo reboot
 
 The reboot is important because changes to group permissions, I²C configuration, and other system settings may not take effect until the system is restarted or the user logs in again.
 
----
+
 
 ## 9.4 Verify Raspberry Pi Interfaces
 
@@ -835,8 +812,6 @@ ls -l /dev/serial*
 ```
 
 
----
-
 ## 9.5 Install Python Environment
 
 If `setup_pi.sh` already completed this successfully, no additional dependency installation should normally be necessary.
@@ -856,7 +831,7 @@ uv.lock
 
 The lock file is important because it records reproducible Python dependency versions.
 
----
+
 
 ## 9.6 Dry Run
 
@@ -892,7 +867,6 @@ src/Raspberrypi/tasks/final/config.toml
 
 These configuration files contain adjustable values for the robot, including speed settings, clearance distances, Pure Pursuit lookahead, obstacle behavior, and path-planning parameters.
 
----
 
 ## 10.1 Do Not Re-Tune During Reproduction Unless Necessary
 
@@ -910,7 +884,6 @@ For exact reproduction:
 
 Do not immediately run the full autonomous challenge. Instead, test the system step by step.
 
----
 
 ## 11.1 Stage 1 — Electrical Verification
 
@@ -922,7 +895,6 @@ Do not immediately run the full autonomous challenge. Instead, test the system s
 - [ ] no unexpected component heating
 - [ ] no undervoltage / reset behavior during idle operation
 
----
 
 ## 11.3 Stage 2 — Steering Test
 
@@ -936,7 +908,6 @@ With drive wheels off the ground:
 
 After centering, connect / adjust the steering linkage mechanically if required.
 
----
 
 ## 11.4 Stage 3 — Drive Motor Test
 
@@ -948,7 +919,6 @@ With wheels lifted:
 - [ ] gears do not skip
 - [ ] drivetrain does not bind
 
----
 
 ## 11.5 Stage 4 — Encoder Test
 
@@ -962,7 +932,6 @@ Verify:
 - [ ] reversing changes direction correctly
 - [ ] count is repeatable over several rotations
 
----
 
 ## 11.6 Stage 5 — IMU Test
 
@@ -975,7 +944,6 @@ Verify:
 - [ ] sensor initializes through I²C
 - [ ] no intermittent connection
 
----
 
 ## 11.7 Stage 6 — LiDAR Test
 
@@ -989,7 +957,6 @@ Verify that the LiDAR:
 
 The debug view can be used to verify whether the scan matches the surrounding geometry.
 
----
 
 # 11.8 Stage 7 — Camera Test
 
@@ -1009,7 +976,6 @@ test_color_picker.py
 
 if color thresholds require validation.
 
----
 
 ## 11.9 Stage 8 — Start Button
 
@@ -1026,7 +992,6 @@ Verify:
 
 The first autonomous test should be performed at reduced risk.
 
----
 
 ## 12.1 Pre-Run Inspection
 
@@ -1040,7 +1005,6 @@ Before placing the robot on the track:
 - [ ] correct configuration selected
 - [ ] debug mode available if required
 
----
 
 ## 12.2 Localization Test
 
@@ -1052,7 +1016,6 @@ uv run python test_navigation.py
 
 Verify that localization particles converge toward a reasonable robot pose. Do not proceed to high-speed testing if localization does not converge reliably.
 
----
 
 ## 12.3 Low-Speed Driving Test
 
@@ -1071,7 +1034,6 @@ Confirm:
 - vehicle clearance
 - drivetrain stability
 
----
 
 ## 12.4 Qualification / Open Challenge
 
@@ -1091,7 +1053,6 @@ The robot should:
 6. complete the task according to qualification logic
 7. stop safely
 
----
 
 ## 12.5 Obstacle Challenge
 
@@ -1121,7 +1082,6 @@ The final task adds:
 
 Testing is an important part of the reproducible engineering workflow. The repository contains dedicated tools instead of requiring every change to be tested through a full competition run.
 
----
 
 ## 13.1 Recommended Development Workflow
 
@@ -1147,7 +1107,6 @@ Full Track Test
 Record Result
 ```
 
----
 
 # 13.2 Software Test Tools
 
@@ -1182,7 +1141,6 @@ uv run python test_color_picker.py
 
 Follow the troubleshooting steps in order. Avoid changing multiple configuration values at the same time, as this makes it more difficult to identify the cause of a problem.
 
----
 
 ## 14.1 Raspberry Pi Does Not Detect LiDAR
 
@@ -1206,7 +1164,6 @@ ls -l /dev/ttyAMA0
 groups
 ```
 
----
 
 ## 14.2 BNO055 Not Detected
 
@@ -1224,7 +1181,6 @@ Check:
 - SDA / SCL connection
 - power and ground
 
----
 
 ## 14.3 Camera Not Available
 
@@ -1238,7 +1194,6 @@ Check:
 
 Then test camera functionality before running competition software.
 
----
 
 ## 14.4 Servo Jitters or Resets
 
@@ -1257,7 +1212,6 @@ Check:
 3. steering mechanism by hand
 4. servo behavior with drivetrain stopped
 
----
 
 ## 14.5 Raspberry Pi Resets During Acceleration
 
@@ -1272,8 +1226,6 @@ Check:
 5. battery state
 
 
----
-
 ## 14.6 Motor Rotates in Wrong Direction
 
 Do not change several software signs simultaneously.
@@ -1286,7 +1238,6 @@ First verify:
 
 Document the final convention after correcting it.
 
----
 
 ## 14.7 Encoder Counts in Wrong Direction
 
@@ -1298,13 +1249,11 @@ Check:
 
 Swapping encoder A and B changes quadrature direction.
 
----
 
 ## 14.8 LiDAR Map Looks Distorted
 
 Check the physical mounting first. The LiDAR scan plane should be approximately parallel to the field surface. A tilted LiDAR can produce incorrect 2D geometry even when communication is working correctly.
 
----
 
 ## 14.9 Robot Localizes Incorrectly
 
@@ -1325,7 +1274,6 @@ uv run python test_navigation.py
 
 and debug visualization before changing path-following parameters.
 
----
 
 ## 14.10 Camera Detects Wrong Pillar Color
 
@@ -1384,7 +1332,6 @@ Initial Heading Captured
 Autonomous Run Begins
 ```
 
----
 
 ## 15.1 Open Challenge
 
@@ -1393,7 +1340,6 @@ cd ~/WRO-FE-YBR-SUNFLOWER/src/Raspberrypi
 uv run python main.py qualification
 ```
 
----
 
 ## 15.2 Obstacle Challenge
 
@@ -1408,7 +1354,6 @@ uv run python main.py final
 
 A reproducible robot requires more than the latest `main` branch. The exact competition version should be permanently identifiable.
 
----
 
 ## 16.1 Reproduce the Exact Competition Version
 
@@ -1444,7 +1389,6 @@ The returned commit should match the final documented competition SHA.
 - [ ] Final release / tag documented
 - [ ] CHANGELOG available
 
----
 
 ## 17.2 Mechanical
 
@@ -1460,7 +1404,6 @@ The returned commit should match the final documented competition SHA.
 - [ ] camera mounted
 - [ ] LiDAR / IMU mounted
 
----
 
 ## 17.3 Electrical
 
@@ -1478,7 +1421,6 @@ The returned commit should match the final documented competition SHA.
 - [ ] start button connected
 - [ ] wiring matches schematic
 
----
 
 ## 17.4 Software
 
@@ -1489,7 +1431,6 @@ The returned commit should match the final documented competition SHA.
 - [ ] `uv sync` succeeds
 - [ ] dry run succeeds
 
----
 
 ## 17.5 Subsystem Tests
 
@@ -1504,7 +1445,6 @@ The returned commit should match the final documented competition SHA.
 - [ ] localization converges
 - [ ] low-speed drive succeeds
 
----
 
 ## 17.6 Competition Functions
 
@@ -1579,3 +1519,5 @@ The final reproduction process is:
 > **Manufacture → Assemble → Wire → Measure → Configure → Verify → Test → Run**
 
 and should lead to the same Version 2.0 hardware and competition software documented throughout this repository.
+
+---

@@ -6,6 +6,8 @@ The central design decision is to treat navigation as a **pose–plan–control*
 
 > **Terminology.** In the software, `qualification` is the WRO **Open Challenge**, and `final` is the **Obstacle Challenge**. The term *simulation* denotes results produced without an actual competition attempt; implementation details do not, by themselves, demonstrate a successful physical run.
 
+---
+
 [← Project README](../README.md)
 
 [← Engineering Overview](0-overview.md)
@@ -1132,4 +1134,4 @@ flowchart TD
 
 The source, geometric assumptions, configuration and test evidence together define how YBR-SUNFLOWER's software makes autonomous decisions on the WRO Future Engineers field.
 
-
+---

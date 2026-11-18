@@ -1,7 +1,8 @@
 # Mobility and Mechanical Design
 
-> **YBR-SUNFLOWER · WRO 2026 · Future Engineers · Engineering Journal 01**  
 > **Current robot:** V2.4, developed through the V2.1–V2.4 overhaul. V1.1–V1.3 describe the first generation.
+
+---
 
 [← Project README](../README.md) 
 
@@ -14,7 +15,6 @@
 [← Build and Reproduction Guide](4-build.md)
 
 ---
-
 
 ## Contents
 
@@ -35,11 +35,15 @@
 15. [Reproducibility and evidence map](#15-reproducibility-and-evidence-map)
 16. [Technical references](#16-technical-references)
 
+---
+
 ## 1. Mechanical design objectives and evidence policy
 
 Our robot uses rear-wheel drive and servo-controlled front steering. The design prioritizes controllable motion, a compact chassis, accessible components and a clear LiDAR scan plane.
 
 Dimensions and build details are team-reported. Equations describe ideal behavior under stated assumptions. Supplier ratings are identified separately from vehicle measurements, and unfinished tests are marked as pending.
+
+---
 
 ## 2. Mechanical architecture and development
 
@@ -74,6 +78,8 @@ The team reported better low-speed control as first-generation reduction increas
 
 The new layout places surrounding components below the LiDAR scan plane where practical. Removing the Arduino also removes its separate mounting layer and communication harness.
 
+---
+
 ## 3. Mechanical components and vehicle geometry
 
 ### 3.1 Main components
@@ -105,6 +111,8 @@ Component specifications and quantities are listed in the [build BOM](4-build.md
 | Mass with battery | $m$ | 963 g |
 | Mass without battery | $m_{dry}$ | 828 g |
 
+---
+
 ## 4. Chassis and structural layout
 
 ![Figure M-01 — Main base CAD preview](../models/pic/Base_p.PNG)
@@ -112,6 +120,8 @@ Component specifications and quantities are listed in the [build BOM](4-build.md
 **Figure M-01.** The main base supports the Pi and lower assemblies, the electrical plate holds the converters and wiring, and the top plate carries the LiDAR and controls.
 
 Separate printed plates allow individual components to be replaced or redesigned. Spacers provide board clearance and access, while rigid joints help preserve sensor alignment.
+
+---
 
 ## 5. Drivetrain and external gearing
 
@@ -164,11 +174,15 @@ At equal gearbox-output speed, 18:28 gives **12.5% higher carrier speed**. At eq
 
 We changed to 18:28 to fit the new drivetrain layout. With the larger tires, the team observed noticeably higher speed while retaining low-speed control. This is a qualitative driving observation rather than a measured speed comparison.
 
+---
+
 ## 6. Differential, axles and bearings
 
 The differential lets the rear wheels turn at different speeds through a corner. Bearings support the rotating axles, printed mounts hold the bearings, and sleeves locate the axle assembly.
 
 The motor bracket must maintain gear alignment. Tight mesh, binding bearings or misplaced sleeves increase friction and motor load. Check free rotation and axle play before powered testing.
+
+---
 
 ## 7. Steering mechanism and turning geometry
 
@@ -206,6 +220,8 @@ Equivalently:
 
 These are ideal relationships. Measure the assembled linkage to determine actual wheel angles and steering limits. Servo angle is not wheel angle, and body overhang makes the swept vehicle envelope larger than the rear-axle path alone.
 
+---
+
 ## 8. Sensor mounting and mechanical integration
 
 The S2L sits on the top plate. Keep its rotating area clear and check the scan plane for chassis and cable obstructions. Camera and IMU mounts must retain their orientation after maintenance, and their recorded poses must match the software calibration.
@@ -223,6 +239,8 @@ The Pi 5 runs the main software and communicates with the HATs. The HATs retain 
 | Pi/HAT stack | Pi header | Board, connector and cooling clearance |
 
 Detailed wiring is in the [electrical journal](2-elec.md).
+
+---
 
 ## 9. CAD models and part previews
 
@@ -274,6 +292,7 @@ Each STL below has a matching preview. The catalog includes the unused wing conc
 | [`wing.stl`](../models/CAD/wing.stl) | <img src="../models/pic/wing_p.PNG" width="180" alt="wing CAD preview"> | Front wing/bumper concept, unused in the final robot |
 | [`magnet_holder.stl`](../models/CAD/magnet_holder.stl) | <img src="../models/pic/magnet_holder_p.PNG" width="180" alt="magnet holder CAD preview"> | Holds the magnets that attach the protective cap |
 
+---
 
 ## 10. Materials and fabrication
 
@@ -293,6 +312,8 @@ We print with a **Bambu Lab H2D**, using **Polymaker ABS Pro** for general struc
 | Bed temperature | 110°C | 105°C |
 | Chamber temperature | 65°C | 65°C |
 
+---
+
 ## 11. Assembly and mechanical interfaces
 
 Follow the [photographic build guide](4-build.md#8-mechanical-assembly).
@@ -304,6 +325,8 @@ Follow the [photographic build guide](4-build.md#8-mechanical-assembly).
 | Top plate | Rigid LiDAR mount and clear rotation/scan area |
 | Drivetrain | Smooth differential rotation and correct gear engagement |
 | Complete robot | Secure fasteners and cables clear of moving parts and exposed circuits |
+
+---
 
 ## 12. Why we chose these components
 
@@ -352,6 +375,8 @@ We upgraded from C1 to S2L to obtain better range readings and finer scan detail
 | ABS Pro and ABS-GF | Provide material choices for toughness and stiffness |
 | Magnetic cap attachment | Holds the protective cap while allowing removal |
 
+---
+
 ## 13. Engineering decisions and trade-offs
 
 | Decision | Benefit | Trade-off |
@@ -363,6 +388,8 @@ We upgraded from C1 to S2L to obtain better range readings and finer scan detail
 | Modular printed plates | Easier replacement and redesign | More fasteners and joints |
 
 Two electrical limits also affect mechanical loading. The electrical journal flags a possible motor-stall/current mismatch with the DFR0592, and DFR1208's 15–24 V input range leaves little margin below the battery's 15.2 V nominal voltage. Gear binding, acceleration load and battery sag must therefore be considered together. See [electrical operating limits](2-elec.md#172-electrical-operating-limits-and-protection-considerations).
+
+---
 
 ## 14. Mechanical verification and calibration
 
@@ -381,6 +408,7 @@ The following tests require recorded results.
 
 V1 steering and encoder calibrations must be checked again after the servo, chassis and gear changes.
 
+---
 
 ## 15. Reproducibility and evidence map
 
@@ -395,6 +423,8 @@ V1 steering and encoder calibrations must be checked again after the servo, chas
 
 Use one revision for the final CAD, parts list, configuration and test evidence. The 26 published STL designs are not a complete printed-instance quantity list.
 
+---
+
 ## 16. Technical references
 
 - [Project README](../README.md) — development history and robot overview.
@@ -405,3 +435,5 @@ Use one revision for the final CAD, parts list, configuration and test evidence.
 - [Software architecture](3-software.md) — motion control and calibration integration.
 
 Vehicle measurements, revision changes and print settings follow the team's supplied draft.
+
+---

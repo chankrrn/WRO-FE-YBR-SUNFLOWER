@@ -12,6 +12,8 @@
 
 This guide connects the official extra task to the team's implemented perception and planning logic. Configuration values describe software settings; the test procedures describe how to evaluate them. They are not measured success rates.
 
+---
+
 ## Contents
 
 1. [Official task and passing-side rule](#1-official-task-and-passing-side-rule)
@@ -25,6 +27,8 @@ This guide connects the official extra task to the team's implemented perception
 9. [Evidence and engineering interpretation](#9-evidence-and-engineering-interpretation)
 10. [Sources](#10-sources)
 
+---
+
 ## 1. Official task and passing-side rule
 
 The [official Extra Task PDF](https://wro-association.org/wp-content/uploads/WRO-2026-Future-Engineers-Extra-Task.pdf) makes participation optional: declare it before each attempt; it cannot change after starting. Judges replace one sign, excluding the first encountered in the required direction, with the opposite colour and a height of 50 or 150 mm instead of 100 mm. Its 50 × 50 mm base position is unchanged. The selected position and height are shared across teams within the round.
@@ -32,6 +36,8 @@ The [official Extra Task PDF](https://wro-association.org/wp-content/uploads/WRO
 The robot must follow the sign's **original colour**. Thus, a modified visible green sign requires passing on its right; a modified visible red sign requires passing on its left. Ordinary signs keep their normal meaning. Wrong-side passage ends the attempt.
 
 Each correct passage of the modified sign earns five extra points, up to fifteen over three laps; earned passage points survive an early finish. Repair halves the total including this bonus. The three-minute limit and other standard rules remain. Maximum totals become 77 for Obstacle and 137 overall. These are rule limits, not team results.
+
+---
 
 ## 2. Engineering challenge
 
@@ -48,6 +54,8 @@ The implemented approach separates three quantities:
 The colour observation remains meaningful even when the planner uses the opposite passing side. Localization, curvature-constrained planning and Pure Pursuit remain the underlying navigation system.
 
 A false modified-sign classification can be as consequential as missing the real one. The design therefore combines restricted shape bands, range consistency, repeated observations and round-level eligibility rules. These controls reduce specific failure mechanisms; their existence does not establish a numerical reliability level.
+
+---
 
 ## 3. Implementation and information flow
 
@@ -79,6 +87,8 @@ flowchart TD
 ```
 
 *Figure SR-01. Implemented decision flow. A height used for position estimation is distinct from authorization to invert a passing side.*
+
+---
 
 ## 4. Geometry and sensor evidence
 
@@ -145,6 +155,8 @@ Veto mode trades a less restrictive decision condition for greater dependence on
 
 The source also separates `place_height` from `vote`. For example, LiDAR can support a 150 mm range correction without sufficient shape evidence for a modified-sign vote. Correcting placement alone must not be described as an instruction to invert the passing side.
 
+---
+
 ## 5. Voting and round-level safeguards
 
 **Tracked evidence.** BlockMap accumulates height votes for each sign. A modified height needs at least four supporting votes and at least 70% of the track's accumulated size votes. Four normal-height votes with the same fraction criterion settle a sign as normal. Unknown observations are not automatically counted as normal.
@@ -158,6 +170,8 @@ The source also separates `place_height` from `vote`. For example, LiDAR can sup
 **Replanning.** A changed inversion signature triggers route reconsideration. Sign memory retains previously mapped obstacles when a camera view is briefly lost; size changes must update the remembered position instead of leaving a duplicate obstacle behind.
 
 **Decision distance.** The task requests a speed cap near undecided signs and holds a suspect-sign request briefly after unusual evidence. In the published profile, `surprise.slow_speed` is absent, so its fallback is `speed.compromised = 105`. That equals `speed.minimum`; a vehicle already at that request does not slow further. These are controller request values, not metres per second.
+
+---
 
 ## 6. Configuration reference
 
@@ -188,6 +202,8 @@ All values below come from the `[surprise]` table in [final/config.toml](../src/
 
 The configured diagnostic path is `logs/surprise_sizer.csv`, relative to `src/Raspberrypi/`. It is a local runtime output overwritten by the implementation, not a published evidence file or a required input dataset. Setting `log_path = ""` disables it. No CSV is added by this documentation.
 
+---
+
 ## 7. Operating procedure
 
 1. Prepare the vehicle and field using the [build guide](4-build.md). Confirm the selected configuration, camera alignment, scan-plane model and physical start control.
@@ -206,6 +222,8 @@ uv run python main.py final --surprise
 5. Evaluate the sign passages and parking from the physical attempt, together with diagnostic output when available.
 
 Omitting `--surprise` preserves the TOML value; it does not forcibly set the feature to false. If the configuration has been edited to `enabled = true`, restore false when selecting standard mode. Diagnostic options and parameter changes belong to preparation and testing.
+
+---
 
 ## 8. Verification method
 
@@ -266,6 +284,8 @@ For each attempt, report the source/configuration identity, direction, sign setu
 
 Useful metrics are modified-sign detection rate, normal-sign false-inversion rate, distance remaining when the side decision becomes usable, and whole-run completion rate. Keep denominators visible and separate bench frames from field attempts. The repository's field recording is not a substitute for those repeated-trial denominators.
 
+---
+
 ## 9. Evidence and engineering interpretation
 
 The [team's Surprise-mode field recording](https://youtu.be/SZ7-qe57g4k) provides physical footage for the team's stated altered-sign scenario. The [standard obstacle recording](https://youtu.be/5n_M14UXSpM) provides complementary context. Neither link is an official scoring record.
@@ -273,6 +293,8 @@ The [team's Surprise-mode field recording](https://youtu.be/SZ7-qe57g4k) provide
 The source establishes that the mode, height hypotheses, cue policy, tracking, guards and planner integration are implemented. The configuration establishes the selected thresholds. The bench and simulation tools make the hypotheses inspectable. These evidence types answer different questions and should be interpreted together.
 
 The central tradeoff is decision timing versus false inversion: stricter cue agreement and more votes can delay action, while looser conditions increase dependence on calibration and tracking. Sensor alignment, scan height, vehicle speed and route geometry all affect that tradeoff. This connects the extra task to the team's broader systems-engineering decisions rather than treating it as a colour-swap shortcut.
+
+---
 
 ## 10. Sources
 
@@ -284,3 +306,4 @@ The central tradeoff is decision timing versus false inversion: stricter cue agr
 - [SignSizer implementation](../src/Raspberrypi/classes/sign_sizer.py)
 - [Tracked-sign voting](../src/Raspberrypi/classes/block_map.py)
 
+---

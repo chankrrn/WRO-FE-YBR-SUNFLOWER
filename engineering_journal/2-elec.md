@@ -1,8 +1,9 @@
 # Power and Sensor Architecture
-
-> **YBR-SUNFLOWER · World Robot Olympiad 2026 · Future Engineers · Engineering Journal 02**  
+ 
 > **Scope:** Power distribution, controller interfaces, sensing electronics, propulsion and steering circuits, engineering calculations, measured supply voltages, schematics, and MATLAB modeling.  
 > **Implementation:** Modular Raspberry Pi HATs and independent regulated power supplies, with commercial wiring/distribution hardware rather than a custom printed circuit board.
+
+---
 
 [← Project README](../README.md)
 
@@ -68,6 +69,8 @@ A published **maximum** current is not a measured operating current. An assumed 
 
 Component ratings are attributed to published specifications; circuit connections follow the assembled-robot wiring record in [`4-build.md`](4-build.md) and the schematic. Software settings are cited to the corresponding Raspberry Pi implementation files.
 
+---
+
 ## 2. System architecture
 
 ### 2.1 Power-flow architecture — Figure E-01
@@ -83,6 +86,8 @@ The EasyEDA schematic uses `VBAT_RAW` (battery positive before the switch), `VBA
 ![Figure E-02 — Raspberry Pi, motor HAT M1/E1, I/O HAT and sensor signal interfaces](../schemes/control_sensor_interfaces.png)
 
 **Figure E-02.** Controller and signal interfaces. The Raspberry Pi 5 exchanges I²C commands with the DFR0592 motor-driver HAT (software-configured address `0x11` on bus 1) and DFR0604 I/O Expansion HAT (`0x10` on bus 1). The DFR0592 **M1/E1** terminals form the propulsion and encoder interface. DFR0604 provides I²C for SEN0253, Digital 16 for the illuminated start button, PWM3 for the steering servo, and UART for the RPLIDAR S2L. The fisheye camera uses the Pi's CSI ribbon interface; the official active cooler uses its dedicated fan header. The drawing illustrates functional connections and power-domain separation rather than assigning custom connector contact numbers.
+
+---
 
 ## 3. Component inventory and technical specifications
 
@@ -128,6 +133,8 @@ Values in the following tables are **datasheet or supplier ratings**, unless exp
 | **XH2.54 5-position LiDAR breakout** | Custom LiDAR power and UART cable | Team-specific leads and connector orientation are documented in Section 10; no new custom PCB |
 | **Camera CSI ribbon, Pi 5 FAN connector, HAT header** | Dedicated commercial interconnects | Not generic GPIO signal wires |
 
+---
+
 ## 4. Battery selection and nominal energy
 
 The single GNB pack supplies **15.2 V nominal** at **1.30 Ah**. The manufacturer's label supports a nominal stored-energy calculation:
@@ -148,6 +155,8 @@ V_{\mathrm{terminal}}(t) = V_{\mathrm{OC}}\!\left(SOC(t)\right) - I_{\mathrm{bat
 
 Here `V_OC(SOC)` and `R_pack` are **model inputs**, not measured battery data. The model explains why the battery's nominal voltage must not be substituted for its guaranteed terminal voltage at every instant. See Section 8 and the currently published [headroom-model script (Figure 07)](../engineering_journal/matlab/figures/figure07_12v_input_headroom.m).
 
+---
+
 ## 5. Physical power distribution
 
 The assembled power circuit uses separate positive and return distribution components, with the main switch placed in the battery-positive line.
@@ -166,6 +175,8 @@ The voltmeter is connected between `VBAT_SW` and `GND`: it shows the **switched 
 ### 5.1 Distribution-connector limits
 
 The team uses commercially available distribution connectors instead of a custom PDB. This is a valid modular design decision, but the **D1-3 connector's current capacity cannot be established from the dimensions alone**. The PCT-214 supplier reference describes the connector family; installed conductor size, termination and temperature limits must still be respected. Likewise, the rocker switch's published **AC** current rating is not automatically its **DC switching** rating. Battery-side protection should be evaluated independently from the converters' internal output protections.
+
+---
 
 ## 6. Regulated rails, input headroom and servo power
 
@@ -222,6 +233,8 @@ These are measurements at the converters, not measurements of voltage at the Pi 
 | `PI_3V3` | 3.3 V | DFR0604 IIC+ and D16+ → SEN0253/DFR0785 | Manufacturer breakout specification; team-reported |
 | `SERVO_V+` | **5 V conditional** | DFR0604 PWM3+ → S0017M | Manufacturer VP-unpowered mode; team state in Section 18 |
 | `GND` | 0 V reference | PCT-214, converter returns, Pi and other peripherals | Shared reference |
+
+---
 
 ## 7. Electrical calculations and evidence-labeled load budget
 
@@ -293,6 +306,8 @@ E_{\mathrm{nom}}=15.2\ \mathrm{V}\times 1.30\ \mathrm{Ah}=19.76\ \mathrm{Wh}.
 
 An energy-over-average-power quotient is only an idealized arithmetic comparison. It does **not** establish usable energy, battery voltage trajectory, output regulation or the duration of a WRO run. In particular, DFR1208 may leave its specified **15–24 V input window** while the pack still has charge; MATLAB Figure 07 analyzes that design constraint.
 
+---
+
 ## 8. MATLAB evidence selected for the electrical chapter
 
 The four embedded MATLAB graphics support complementary engineering questions: component load allocation, regulator input compatibility, 12 V converter headroom and Raspberry Pi power-path voltage drop. **MATLAB figures use their own 01–08 sequence**; E-01 through E-04 identify architecture, schematic and wiring drawings. Source code is provided as standalone MATLAB scripts in [`other/matlab/`](../engineering_journal/matlab/). Calculated and synthetic results are not physical telemetry.
@@ -353,6 +368,8 @@ The **4.80 V** design reference and **4.63 V** nominal undervoltage-warning refe
 
 To reproduce a plot, execute its full `.m` program in MATLAB and use the generated PNG in `engineering_journal/matlab/visualization/`. Other exploratory electrical simulations are available in the same script directory, but the four shown here directly support the design and reliability discussion.
 
+---
+
 ## 9. Schematic and pictorial wiring documentation
 
 ### 9.1 Figure E-03 — Three-sheet EasyEDA electrical schematic
@@ -388,6 +405,8 @@ The [`Build and Reproduction Guide`](4-build.md) documents cable and connector a
 ### 9.4 Documentation scope and electrical drawing identifiers
 
 Figures **E-01** and **E-02** describe functional power and controller architecture. **E-03A/B/C** are the three sheets of the same EasyEDA electrical schematic, and **E-04** is the pictorial harness. The MATLAB plots retain their standalone numbering **01–08**. Detailed cable tables in Section 10 complement these drawings without requiring a duplicate connector-map figure.
+
+---
 
 ## 10. Complete team-reported electrical connections
 
@@ -468,6 +487,8 @@ The HAT motor outputs are controlled over I²C; the software channel selection a
 
 The DFR0592 and DFR0604 share the Raspberry Pi's I²C interface *as represented by the team's schematic*. Their internal MCU functions are not reconstructed into fictional individual Raspberry Pi control lines.
 
+---
+
 ## 11. Raspberry Pi, HATs and communication buses
 
 ### 11.1 Controller choice
@@ -495,6 +516,8 @@ The DFR0604 Digital 16 signal connects to Raspberry Pi **BCM GPIO16**. The UART 
 
 The DFR0604 sensor `+` breakout nominally supplies **3.3 V**; this is the preferred rail for the LED button and an allowed supply for SEN0253. The LiDAR receives its **separate regulated 5 V**, not power from the UART `+` contact. The motor driver receives its **separate 12 V motor supply**, while the servo uses the **PWM+ rail** subject to the VP condition discussed above. Do not interpret the presence of a common ground as permission to join these positive rails.
 
+---
+
 ## 12. RPLIDAR S2L
 
 The DFR1023 RPLIDAR S2L is a 360° direct time-of-flight ranging sensor. DFRobot lists **5 V**, **400 mA operating**, **40 mA sleep**, **10 Hz scan frequency**, **32 kHz sampling**, a stated **0.05–18 m** white-target range and **±30 mm** ranging accuracy. The host interface is **TTL UART at 1 Mbps**; these are manufacturer specifications, not YBR-SUNFLOWER field measurements. [R10]
@@ -504,6 +527,8 @@ The team's electrical design powers the scanner directly from the **DFR1202** ra
 Electrical integration considerations are stable 5 V supply, common UART return and correct TX/RX signal pairing. The published maximum range is not a guarantee for every dark, transparent or highly reflective competition object.
 
 **Software interface note:** [`lidar_manager.py`](../src/Raspberrypi/classes/lidar_manager.py) currently configures `/dev/ttyAMA0`, **1,000,000 baud**, for the Pi's UART breakout. This is implementation evidence, not a measurement of packet error rate; the team’s scanner-side TX/RX wire colors remain a separate physical-harness check.
+
+---
 
 ## 13. OV5647 camera and active cooler
 
@@ -518,6 +543,8 @@ The camera module is **not** shown as a Pi GPIO pin group. The physical camera p
 The official Active Cooler connects to the Pi 5 **dedicated four-pin FAN header**, receives **5 V from the Pi** and supports fan PWM/tachometer operation. The manufacturer describes a temperature-controlled fan and aluminium heatsink. [R9]
 
 The cooler is documented as a native Pi accessory; it does **not** require an independent hand-wired fan supply from either buck converter.
+
+---
 
 ## 14. SEN0253 IMU and DFR0785-W button
 
@@ -562,6 +589,8 @@ For reproducibility and the **2026 WRO Power & Sensor Architecture rubric**, sen
 
 A geometric field-coverage claim requires installed sensor origin, pitch/yaw, scan-plane height and chassis occlusion geometry. The component datasheets alone do not determine those quantities. This is a defined evidence boundary, not an assumed calibration result.
 
+---
+
 ## 15. Motor driver, geared motor and encoder
 
 ### 15.1 DFR0592 motor and encoder channel assignment
@@ -597,6 +626,8 @@ v_{\mathrm{wheel}} = \frac{2\pi r\,N}{C_{w}\,\Delta t}.
 
 No **measured wheel counts-per-revolution** are claimed: the nominal 836 gearbox-output edge count above is **derived from software parameters**, while an observed and calibrated `C_w` depends on the encoder pulse definition, quadrature decoding (×1, ×2 or ×4), gearbox, external gearing and software configuration. **No `encoder_calibration.m` script exists in the current public `matlab/` directory**; consequently the electrical journal does not link to an obsolete path or present an unrelated battery-current script as an encoder study. Keep `C_w` symbolic until the installed motor/encoder configuration supplies a defensible value.
 
+---
+
 ## 16. Steering-servo interface
 
 The S0017M is driven by the DFR0604 onboard STM32-generated PWM channel **3**, not by applying 12 V motor power to a Raspberry Pi GPIO output. The team reports:
@@ -606,6 +637,8 @@ The S0017M is driven by the DFR0604 onboard STM32-generated PWM channel **3**, n
 - `PWM3 −` → servo return, black.
 
 The supplier's **4.8–6 V** rating and advertised 0.20 s/60° at **6 V** are referenced values, not a measured steering-wheel response. The DFR0604's VP-unpowered supply configuration makes PWM+ **5 V nominal**; externally powering VP at 6–12 V would instead pass that voltage to PWM+, potentially exceeding the servo rating. The servo's output-shaft angle is not automatically equal to the road-wheel angle because of the steering linkage. For planning plots only, the team supplied approximately **0.10–0.20 A no-load current** and **0.8–1.2 A possible stall current** as generic 17 g digital-servo ranges. Their precision and applicability to this exact S0017M revision are **not authenticated by the cited seller specification**; Figure E-03 assumes 0.15 A and MATLAB Figure 08 assumes a transient 1.20 A scenario. These are electrical/mechanical interface facts, not a claimed servo calibration. [R6, R8]
+
+---
 
 ## 17. Electrical reliability and design trade-offs
 
@@ -666,6 +699,8 @@ The WRO 2026 documentation rubric emphasizes explainable system design, sensor c
 
 The architecture is evaluated as a connected system: the power budget relates to the battery and regulator ratings; motor-drive electrical limits relate to mechanical loading; and sensor mounting, image processing and localization assumptions affect control performance. Physical observations and calibration data should be attributed to the experiment or source file where they were obtained.
 
+---
+
 ## 18. Reproducibility and engineering verification
 
 ### 18.1 Repository resources
@@ -699,6 +734,8 @@ The EasyEDA SVG/PDF exports are suitable for reviewing module terminals and name
 | Upstream protection | Determine switch DC suitability, conductor rating and presence or absence of an actual battery-side protective device | The installed power harness and component markings; no nonexistent protection device is depicted |
 
 Reproducibility depends on preserving both the schematic's named electrical nets and the software's selected peripheral channels. A physical terminal group and the corresponding software controller channel must agree for motor and encoder behavior to follow the documented circuit.
+
+---
 
 ## 19. Technical references
 
