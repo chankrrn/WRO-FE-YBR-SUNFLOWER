@@ -123,7 +123,7 @@ Video records: [final challenge video index](video/final.md) and [run-test index
 
 ## MATLAB Modeling — MathWorks Modeling Award (Future Engineers)
 
-All detailed information about our use of MathWorks tools can be found in the [MATLAB README](matlab/README.md).
+All detailed information about our use of MathWorks tools can be found in the [MATLAB README](engineering_journal/matlab/README.md).
 
 ### Engineering problem and modeling strategy
 
@@ -164,7 +164,7 @@ Two representative results are illustrated below. Their full assumptions, calcul
 
 ### Reproducing the analyses
 
-1. Open any `.m` file in [`other/matlab/`](other/matlab/). The scripts specify **base MATLAB R2020a or newer** as their intended execution environment.
+1. Open any `.m` file in [`	engineering_journal/matlab/figures/`](	engineering_journal/matlab/figures/). The scripts specify **base MATLAB R2020a or newer** as their intended execution environment.
 2. Review the parameters and source-status comments near the beginning of the script. Separate manufacturer specifications from scenario assumptions before changing a value.
 3. Run the **complete script**. Each script is written as a standalone analysis and exports a PNG to its local `results/` directory; the versions of the figures selected for publication are stored in [`engineering_journal/matlab/visualization/`](engineering_journal/matlab/visualization/).
 4. Compare the output with the figure and the interpretation in the electrical journal. Re-running a script verifies model execution and numerical behavior under its assumptions; it does not establish physical accuracy.
@@ -190,8 +190,8 @@ The technical records explain **why** decisions were made; the source and suppor
 | Engineering records | [`engineering_journal/`](engineering_journal/) |
 | Competition records | [`history/history_README.md`](history/history_README.md) |
 | Robot CAD/STL models and previews | [`models/`](models/) |
-| MATLAB source scripts | [`other/matlab/`](other/matlab/) |
-| Published MATLAB figures | [`engineering_journal/matlab/visualization/`](engineering_journal/matlab/visualization/) |
+| MATLAB source scripts | [`engineering_journal/matlab/figures`](engineering_journal/matlab/figures) |
+| Published MATLAB visualizations | [`engineering_journal/matlab/visualization/`](engineering_journal/matlab/visualization/) |
 | Supporting resources | [`other/`](other/) |
 | Circuit and wiring diagrams | [`schemes/`](schemes/) |
 | Raspberry Pi source and configuration | [`src/Raspberrypi/`](src/Raspberrypi/) |

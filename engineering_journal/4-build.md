@@ -1475,7 +1475,7 @@ For design reasoning, use:
 
 ### Software
 
-[`3-software.md`](`3-software.md)
+[`3-software.md`](3-software.md)
 
 ### Electrical Schematic
 
@@ -1487,7 +1487,7 @@ For design reasoning, use:
 
 ### Source Code
 
-[`src/`](src/)
+[`src/`](../src/)
 
 ---
 
