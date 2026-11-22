@@ -1,8 +1,8 @@
 # Software Architecture and Obstacle Strategy
 
-The YBR-SUNFLOWER autonomous vehicle was designed for the **World Robot Olympiad 2026 — Future Engineers** category. Its international-round software combines field-relative localization, geometric path tracking, color-based traffic-sign perception, curvature-constrained obstacle avoidance, controlled departure from the starting parking bay, and a separate LiDAR-based final parking sequence.
+The YBR-SUNFLOWER autonomous robot was designed for the **World Robot Olympiad 2026 — Future Engineers** category. Its international-round software combines field-relative localization, geometric path tracking, color-based traffic-sign perception, curvature-constrained obstacle avoidance, controlled departure from the starting parking bay, and a separate LiDAR-based final parking sequence.
 
-The central design decision is to treat navigation as a **pose–plan–control** problem: estimate the vehicle's location, construct a feasible path through the known course, and follow that path with a common steering controller. This chapter documents the implementation, mathematical assumptions, algorithmic choices, operating procedures, test tools and failure mechanisms represented in the repository's Python code.
+The central design decision is to treat navigation as a **pose–plan–control** problem: estimate the robot's location, construct a feasible path through the known course, and follow that path with a common steering controller. This chapter documents the implementation, mathematical assumptions, algorithmic choices, operating procedures, test tools and failure mechanisms represented in the repository's Python code.
 
 > **Terminology.** In the software, `qualification` is the WRO **Open Challenge**, and `final` is the **Obstacle Challenge**. The term *simulation* denotes results produced without an actual competition attempt; implementation details do not, by themselves, demonstrate a successful physical run.
 
@@ -44,7 +44,7 @@ The central design decision is to treat navigation as a **pose–plan–control*
 
 # 1. Software engineering overview
 
-The field has a defined perimeter, central obstacle and legal traffic-sign positions. Rather than reacting independently to every visible object, the vehicle estimates its location on that field and derives steering commands from a planned route. This permits navigation decisions to remain meaningful when a colored sign temporarily leaves the camera frame.
+The field has a defined perimeter, central obstacle and legal traffic-sign positions. Rather than reacting independently to every visible object, the robot estimates its location on that field and derives steering commands from a planned route. This permits navigation decisions to remain meaningful when a colored sign temporarily leaves the camera frame.
 
 The system answers three questions continuously:
 
@@ -92,7 +92,7 @@ The same underlying localization and steering architecture is used in both tasks
 
 ## 1.3 Software, models and physical evidence
 
-Algorithm descriptions refer to [`main.py`](../src/Raspberrypi/main.py), [`tasks/path_task.py`](../src/Raspberrypi/tasks/path_task.py), [`tasks/final/task.py`](../src/Raspberrypi/tasks/final/task.py), and the round-specific TOML files. Parameter tables describe software settings. Equations describe mathematical models, while figures are labeled as simulation output or conceptual illustrations. [Physical run recordings](#134-physical-run-recordings) show the vehicle operating on the field.
+Algorithm descriptions refer to [`main.py`](../src/Raspberrypi/main.py), [`tasks/path_task.py`](../src/Raspberrypi/tasks/path_task.py), [`tasks/final/task.py`](../src/Raspberrypi/tasks/final/task.py), and the round-specific TOML files. Parameter tables describe software settings. Equations describe mathematical models, while figures are labeled as simulation output or conceptual illustrations. [Physical run recordings](#134-physical-run-recordings) show the robot operating on the field.
 
 ---
 
@@ -136,7 +136,7 @@ y_s &= y + f\cos\psi - r\sin\psi.
 \end{aligned}
 ```
 
-Here `(x,y)` is the rear-axle pose and `\psi` is its heading. This transform is implemented in [`classes/robot_geometry.py`](../src/Raspberrypi/classes/robot_geometry.py), and is used to locate LiDAR and camera observations relative to the same vehicle pose.
+Here `(x,y)` is the rear-axle pose and `\psi` is its heading. This transform is implemented in [`classes/robot_geometry.py`](../src/Raspberrypi/classes/robot_geometry.py), and is used to locate LiDAR and camera observations relative to the same robot pose.
 
 ---
 
@@ -288,7 +288,7 @@ The normal task's 180 s timeout must not be confused with the independent timeou
 
 ## 5.1 Controller topology
 
-The current international vehicle uses Raspberry Pi 5 as the main programmable host. It communicates with the DFRobot boards on **I²C bus 1**:
+The current international robot version uses Raspberry Pi 5 as the main programmable host. It communicates with the DFRobot boards on **I²C bus 1**:
 
 | Peripheral | Bus/interface | Published code setting | Function |
 |---|---|---|---|
@@ -345,7 +345,7 @@ where `\mathcal M` is the field geometry, `\theta_i` is an observed scan bearing
 
 ## 6.2 Monte Carlo localization
 
-`NavigationManager` uses a **particle filter** with `PARTICLE_COUNT = 500`. Particles represent candidate vehicle poses. The implementation selects up to **48 scan beams per update**, applies a noise/outlier model, scores candidates against map raycasts and resamples when effective particle count falls sufficiently. Cloud spread and map-match error inform the confidence estimate.
+`NavigationManager` uses a **particle filter** with `PARTICLE_COUNT = 500`. Particles represent candidate robot poses. The implementation selects up to **48 scan beams per update**, applies a noise/outlier model, scores candidates against map raycasts and resamples when effective particle count falls sufficiently. Cloud spread and map-match error inform the confidence estimate.
 
 A simplified measurement-weighting model is:
 
@@ -369,7 +369,7 @@ The software reports pose reliability using a confidence threshold of **0.35**. 
 
 *Figure S-05. Simulation with concentrated particles and scan returns aligned with the modeled walls. These two images illustrate separate localization states at different reference positions.*
 
-The useful comparison is the **distribution of plausible poses**. A scattered cloud represents uncertainty; a concentrated cloud represents agreement with the supplied model and observations. The small errors printed in a simulation image are not measured localization accuracy on the physical vehicle.
+The useful comparison is the **distribution of plausible poses**. A scattered cloud represents uncertainty; a concentrated cloud represents agreement with the supplied model and observations. The small errors printed in a simulation image are not measured localization accuracy on the physical robot.
 
 ## 6.3 LiDAR and IMU heading fusion
 
@@ -379,7 +379,7 @@ The BNO055 is operated in **IMUPLUS** mode (`USE_MAGNETOMETER = False`) so the m
 
 ## 6.4 Motion model and reference point
 
-The rear axle is the vehicle's pose origin. The LiDAR is configured **65 mm forward** of that origin in the round configuration. The camera offset is computed relative to the LiDAR through `robot_geometry.py`.
+The rear axle is the robot's pose origin. The LiDAR is configured **65 mm forward** of that origin in the round configuration. The camera offset is computed relative to the LiDAR through `robot_geometry.py`.
 
 An idealized kinematic bicycle model predicts:
 
@@ -428,7 +428,7 @@ The active round configurations are **not identical**:
 | Lookahead bounds before corner cap | 400–800 mm | 100–400 mm |
 | Lap-distance stop offset | 550 mm | 320 mm |
 
-These are **software configuration values**, not independent measurements of physical steering angle or vehicle speed. Both rounds use the same maximum modeled road-wheel angle; their command limits, lookahead settings and speed settings differ. The Open configuration also ramps from command **120** over **1.0 s** at startup. A command of 255 requests the top of the software scale, not a measured speed in millimeters per second.
+These are **software configuration values**, not independent measurements of physical steering angle or robot speed. Both rounds use the same maximum modeled road-wheel angle; their command limits, lookahead settings and speed settings differ. The Open configuration also ramps from command **120** over **1.0 s** at startup. A command of 255 requests the top of the software scale, not a measured speed in millimeters per second.
 
 ![Rounded-square racing-line illustration with field geometry and sampled reference route](../other/Pic/software/racing_line_illustration.png)
 
@@ -446,7 +446,7 @@ Additional corner-dependent caps prevent the controller from targeting too far b
 
 ## 7.3 Pure Pursuit steering law
 
-A target point is selected ahead of the rear axle in the vehicle's direction of travel. If the target is at angular offset `\alpha` and distance `L_d`, the geometric curvature and idealized road-wheel angle are:
+A target point is selected ahead of the rear axle in the robto's direction of travel. If the target is at angular offset `\alpha` and distance `L_d`, the geometric curvature and idealized road-wheel angle are:
 
 ```math
 \kappa=\frac{2\sin\alpha}{L_d},\qquad
@@ -462,9 +462,9 @@ u_{\mathrm{steer}}=\mathrm{clip}\left(
 
 `PurePursuit` contains the implementation, including steering-lag representation. `PathDrivingTask` adds rate handling, speed selection and safety checks around the requested command.
 
-![Conceptual Pure Pursuit lookahead target relative to the vehicle and waypoints](../other/Pic/software/pure_pursuit_concept.png)
+![Conceptual Pure Pursuit lookahead target relative to the robot and waypoints](../other/Pic/software/pure_pursuit_concept.png)
 
-*Figure S-08. Pure Pursuit lookahead geometry. Steering depends on the target point's position relative to the vehicle.*
+*Figure S-08. Pure Pursuit lookahead geometry. Steering depends on the target point's position relative to the robot.*
 
 ## 7.4 Turning-radius feasibility
 
@@ -474,7 +474,7 @@ A bicycle-model estimate for the minimum rear-axle turning radius is:
 R_{\min}=\frac{L}{\tan|\delta_{\max}|}.
 ```
 
-For the **165 mm** wheelbase parameter and **38.8°** modeled angle used by both active round configurations, the ideal minimum radius is approximately **205 mm**. This is a derived rear-axle radius, not a measured turning circle or the clearance required by the whole body. The obstacle configuration also applies `blocks.turn_radius_margin = 1.05` when establishing its planning radius. Front overhang, vehicle width, collision margins and speed-dependent tire effects remain relevant.
+For the **165 mm** wheelbase parameter and **38.8°** modeled angle used by both active round configurations, the ideal minimum radius is approximately **205 mm**. This is a derived rear-axle radius, not a measured turning circle or the clearance required by the whole body. The obstacle configuration also applies `blocks.turn_radius_margin = 1.05` when establishing its planning radius. Front overhang, robot width, collision margins and speed-dependent tire effects remain relevant.
 
 ## 7.5 Lap progress and speed control
 
@@ -542,25 +542,25 @@ The Obstacle Challenge adds `RememberedPillar` storage in `FinalTask`. Instead o
 
 In the task's travel-relative lateral convention:
 
-| Sign color | Required vehicle passing side | Planner sign |
+| Sign color | Required robot passing side | Planner sign |
 |---|---|---:|
 | Green | **Left** of the sign | `-1` |
 | Red | **Right** of the sign | `+1` |
 
-This rule is implemented through `SIDE_FOR_COLOR` in [`tasks/final/task.py`](../src/Raspberrypi/tasks/final/task.py). The sign refers to lateral position relative to the vehicle's direction of travel, so left/right remains consistent for clockwise and counter-clockwise routes.
+This rule is implemented through `SIDE_FOR_COLOR` in [`tasks/final/task.py`](../src/Raspberrypi/tasks/final/task.py). The sign refers to lateral position relative to the robot's direction of travel, so left/right remains consistent for clockwise and counter-clockwise routes.
 
 ## 8.5 Goal-pose planning and feasibility
 
-A smooth lateral offset can preserve path continuity while demanding more space than the corridor provides. Legal passing therefore requires checking both the requested position and the vehicle's reachable curvature and body clearance.
+A smooth lateral offset can preserve path continuity while demanding more space than the corridor provides. Legal passing therefore requires checking both the requested position and the robot's reachable curvature and body clearance.
 
-The international-round planner defines **goal poses** beside each obstacle, including orientation. `GoalPlanner` connects those poses with **Dubins paths** that respect a minimum curvature radius. It checks the vehicle's swept footprint along candidate routes against walls, the central island, the traffic signs and parking-bay keep-out geometry.
+The international-round planner defines **goal poses** beside each obstacle, including orientation. `GoalPlanner` connects those poses with **Dubins paths** that respect a minimum curvature radius. It checks the robot's swept footprint along candidate routes against walls, the central island, the traffic signs and parking-bay keep-out geometry.
 
 ```mermaid
 flowchart TD
     A[Localized pose + remembered signs] --> B[Select obstacle goals ahead]
     B --> C[Choose legal passing side]
     C --> D[Generate curvature-bounded Dubins candidates]
-    D --> E[Sweep vehicle body along path]
+    D --> E[Sweep robot body along path]
     E --> F{Clearance feasible?}
     F -->|Yes| G[Accept plan]
     F -->|No| H[Try alternative goal position / heading]
@@ -593,11 +593,11 @@ Collision screening must consider the robot's entire footprint, not only the rea
 | `goals.min_clearance_mm` | 60 mm | Planner's minimum acceptable margin setting |
 | `speed.compromised` | 105 | Speed cap for a compromised plan |
 
-These settings are **requests and limits**, not measured clearances achieved by the robot. The true margin is affected by pose uncertainty, obstacle-range error, vehicle dynamics and path-tracking error.
+These settings are **requests and limits**, not measured clearances achieved by the robot. The true margin is affected by pose uncertainty, obstacle-range error, robot dynamics and path-tracking error.
 
 ## 8.8 Perception/planning edge conditions
 
-The implementation separates several hazards: insufficient localization confidence, a sign mapped inside an impossible wall region, a sign track disappearing before passage, a physically unreachable passing gate, a nearby parking-wall exclusion, a lidar-observed obstruction without a corresponding color observation, and a candidate path requiring more steering curvature than the vehicle model permits. The control loop may slow or replan; it cannot guarantee a safe solution for every randomized arrangement.
+The implementation separates several hazards: insufficient localization confidence, a sign mapped inside an impossible wall region, a sign track disappearing before passage, a physically unreachable passing gate, a nearby parking-wall exclusion, a lidar-observed obstruction without a corresponding color observation, and a candidate path requiring more steering curvature than the robot model permits. The control loop may slow or replan; it cannot guarantee a safe solution for every randomized arrangement.
 
 ## 8.9 Optional Surprise-rule sign interpretation
 
@@ -857,9 +857,9 @@ The steering model includes a first-order response time constant in the round co
 \delta(t)=\delta_{\mathrm{target}}+\bigl(\delta(0)-\delta_{\mathrm{target}}\bigr)e^{-t/\tau}.
 ```
 
-Here `\tau` is the assumed response-time constant. A separate `lag_compensation_s` parameter can help predict where the vehicle will be when the steering response takes effect, but aggressive compensation may increase overshoot.
+Here `\tau` is the assumed response-time constant. A separate `lag_compensation_s` parameter can help predict where the robot will be when the steering response takes effect, but aggressive compensation may increase overshoot.
 
-The relevant physical test is to record **command angle**, **observed wheel angle**, **elapsed time**, **vehicle speed** and **steering direction**. Motor-calibration tests should also distinguish gearbox-output angle from actual rear-wheel travel through the external gear pair and differential.
+The relevant physical test is to record **command angle**, **observed wheel angle**, **elapsed time**, **robot speed** and **steering direction**. Motor-calibration tests should also distinguish gearbox-output angle from actual rear-wheel travel through the external gear pair and differential.
 
 ## 12.4 Fisheye and traffic-sign calibration
 
@@ -908,16 +908,16 @@ Examples recorded in the source include configuration sweeps of wall margin and 
 
 ## 13.4 Physical run recordings
 
-The recordings below show Open and Obstacle Challenge driving, parking and the Surprise-rule scenario. Vehicle configuration and test purpose are identified for each recording.
+The recordings below show Open and Obstacle Challenge driving, parking and the Surprise-rule scenario. Robot configuration and test purpose are identified for each recording.
 
 | Recording | Hardware/test context | Evidence role |
 |---|---|---|
-| [Open Challenge performance](https://youtu.be/SlxmnO9ZnVM) | Current vehicle; standard Open run | Physical route following and stopping behavior |
-| [Open speed test](https://youtu.be/CYVkDdoaMsE) | Latest vehicle; speed test | Additional physical driving example, separate from the performance run |
-| [Obstacle Challenge performance](https://youtu.be/5n_M14UXSpM) | Current vehicle; standard obstacle run | Physical sign navigation and parking sequence |
-| [Obstacle Challenge with Surprise rule](https://youtu.be/SZ7-qe57g4k) | Current vehicle; altered-sign test | Physical example of the team's Surprise-mode scenario |
-| [Obstacle speed test, clockwise](https://youtu.be/MPv1s5uWH2Q) | Vehicle without cover or parking | Obstacle-driving speed test |
-| [Obstacle speed test, counterclockwise](https://youtu.be/YH1zq7tGzv8) | Vehicle without cover or parking | Obstacle-driving speed test in the other direction |
+| [Open Challenge performance](https://youtu.be/SlxmnO9ZnVM) | Current robot; standard Open run | Physical route following and stopping behavior |
+| [Open speed test](https://youtu.be/CYVkDdoaMsE) | Latest robot; speed test | Additional physical driving example, separate from the performance run |
+| [Obstacle Challenge performance](https://youtu.be/5n_M14UXSpM) | Current robot; standard obstacle run | Physical sign navigation and parking sequence |
+| [Obstacle Challenge with Surprise rule](https://youtu.be/SZ7-qe57g4k) | Current robot; altered-sign test | Physical example of the team's Surprise-mode scenario |
+| [Obstacle speed test, clockwise](https://youtu.be/MPv1s5uWH2Q) | Robot without cover or parking | Obstacle-driving speed test |
+| [Obstacle speed test, counterclockwise](https://youtu.be/YH1zq7tGzv8) | Robot without cover or parking | Obstacle-driving speed test in the other direction |
 
 The physical recordings and simulation figures are separate evidence sources. Simulation readouts are not telemetry from the linked videos.
 
@@ -939,11 +939,11 @@ The Raspberry Pi communicates directly with the I²C motor and expansion HATs an
 
 ![Conceptual diagram of LiDAR, IMU and camera responsibilities](../other/Pic/software/legacy_sensor_roles.png)
 
-*Figure S-15. Conceptual sensor responsibilities. The diagram labels its LiDAR as C1; the vehicle uses **RPLIDAR S2L**. The functional roles are geometry, heading and color perception.*
+*Figure S-15. Conceptual sensor responsibilities. The diagram labels its LiDAR as C1; the robot uses **RPLIDAR S2L**. The functional roles are geometry, heading and color perception.*
 
 ## 14.3 Pose-goal planning and clearance
 
-A lateral offset is simple to construct, but tight corners and signs near boundaries can leave insufficient room for the vehicle. `GoalPlanner` formulates legal passing as a **pose-constrained geometric problem**, enumerates curvature-bounded candidates and checks the swept chassis footprint. This requires more computation but provides an explicit compromised-clearance signal when the requested margin is unavailable.
+A lateral offset is simple to construct, but tight corners and signs near boundaries can leave insufficient room for the robot. `GoalPlanner` formulates legal passing as a **pose-constrained geometric problem**, enumerates curvature-bounded candidates and checks the swept chassis footprint. This requires more computation but provides an explicit compromised-clearance signal when the requested margin is unavailable.
 
 ![Conceptual smooth lateral-offset path illustration](../other/Pic/software/legacy_lateral_offset.png)
 
@@ -971,7 +971,7 @@ Simulation is useful for varying corner radius, sign placement and steering resp
 
 ## 15.1 Operating assumptions
 
-The navigation model uses known field geometry, calibrated sensor offsets and a defined vehicle envelope. Planning assumes that the steering and propulsion system can follow the modeled curvature within the available clearance. Physical performance depends on the quality of those assumptions and the sensor observations supplied during each run.
+The navigation model uses known field geometry, calibrated sensor offsets and a defined robot envelope. Planning assumes that the steering and propulsion system can follow the modeled curvature within the available clearance. Physical performance depends on the quality of those assumptions and the sensor observations supplied during each run.
 
 ## 15.2 Localization limits
 
@@ -981,7 +981,7 @@ The map's rotational symmetry creates a real heading ambiguity. A wrong start-he
 
 HSV thresholding depends on illumination and color reproduction. Standard ranging assumes a 100 mm sign. Optional Surprise mode adds shape and LiDAR cues, evidence accumulation and a restricted passing-side inversion, as described in Section 8.9. The configured veto policy can accept shape evidence without a confirming LiDAR cue, so repeated segmentation or perspective errors remain important failure modes. The feature addresses the implemented altered-sign scenario; it does not establish a general solution to all possible object modifications.
 
-## 15.4 Vehicle-model limits
+## 15.4 Robot-model limits
 
 The geometric steering and collision model assumes a wheelbase, effective maximum steering angle, body envelope and finite response time. Tire scrub, axle play, drivetrain slip and steering asymmetry can change the actual trajectory. Both round configurations use a 38.8° maximum modeled road-wheel angle and a 165 mm wheelbase parameter. Their command limits and lookahead settings differ, and model parameters remain distinct from independent physical measurements.
 

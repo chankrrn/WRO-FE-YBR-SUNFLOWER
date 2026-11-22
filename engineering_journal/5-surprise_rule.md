@@ -171,7 +171,7 @@ The source also separates `place_height` from `vote`. For example, LiDAR can sup
 
 **Replanning.** A changed inversion signature triggers route reconsideration. Sign memory retains previously mapped obstacles when a camera view is briefly lost; size changes must update the remembered position instead of leaving a duplicate obstacle behind.
 
-**Decision distance.** The task requests a speed cap near undecided signs and holds a suspect-sign request briefly after unusual evidence. In the published profile, `surprise.slow_speed` is absent, so its fallback is `speed.compromised = 105`. That equals `speed.minimum`; a vehicle already at that request does not slow further. These are controller request values, not metres per second.
+**Decision distance.** The task requests a speed cap near undecided signs and holds a suspect-sign request briefly after unusual evidence. In the published profile, `surprise.slow_speed` is absent, so its fallback is `speed.compromised = 105`. That equals `speed.minimum`; a robot already at that request does not slow further. These are controller request values, not metres per second.
 
 ---
 
@@ -208,7 +208,7 @@ The configured diagnostic path is `logs/surprise_sizer.csv`, relative to `src/Ra
 
 ## 7. Operating procedure
 
-1. Prepare the vehicle and field using the [build guide](4-build.md). Confirm the selected configuration, camera alignment, scan-plane model and physical start control.
+1. Prepare the robot and field using the [build guide](4-build.md). Confirm the selected configuration, camera alignment, scan-plane model and physical start control.
 2. Select standard or Surprise mode during preparation. For an official attempt, follow the declaration and start procedure in the rules.
 3. From `src/Raspberrypi/`, launch the corresponding task:
 
@@ -231,7 +231,7 @@ Omitting `--surprise` preserves the TOML value; it does not forcibly set the fea
 
 ### 8.1 Camera/LiDAR bench checks
 
-Use [test_sign_sizer.py](../src/Raspberrypi/test_sign_sizer.py) to compare known sign placements with the reported cues. Secure the vehicle for a stationary sensor test. The script's `--place`, `--height`, `--side` and `--wall` distances use **centimetres**; `--facing` uses degrees.
+Use [test_sign_sizer.py](../src/Raspberrypi/test_sign_sizer.py) to compare known sign placements with the reported cues. Secure the robot for a stationary sensor test. The script's `--place`, `--height`, `--side` and `--wall` distances use **centimetres**; `--facing` uses degrees.
 
 ```bash
 uv run python test_sign_sizer.py --place 40 --height 10
@@ -294,7 +294,7 @@ The [team's Surprise-mode field recording](https://youtu.be/SZ7-qe57g4k) provide
 
 The source establishes that the mode, height hypotheses, cue policy, tracking, guards and planner integration are implemented. The configuration establishes the selected thresholds. The bench and simulation tools make the hypotheses inspectable. These evidence types answer different questions and should be interpreted together.
 
-The central tradeoff is decision timing versus false inversion: stricter cue agreement and more votes can delay action, while looser conditions increase dependence on calibration and tracking. Sensor alignment, scan height, vehicle speed and route geometry all affect that tradeoff. This connects the extra task to the team's broader systems-engineering decisions rather than treating it as a colour-swap shortcut.
+The central tradeoff is decision timing versus false inversion: stricter cue agreement and more votes can delay action, while looser conditions increase dependence on calibration and tracking. Sensor alignment, scan height, robot speed and route geometry all affect that tradeoff. This connects the extra task to the team's broader systems-engineering decisions rather than treating it as a colour-swap shortcut.
 
 ---
 

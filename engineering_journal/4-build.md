@@ -1031,7 +1031,7 @@ Confirm:
 
 - steering direction
 - motor direction
-- vehicle clearance
+- robot clearance
 - drivetrain stability
 
 

@@ -69,7 +69,7 @@ The engineering objective is repeatable autonomous navigation: estimate the robo
 | Regulation | DFR1202 nominal 5 V branch; DFR1208 nominal 12 V branch |
 | Human interface | Main power switch, start button and battery-voltage display |
 
-Dimensions and masses come from the [mechanical measurement table](1-mech.md#32-reported-vehicle-measurements). Electrical ratings and their conditions belong to [Power and Sensor Architecture](2-elec.md). A component rating, a configured model parameter and a physical measurement describe different quantities.
+Dimensions and masses come from the [mechanical measurement table](1-mech.md#32-reported-robot-measurements). Electrical ratings and their conditions belong to [Power and Sensor Architecture](2-elec.md). A component rating, a configured model parameter and a physical measurement describe different quantities.
 
 ### 2.2 Reading map
 
@@ -101,7 +101,7 @@ flowchart TD
     V --> P
     P --> T["Path tracking and speed selection"]
     T --> A["Drive motor and steering"]
-    A --> M["Vehicle motion"]
+    A --> M["Robot motion"]
     M --> L
     M --> C
     N --> K["Parking-mode handoff"]

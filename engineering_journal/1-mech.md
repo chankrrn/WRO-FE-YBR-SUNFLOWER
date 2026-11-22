@@ -20,7 +20,7 @@
 
 1. [Mechanical design objectives and evidence policy](#1-mechanical-design-objectives-and-evidence-policy)
 2. [Mechanical architecture and development](#2-mechanical-architecture-and-development)
-3. [Mechanical components and vehicle geometry](#3-mechanical-components-and-vehicle-geometry)
+3. [Mechanical components and robot geometry](#3-mechanical-components-and-robot-geometry)
 4. [Chassis and structural layout](#4-chassis-and-structural-layout)
 5. [Drivetrain and external gearing](#5-drivetrain-and-external-gearing)
 6. [Differential, axles and bearings](#6-differential-axles-and-bearings)
@@ -41,7 +41,7 @@
 
 Our robot uses rear-wheel drive and servo-controlled front steering. The design prioritizes controllable motion, a compact chassis, accessible components and a clear LiDAR scan plane.
 
-Dimensions and build details are team-reported. Equations describe ideal behavior under stated assumptions. Supplier ratings are identified separately from vehicle measurements, and unfinished tests are marked as pending.
+Dimensions and build details are team-reported. Equations describe ideal behavior under stated assumptions. Supplier ratings are identified separately from robot measurements, and unfinished tests are marked as pending.
 
 ---
 
@@ -80,7 +80,7 @@ The new layout places surrounding components below the LiDAR scan plane where pr
 
 ---
 
-## 3. Mechanical components and vehicle geometry
+## 3. Mechanical components and robot geometry
 
 ### 3.1 Main components
 
@@ -96,7 +96,7 @@ The new layout places surrounding components below the LiDAR scan plane where pr
 
 Component specifications and quantities are listed in the [build BOM](4-build.md#3-bill-of-materials).
 
-### 3.2 Reported vehicle measurements
+### 3.2 Reported robot measurements
 
 | Quantity | Symbol | Team-reported value |
 |---|---|---|
@@ -157,9 +157,9 @@ Here $\tau_g$ is gearbox-output torque and $\tau_c$ is total carrier torque. For
 v=\frac{2\pi r_w n_c}{60}.
 ```
 
-The 49.5 mm tire diameter gives a nominal radius of **24.75 mm** and circumference of **155.5 mm**. Use measured travel per wheel revolution to calibrate the effective rolling radius $r_w$ under vehicle load.
+The 49.5 mm tire diameter gives a nominal radius of **24.75 mm** and circumference of **155.5 mm**. Use measured travel per wheel revolution to calibrate the effective rolling radius $r_w$ under robot load.
 
-The supplier gearbox-output speeds cited in the electrical journal are 780 rpm no-load and 680 rpm rated. The external ratio converts these to approximately **501 rpm** and **437 rpm** at the carrier. These calculated values are not measured vehicle speeds.
+The supplier gearbox-output speeds cited in the electrical journal are 780 rpm no-load and 680 rpm rated. The external ratio converts these to approximately **501 rpm** and **437 rpm** at the carrier. These calculated values are not measured robot speeds.
 
 ### 5.3 Change from 16:28 to 18:28
 
@@ -218,7 +218,7 @@ Equivalently:
 \cot\delta_{out}-\cot\delta_{in}=\frac{t_f}{L}.
 ```
 
-These are ideal relationships. Measure the assembled linkage to determine actual wheel angles and steering limits. Servo angle is not wheel angle, and body overhang makes the swept vehicle envelope larger than the rear-axle path alone.
+These are ideal relationships. Measure the assembled linkage to determine actual wheel angles and steering limits. Servo angle is not wheel angle, and body overhang makes the swept robot envelope larger than the rear-axle path alone.
 
 ---
 
@@ -418,7 +418,7 @@ V1 steering and encoder calibrations must be checked again after the servo, chas
 | Components, quantities and assembly | [Build guide](4-build.md) |
 | Power, wiring and actuator limits | [Electrical journal](2-elec.md) |
 | Geometry and control configuration | [Software journal](3-software.md) |
-| Robot photographs | [Vehicle photos](../v-photos/) |
+| Robot photographs | [Robot photos](../v-photos/) |
 | Test videos | [Video folder](../video/) |
 
 Use one revision for the final CAD, parts list, configuration and test evidence. The 26 published STL designs are not a complete printed-instance quantity list.
@@ -434,6 +434,6 @@ Use one revision for the final CAD, parts list, configuration and test evidence.
 - [CAD files](../models/CAD/) and [previews](../models/pic/) — printed-part designs.
 - [Software architecture](3-software.md) — motion control and calibration integration.
 
-Vehicle measurements, revision changes and print settings follow the team's supplied draft.
+Robot measurements, revision changes and print settings follow the team's supplied draft.
 
 ---

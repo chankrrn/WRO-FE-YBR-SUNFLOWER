@@ -112,10 +112,10 @@ Our main principle was to design the robot around the LiDAR sensor and aim for a
 
 ## Performance Videos
 
-| Challenge | Status / reference |
+| Challenge | LINK |
 |---|---|
-| Open Challenge | [LINK](https://youtu.be/SlxmnO9ZnVM?si=7TLQcImkOCNDJs5n) |
-| Obstacle Challenge | [LINK](https://youtu.be/5n_M14UXSpM?si=iSTkrHQxrhAiyLdt) |
+| Open Challenge | https://youtu.be/SlxmnO9ZnVM?si=7TLQcImkOCNDJs5n |
+| Obstacle Challenge | https://youtu.be/5n_M14UXSpM?si=iSTkrHQxrhAiyLdt |
 
 Video records: [final challenge video index](video/final.md) and [run-test index](video/runtest.md). 
 

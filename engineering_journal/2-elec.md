@@ -550,7 +550,7 @@ The cooler is documented as a native Pi accessory; it does **not** require an in
 
 ### 14.1 SEN0253 BNO055 + BMP280
 
-The SEN0253 combines the BNO055 accelerometer, gyroscope and magnetometer with a BMP280 pressure/temperature sensor. DFRobot specifies **3.3–5 V**, about **5 mA**, and a Gravity-I²C connector. The module provides fused orientation and environmental readings; the datasheet's accuracy and range statements depend on sensor mode and calibration, and are **not** measured pose accuracy of the vehicle. [R12]
+The SEN0253 combines the BNO055 accelerometer, gyroscope and magnetometer with a BMP280 pressure/temperature sensor. DFRobot specifies **3.3–5 V**, about **5 mA**, and a Gravity-I²C connector. The module provides fused orientation and environmental readings; the datasheet's accuracy and range statements depend on sensor mode and calibration, and are **not** measured pose accuracy of the robot. [R12]
 
 The team's connection uses the DFR0604 IIC `D/C/+/-` terminals with green SDA, blue SCL, red 3.3 V and black GND leads. The BNO055 (`0x28`) and BMP280 (`0x76`) defaults are recorded in Section 11. Magnetic disturbance from the motor, current conductors or nearby ferrous materials can affect magnetometer readings; such effects should not be labeled as tested or eliminated without evidence.
 
@@ -595,11 +595,11 @@ A geometric field-coverage claim requires installed sensor origin, pitch/yaw, sc
 
 ### 15.1 DFR0592 motor and encoder channel assignment
 
-The DFR0592 contains an STM32 I²C controller and TB6612FNG H-bridge stage. In the vehicle circuit, **M1+ / M1−** drive the CHP motor while **E1A / E1B / E1+ / E1−** provide the encoder interface. The motor's 19:1 reduction is **inside the purchased gearbox**; multiplying speed or torque by 19 a second time would be a modeling error. [R5, R7]
+The DFR0592 contains an STM32 I²C controller and TB6612FNG H-bridge stage. In the robot circuit, **M1+ / M1−** drive the CHP motor while **E1A / E1B / E1+ / E1−** provide the encoder interface. The motor's 19:1 reduction is **inside the purchased gearbox**; multiplying speed or torque by 19 a second time would be a modeling error. [R5, R7]
 
 ### 15.2 Motor rated points and torque conversion
 
-Manufacturer/supplier figures at 12 V are **780 rpm no-load**, **680 rpm rated**, **≤550 mA rated current**, **0.40 kgf·cm rated torque**, **≤2.7 A stall current** and **≥2.0 kgf·cm stall torque**. These are not measurements of the installed vehicle.
+Manufacturer/supplier figures at 12 V are **780 rpm no-load**, **680 rpm rated**, **≤550 mA rated current**, **0.40 kgf·cm rated torque**, **≤2.7 A stall current** and **≥2.0 kgf·cm stall torque**. These are not measurements of the installed robot.
 
 Using `1 kgf·cm = 0.0980665 N·m`:
 
@@ -611,7 +611,7 @@ Using `1 kgf·cm = 0.0980665 N·m`:
 \tau_{\mathrm{stall,supplier}} \ge 2.0\times 0.0980665 \approx 0.196\ \mathrm{N\!\cdot\!m}.
 ```
 
-The supplier's rated current upper bound implies a **rated-point electrical input of at most 12 × 0.55 = 6.6 W** under the stated rating conditions; this is not motor shaft output or combined vehicle power. Stall behavior can demand substantially more current and impose a larger load on the TB6612FNG channel. The difference between the motor's stall-current limit and the DFR0592's published current figures is a real design constraint, not a task that can be cleared by a larger buck converter.
+The supplier's rated current upper bound implies a **rated-point electrical input of at most 12 × 0.55 = 6.6 W** under the stated rating conditions; this is not motor shaft output or combined robot power. Stall behavior can demand substantially more current and impose a larger load on the TB6612FNG channel. The difference between the motor's stall-current limit and the DFR0592's published current figures is a real design constraint, not a task that can be cleared by a larger buck converter.
 
 **Software trace:** The existing motor controller uses `GEAR_RATIO = 19`, `ENCODER_PPR = 11`, an effective ×4 phase-edge convention according to its comments, `ENCODER_SIGN = -1`, and `ENCODER_CALIBRATION = 1.0`. Their mathematical nominal combined count is **11 × 4 × 19 = 836 quadrature edge counts per gearbox output revolution** *under that interpretation*. The controller calls a DFR0592 speed-reporting API and applies its own scaling; **836 is not a measured wheel count or direct report of the HAT library output**. The *external* 18T-to-28T gear pair described in the build guide changes wheel rotation relative to gearbox-output rotation, so effective counts per wheel revolution require documenting which shaft the observation represents and validating the scale. [Motor control source](../src/Raspberrypi/classes/motor_manager.py) · [Build gearing](4-build.md#84-assemble-drivetrain).
 
@@ -647,7 +647,7 @@ The supplier's **4.8–6 V** rating and advertised 0.20 s/60° at **6 V** are re
 | Topic | Supported engineering conclusion | What the figure/specification cannot prove |
 |---|---|---|
 | **DFR1208 input headroom** | 15.2 V pack nominal minus 15.0 V minimum input = **0.2 V nominal margin**; battery sag/discharge can remove it | Actual shutdown point or delivered output under out-of-spec input |
-| **Motor-driver current capacity** | DFR0592 documentation contains a 1.2 A continuous/2 A peak statement alongside a 2 A table figure; motor supplier gives ≤2.7 A stall | That the real vehicle stalls, that the driver survives every stall, or the actual channel current |
+| **Motor-driver current capacity** | DFR0592 documentation contains a 1.2 A continuous/2 A peak statement alongside a 2 A table figure; motor supplier gives ≤2.7 A stall | That the real robot stalls, that the driver survives every stall, or the actual channel current |
 | **Servo VP and PWM+** | Servo requires 4.8–6 V; DFR0604 gives PWM+ = 5 V when VP unpowered | Which VP terminal wiring is present on this assembled robot |
 | **USB-C / Pi 5 V** | Official Pi 5 supply recommendation is 5 V/5 A capable; DFR1202 is rated 5 V up to 16 A | That the custom lead identifies as a 5 A source or stays above Pi input limits under load |
 | **Battery switch / connectors** | Switch seller lists AC ratings; installed splitter/contact rating is not established | An equivalent DC interrupt rating or correctly specified crimp/wire capacity |
