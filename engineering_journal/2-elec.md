@@ -32,7 +32,7 @@
 11. [Raspberry Pi, HATs and communication buses](#11-raspberry-pi-hats-and-communication-buses)
 12. [RPLIDAR S2L](#12-rplidar-s2l)
 13. [OV5647 camera and active cooler](#13-ov5647-camera-and-active-cooler)
-14. [SEN0253 IMU and DFR0785-W button](#14-sen0253-imu-and-dfr0785-w-button)
+14. [SEN0253 IMU and DFR0785-R button](#14-sen0253-imu-and-dfr0785-r-button)
 15. [Motor driver, geared motor and encoder](#15-motor-driver-geared-motor-and-encoder)
 16. [Steering-servo interface](#16-steering-servo-interface)
 17. [Electrical reliability and design trade-offs](#17-electrical-reliability-and-design-trade-offs)
@@ -77,7 +77,7 @@ Component ratings are attributed to published specifications; circuit connection
 
 ![Figure E-01 — Modular power architecture, 4S LiHV battery, separate 5 V and 12 V converters, and common PCT-214 ground](../schemes/modular_power_architecture.png)
 
-**Figure E-01.** Modular power architecture. The 4S LiHV battery positive passes through the main rocker switch to the **D1-3 positive distributor**. Battery negative connects directly to the **PCT-214 common-ground distributor**. The DFR1202 and DFR1208 produce separate nominal 5 V and 12 V supply domains. The team measured **5.1 V** at the 5 V converter output and **12.1 V** at the 12 V converter output. The 12 V domain supplies the DFR0592 motor driver, whose **M1** motor output drives the propulsion motor; **E1** supplies and reads the encoder. The 5 V domain powers the Raspberry Pi via USB-C and the LiDAR through its dedicated power lead. This is a functional power diagram; individual connector contacts are documented in Section 10 and Figure E-03.
+*Figure E-01.* Modular power architecture. The 4S LiHV battery positive passes through the main rocker switch to the **D1-3 positive distributor**. Battery negative connects directly to the **PCT-214 common-ground distributor**. The DFR1202 and DFR1208 produce separate nominal 5 V and 12 V supply domains. The team measured **5.1 V** at the 5 V converter output and **12.1 V** at the 12 V converter output. The 12 V domain supplies the DFR0592 motor driver, whose **M1** motor output drives the propulsion motor; **E1** supplies and reads the encoder. The 5 V domain powers the Raspberry Pi via USB-C and the LiDAR through its dedicated power lead. This is a functional power diagram; individual connector contacts are documented in Section 10 and Figure E-03.
 
 The EasyEDA schematic uses `VBAT_RAW` (battery positive before the switch), `VBAT_SW` (switched battery positive), `+5V_REG`, `+12V_REG`, `PI_5V`, `PI_3V3` and `GND`. The Pi's 3.3 V logic supply is not a separate battery converter. Neither the 5 V nor the 12 V converter output is tied to the other's positive output.
 
@@ -85,7 +85,7 @@ The EasyEDA schematic uses `VBAT_RAW` (battery positive before the switch), `VBA
 
 ![Figure E-02 — Raspberry Pi, motor HAT M1/E1, I/O HAT and sensor signal interfaces](../schemes/control_sensor_interfaces.png)
 
-**Figure E-02.** Controller and signal interfaces. The Raspberry Pi 5 exchanges I²C commands with the DFR0592 motor-driver HAT (software-configured address `0x11` on bus 1) and DFR0604 I/O Expansion HAT (`0x10` on bus 1). The DFR0592 **M1/E1** terminals form the propulsion and encoder interface. DFR0604 provides I²C for SEN0253, Digital 16 for the illuminated start button, PWM3 for the steering servo, and UART for the RPLIDAR S2L. The fisheye camera uses the Pi's CSI ribbon interface; the official active cooler uses its dedicated fan header. The drawing illustrates functional connections and power-domain separation rather than assigning custom connector contact numbers.
+*Figure E-02.* Controller and signal interfaces. The Raspberry Pi 5 exchanges I²C commands with the DFR0592 motor-driver HAT (software-configured address `0x11` on bus 1) and DFR0604 I/O Expansion HAT (`0x10` on bus 1). The DFR0592 **M1/E1** terminals form the propulsion and encoder interface. DFR0604 provides I²C for SEN0253, Digital 16 for the illuminated start button, PWM3 for the steering servo, and UART for the RPLIDAR S2L. The fisheye camera uses the Pi's CSI ribbon interface; the official active cooler uses its dedicated fan header. The drawing illustrates functional connections and power-domain separation rather than assigning custom connector contact numbers.
 
 ---
 
@@ -116,7 +116,7 @@ Values in the following tables are **datasheet or supplier ratings**, unless exp
 | **DFR1023 RPLIDAR S2L — 1** | 5 V, **400 mA working**, 40 mA sleep, TTL UART at **1 Mbps**; 360°; about 10 Hz scan; 32 kHz sample rate; up to 18 m on stated white targets; accuracy ±30 mm | 2D ranging/obstacle perception [R10] |
 | **OV5647 5 MP fisheye camera — 1** | OV5647 sensor; seller-advertised 222° lens FoV and 2.1 mm focal length; ribbon-based camera connection | Wide-angle visual perception [R11] |
 | **SEN0253 BNO055 + BMP280 — 1** | 3.3–5 V, approximately 5 mA; Gravity-I²C; BNO055 IMU plus BMP280 pressure/temperature | Orientation and environmental sensing [R12] |
-| **DFR0785-W LED pushbutton — 1** | 3.3–5 V, **3.3 V recommended**; PH2.0 three-pin digital output; pressed state reported HIGH in vendor example | Human/start control [R13] |
+| **DFR0785-R LED pushbutton — 1** | 3.3–5 V, **3.3 V recommended**; PH2.0 three-pin digital output; pressed state reported HIGH in vendor example | Human/start control [R13] |
 | **0–30 V mini voltmeter — 1** | 3.5–30 V supply, 0–30 V measurement range, <20 mA specified; approximately 0.7% seller accuracy | Observes switched battery voltage [R14] |
 
 **FoV clarification:** 222° is a **seller-stated lens specification**, not a measured usable field of view on the team's Pi 5 and not a calibrated mapping from pixels to bearings. The camera's software calibration belongs to the software journal; the electrical chapter documents only the CSI attachment and hardware interface.
@@ -254,7 +254,7 @@ P_k=V_k I_k,\qquad P_{\mathrm{branch}}=\sum_k P_k.
 | RPLIDAR S2L | 5.0 V | 0.400 A | **2.00 W** | DFRobot published **working** current |
 | DFR0592 + DFR0604 HAT logic | 5.0 V | 0.120 A | **0.600 W** | **Assumed** electronic-logic demand |
 | S0017M steering servo (normal scenario) | 5.0 V | 0.150 A | **0.750 W** | **Assumed** representative no-load point; valid as a 5 V rail allocation **only if external VP is unpowered** |
-| DFR0785-W button | 3.3 V | 0.020 A | **0.066 W** | **Assumed** illuminated-button consumption |
+| DFR0785-R button | 3.3 V | 0.020 A | **0.066 W** | **Assumed** illuminated-button consumption |
 | SEN0253 IMU | 3.3 V | 0.005 A | **0.0165 W** | DFRobot published operating current |
 | CHP-20GP-180 motor (rated-current upper bound) | 12.0 V | ≤0.550 A | **≤6.60 W** | Supplier upper bound at rated condition, **not a measured running demand** |
 | Mini voltmeter | 15.2 V switched battery | 0.015 A | **0.228 W** | **Assumed** consumption; direct pack branch |
@@ -316,13 +316,13 @@ The four embedded MATLAB graphics support complementary engineering questions: c
 
 ![MATLAB Figure 01 — Electrical load budget](../engineering_journal/matlab/visualization/01_assumed_load_budget.png)
 
-**MATLAB Figure 01.** Calculated load allocations based on manufacturer/supplier operating points and clearly identified design assumptions. The CHP-20GP-180 motor is represented at its supplier's rated-current bound, not at a measured driving current. The calculated output-power allocations are **13.4325 W on the nominal 5 V branch** (including downstream 3.3 V subloads) and **6.60 W for the 12 V motor branch**. With illustrative 90% converter efficiencies, the model gives approximately **22.49 W** and **1.48 A** at a nominal 15.2 V battery voltage. The output voltage readings in Section 6.4 are independent of this model. [MATLAB source](../engineering_journal/matlab/figures/figure01_electrical_load_budget.m).
+*MATLAB Figure 01.* Calculated load allocations based on manufacturer/supplier operating points and clearly identified design assumptions. The CHP-20GP-180 motor is represented at its supplier's rated-current bound, not at a measured driving current. The calculated output-power allocations are **13.4325 W on the nominal 5 V branch** (including downstream 3.3 V subloads) and **6.60 W for the 12 V motor branch**. With illustrative 90% converter efficiencies, the model gives approximately **22.49 W** and **1.48 A** at a nominal 15.2 V battery voltage. The output voltage readings in Section 6.4 are independent of this model. [MATLAB source](../engineering_journal/matlab/figures/figure01_electrical_load_budget.m).
 
 ### 8.2 MATLAB Figure 02 — Converter input-range screening
 
 ![MATLAB Figure 02 — Published converter input ranges](../engineering_journal/matlab/visualization/02_input_range_screen.png)
 
-**MATLAB Figure 02.** Manufacturer input ranges: DFR1202 **6–24 V** and DFR1208 **15–24 V**. The 4S LiHV battery is **15.2 V nominal**; **17.4 V** is a full-charge chemistry reference based on 4 × 4.35 V/cell. The DFR1208's nominal input headroom is only **0.20 V**. This is a compatibility screen, not a measurement of converter regulation; the sweep's lower plotting bound is not a battery cutoff. [MATLAB source](../engineering_journal/matlab/figures/figure02_converter_input_range.m).
+*MATLAB Figure 02.* Manufacturer input ranges: DFR1202 **6–24 V** and DFR1208 **15–24 V**. The 4S LiHV battery is **15.2 V nominal**; **17.4 V** is a full-charge chemistry reference based on 4 × 4.35 V/cell. The DFR1208's nominal input headroom is only **0.20 V**. This is a compatibility screen, not a measurement of converter regulation; the sweep's lower plotting bound is not a battery cutoff. [MATLAB source](../engineering_journal/matlab/figures/figure02_converter_input_range.m).
 
 ### 8.3 MATLAB Figure 07 — Simulated DFR1208 input headroom
 
@@ -335,13 +335,13 @@ M_{12}(t)=V_{\mathrm{terminal}}(t)-15\ \mathrm{V}.
 
 ![MATLAB Figure 07 — Illustrative DFR1208 input margin](../engineering_journal/matlab/visualization/07_12v_input_headroom.png)
 
-**MATLAB Figure 07.** The synthetic examples reach the DFR1208's published **15 V input minimum** at approximately **61.5 min (light)**, **28.0 min (planning)** and **16.6 min (heavy)**. These are neither measured battery endurance nor predicted usable robot runtime. Dotted portions show mathematical extrapolation below the published regulator input limit. [MATLAB source](../engineering_journal/matlab/figures/figure07_12v_input_headroom.m).
+*MATLAB Figure 07.* The synthetic examples reach the DFR1208's published **15 V input minimum** at approximately **61.5 min (light)**, **28.0 min (planning)** and **16.6 min (heavy)**. These are neither measured battery endurance nor predicted usable robot runtime. Dotted portions show mathematical extrapolation below the published regulator input limit. [MATLAB source](../engineering_journal/matlab/figures/figure07_12v_input_headroom.m).
 
 ### 8.4 MATLAB Figure 08 — 5 V USB-C path and load-step sensitivity
 
 ![MATLAB Figure 08 — Illustrative Raspberry Pi power-path voltage drop](../engineering_journal/matlab/visualization/08_transient_timeline.png)
 
-**MATLAB Figure 08.** A resistive wiring sensitivity analysis for a hypothetical 5.00 V supply, not a recorded oscilloscope trace or switching-converter transient model. The assumed source voltage is intentionally separate from the **5.1 V converter output reading**. The LiDAR is supplied by its own 5 V branch and is not counted in the Pi USB-C cable current:
+*MATLAB Figure 08.* A resistive wiring sensitivity analysis for a hypothetical 5.00 V supply, not a recorded oscilloscope trace or switching-converter transient model. The assumed source voltage is intentionally separate from the **5.1 V converter output reading**. The LiDAR is supplied by its own 5 V branch and is not counted in the Pi USB-C cable current:
 
 ```math
 V_{\mathrm{Pi}}(t)=5.00\ \mathrm{V}-I_{\mathrm{USB}}(t)
@@ -376,15 +376,15 @@ To reproduce a plot, execute its full `.m` program in MATLAB and use the generat
 
 The electrical schematic uses commercial-module symbols and named nets to document power distribution, controller interfaces and peripheral connections. It is a **module-level schematic**, not the internal design of a custom printed circuit board.
 
-**Figure E-03A — Sheet 1/3: Power Distribution**
+*Figure E-03A — Sheet 1/3: Power Distribution*
 
 ![E-03A — Power Distribution schematic](../schemes/power_distribution.svg)
 
-**Figure E-03B — Sheet 2/3: Main Controller and HAT Interfaces**
+*Figure E-03B — Sheet 2/3: Main Controller and HAT Interfaces*
 
 ![E-03B — Main Controller and HAT Interfaces schematic](../schemes/main_controller_hat_interfaces.svg)
 
-**Figure E-03C — Sheet 3/3: Sensors, Motor and Steering**
+*Figure E-03C — Sheet 3/3: Sensors, Motor and Steering*
 
 ![E-03C — Sensors, Motor and Steering schematic](../schemes/sensors_motor_steering.svg)
 
@@ -396,7 +396,7 @@ The electrical schematic uses commercial-module symbols and named nets to docume
 
 ![E-04 — Physical module connections and power wiring](../schemes/wiring_diagram.png)
 
-**Figure E-04.** Wiring illustration of the assembled modular electrical system, including power, motor and encoder groups, I²C, UART and servo connections. The DFR0592 propulsion harness uses **M1/E1** and the battery ground distributor is **PCT-214**. The detailed terminal and conductor functions are recorded in Section 10, while the schematic in Figure E-03 supplies the named electrical nets.
+*Figure E-04.* Wiring illustration of the assembled modular electrical system, including power, motor and encoder groups, I²C, UART and servo connections. The DFR0592 propulsion harness uses **M1/E1** and the battery ground distributor is **PCT-214**. The detailed terminal and conductor functions are recorded in Section 10, while the schematic in Figure E-03 supplies the named electrical nets.
 
 ### 9.3 Constructed-robot electrical assembly
 
@@ -456,9 +456,9 @@ The HAT motor outputs are controlled over I²C; the software channel selection a
 | `IIC C` | SEN0253 `SCL` | Blue | `I2C_SCL` |
 | `IIC +` | SEN0253 `VCC` | Red | `PI_3V3` |
 | `IIC −` | SEN0253 `GND` | Black | `GND` |
-| `Digital 16 D` | DFR0785-W `D` | Green | `BTN_D16` / GPIO16 |
-| `Digital 16 +` | DFR0785-W `+` | Red | `PI_3V3` |
-| `Digital 16 −` | DFR0785-W `−` | Black | `GND` |
+| `Digital 16 D` | DFR0785-R `D` | Green | `BTN_D16` / GPIO16 |
+| `Digital 16 +` | DFR0785-R `+` | Red | `PI_3V3` |
+| `Digital 16 −` | DFR0785-R `−` | Black | `GND` |
 | `PWM3 P` | S0017M PWM/signal | White | `PWM_STEER` |
 | `PWM3 +` | S0017M positive | Red | `SERVO_V+` |
 | `PWM3 −` | S0017M ground | Black | `GND` |
@@ -546,7 +546,7 @@ The cooler is documented as a native Pi accessory; it does **not** require an in
 
 ---
 
-## 14. SEN0253 IMU and DFR0785-W button
+## 14. SEN0253 IMU and DFR0785-R button
 
 ### 14.1 SEN0253 BNO055 + BMP280
 
@@ -556,9 +556,9 @@ The team's connection uses the DFR0604 IIC `D/C/+/-` terminals with green SDA, b
 
 **Software configuration:** [`compass_manager.py`](../src/Raspberrypi/classes/compass_manager.py) sets `USE_MAGNETOMETER = False` and selects the BNO055 **IMUPLUS** fusion mode (gyroscope and accelerometer). This avoids reliance on a magnetometer susceptible to nearby motor/metal magnetic fields, but does not prove heading accuracy or eliminate gyro drift. The actual mounting-frame and calibration procedure remain team-specific.
 
-### 14.2 DFR0785-W illuminated button
+### 14.2 DFR0785-R illuminated button
 
-The DFR0785-W is a **digital-output, illuminated pushbutton** using a three-pin PH2.0 interface. DFRobot specifies **3.3–5 V** and recommends **3.3 V**. The team's Digital 16 connection is signal **D** (green), positive **+** (red) and ground **−** (black), mapped to `BTN_D16`, `PI_3V3` and `GND`. [R13]
+The DFR0785-R is a **digital-output, illuminated pushbutton** using a three-pin PH2.0 interface. DFRobot specifies **3.3–5 V** and recommends **3.3 V**. The team's Digital 16 connection is signal **D** (green), positive **+** (red) and ground **−** (black), mapped to `BTN_D16`, `PI_3V3` and `GND`. [R13]
 
 The button is part of the human/start interface; its software debounce, start-state logic and competition behavior belong to the software journal.
 
@@ -762,7 +762,7 @@ Reproducibility depends on preserving both the schematic's named electrical nets
 - **[R10]** [DFR1023 RPLIDAR S2L — manufacturer/distributor specifications](https://www.dfrobot.com/product-2617.html).
 - **[R11]** [OV5647 fisheye camera — vendor lens/FoV listing](https://www.amazon.com/dp/B07JPXBF3X).
 - **[R12]** [DFRobot SEN0253 BNO055 + BMP280 IMU](https://wiki.dfrobot.com/sen0253/).
-- **[R13]** [DFRobot DFR0785-W LED button](https://www.dfrobot.com/product-2362.html).
+- **[R13]** [DFRobot DFR0785-R LED button](https://www.dfrobot.com/product-2363.html).
 - **[R14]** [0–30 V mini OLED voltmeter supplier manual](https://manuals.plus/m/ab6837e825d941ff9cac34b823e7b44b2a35dc1b08c44d02f8004d9824bb13e7).
 - **[R15]** [KCD5-101 rocker switch supplier specification](https://www.chinadaier.com/kcd5-101-small-black-on-off-rocker-switch/).
 - **[R16]** [D1-3 positive splitter supplier listing](https://garmade.com/products/5pcs-d1-3-push-type-mini-wire-connection-splitter-quick-connect-terminal-blockorange).

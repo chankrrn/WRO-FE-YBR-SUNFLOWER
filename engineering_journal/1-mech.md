@@ -117,7 +117,7 @@ Component specifications and quantities are listed in the [build BOM](4-build.md
 
 ![Figure M-01 — Main base CAD preview](../models/pic/Base_p.PNG)
 
-**Figure M-01.** The main base supports the Pi and lower assemblies, the electrical plate holds the converters and wiring, and the top plate carries the LiDAR and controls.
+*Figure M-01. The main base supports the Pi and lower assemblies, the electrical plate holds the converters and wiring, and the top plate carries the LiDAR and controls.*
 
 Separate printed plates allow individual components to be replaced or redesigned. Spacers provide board clearance and access, while rigid joints help preserve sensor alignment.
 
@@ -192,7 +192,8 @@ The motor bracket must maintain gear alignment. Tight mesh, binding bearings or 
   <img src="../other/Pic/Ackermann_Geometry.png" width="650" alt="Ackermann steering geometry showing a common turning center and different inner and outer wheel angles">
 </p>
 
-**Figure M-02.** The inside front wheel follows a tighter radius and needs a larger steering angle than the outside wheel. Ackermann geometry aligns the wheel-plane normals toward a common turning center to reduce tire scrub.
+
+*Figure M-02. The inside front wheel follows a tighter radius and needs a larger steering angle than the outside wheel. Ackermann geometry aligns the wheel-plane normals toward a common turning center to reduce tire scrub.*
 
 The figure's $L_F$ and $S_{RV}$ correspond to our wheelbase $L$ and front track $t_f$. Our $R$ is measured to the rear-axle midpoint and differs from the figure's $R_0$.
 

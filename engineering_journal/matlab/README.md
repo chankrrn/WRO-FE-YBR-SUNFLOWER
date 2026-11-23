@@ -250,6 +250,8 @@ The model uses the shared inventory in Section 4. It assumes the servo is on the
 
 ![Figure 01 — Calculated electrical load budget](visualization/01_assumed_load_budget.png)
 
+*Figure 01 — Calculated electrical load budget*
+
 The Pi group and motor dominate this allocation. The high-servo result is printed in the summary; it is not a measured peak or a simultaneous worst-case motor-and-servo load test. The motor uses its rated-current bound, so this model does not establish starting-current, stall, protection, or wire-current margins.
 
 **Journal integration:** use the branch powers and evidence labels in electrical-journal **Sections 7.1 and 8.1**. If a load estimate is replaced by a measurement, record its operating condition and propagate the change to Models 03 and 05–07.
@@ -282,6 +284,8 @@ DFR1202 uses **6–24 V**; DFR1208 uses **15–24 V**. The default sweep is **13
 | DFR1208 at the illustrative 17.4 V reference | +2.40 V |
 
 ![Figure 02 — Published converter input ranges and calculated margins](visualization/02_input_range_screen.png)
+
+*Figure 02 — Published converter input ranges and calculated margins.*
 
 This result establishes a small nominal margin for the selected 12 V converter. It does not simulate the converter's output, switching behavior, dropout curve, or failure time. A voltage below 15 V is outside the stated input range; it does not mean the real output necessarily becomes zero immediately.
 
@@ -316,6 +320,8 @@ The current curves are filled only where both converters satisfy their input-vol
 | 17.4 V reference | 1.2942 A | 1.6295 A |
 
 ![Figure 03 — Calculated battery-side current for two demand scenarios](visualization/03_estimated_input_current.png)
+
+*Figure 03 — Calculated battery-side current for two demand scenarios.*
 
 Current rises as voltage falls because the regulated-load power is held constant. These battery currents are different from the currents on the 5 V or 12 V branches. The model does not resolve cable loss, switching ripple, thermal effects, or changing efficiency.
 
@@ -359,6 +365,8 @@ V_{\mathrm{OC}}(s)=4\,\mathrm{PCHIP}\bigl(s;\{s_i,V_{\mathrm{cell},i}\}\bigr).
 4. If measured OCV data become available, document the measurement conditions before replacing the knots. Copy the same revised knots and interpolation method into Models 05–07.
 
 ![Figure 04 — Illustrative and unmeasured battery OCV versus SOC](visualization/04_assumed_voltage_vs_soc.png)
+
+*Figure 04 — Illustrative and unmeasured battery OCV versus SOC.*
 
 The output is a continuous assumption curve, not a fitted electrochemical model. Temperature, aging, cell imbalance, hysteresis, relaxation, and dynamic polarization are not represented. Nameplate energy does not establish usable energy or competition runtime.
 
@@ -427,6 +435,8 @@ The crossing is found from the first sample below 15 V, with linear interpolatio
 
 ![Figure 05 — Simulated battery terminal voltage for three assumed loads](visualization/05_voltage_vs_time_scenarios.png)
 
+*Figure 05 — Simulated battery terminal voltage for three assumed loads.*
+
 The simulation stops at its demonstration endpoint, zero hypothetical SOC, maximum horizon, or an infeasible quadratic (`D < 0`). Continuing the equations below 15 V is an illustrative extrapolation: actual DFR1208 output and resulting load behavior are not modeled there. These times are **not measured endurance or predicted usable robot runtime**.
 
 **Journal integration:** use the scenario trend and assumptions to support **Section 8.3**, and use **Section 7.3** to explain why capacity alone does not determine useful operation. Do not present the 28.03-minute planning result as a competition-runtime claim.
@@ -451,6 +461,8 @@ SOC_{\%}(t)=100s(t),\qquad I(t)=\frac{P}{V(t)}+I_{\mathrm{meter}}.
 4. If a scenario is changed, update Models 05 and 07 as well. The default crossing times remain **61.52 / 28.03 / 16.64 min**, as in Model 05.
 
 ![Figure 06 — Simulated SOC and battery current under the same three scenarios](visualization/06_soc_and_current.png)
+
+*Figure 06 — Simulated SOC and battery current under the same three scenarios.*
 
 The upper panel shows charge depletion; the lower panel shows increasing current as voltage falls under constant-power demand. Solid portions satisfy the model's 15 V lower-input comparison. Dotted portions continue below that limit and do not establish converter operation. SOC here is an integrated model state, not a battery-gauge reading.
 
@@ -481,6 +493,8 @@ The physical-model parameters are those in Section 9. `p.converter12MinInputV = 
 4. When exploring a different battery or converter, revise the corresponding input limits, assertions, labels, and related scripts together.
 
 ![Figure 07 — Simulated input headroom above the DFR1208 minimum](visualization/07_12v_input_headroom.png)
+
+*Figure 07 — Simulated input headroom above the DFR1208 minimum.*
 
 Positive margin means the modeled input is above the lower published limit; it does not prove output regulation. Negative margin identifies a condition outside that range. The actual time at which the installed robot reaches it requires measured voltage and load data.
 
@@ -537,6 +551,8 @@ These are assumed effective round-trip/path resistances. In the implemented equa
 4. Change one resistance or load assumption at a time. Keep a record of whether the new input is assumed or measured, and verify that the current paths still match the installed architecture.
 
 ![Figure 08 — Resistive voltage sensitivity to assumed Pi and servo load steps](visualization/08_transient_timeline.png)
+
+*Figure 08 — Resistive voltage sensitivity to assumed Pi and servo load steps.*
 
 The plot uses **4.80 V** as a design comparison and **4.63 V** as a nominal warning reference. Raspberry Pi's published low-voltage reference includes **±5%** tolerance; these horizontal lines are not exact measured trip thresholds or universal pass/fail tests for the assembled car.
 
