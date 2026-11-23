@@ -57,6 +57,14 @@ The colour observation remains meaningful even when the planner uses the opposit
 
 A false modified-sign classification can be as consequential as missing the real one. The design therefore combines restricted shape bands, range consistency, repeated observations and round-level eligibility rules. These controls reduce specific failure mechanisms; their existence does not establish a numerical reliability level.
 
+### Red Sign Height Examples
+
+| 50 mm-High Red Traffic Sign | 150 mm-High Red Traffic Sign |
+|---------|---------|
+| <img src="[smallRed.gif](https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/1070e9187c8ab7e5ea2eea4d55eec6ce940422a6/other/Pic/smallRed.gif)" width="500"> | <img src="[tallRed](https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/1070e9187c8ab7e5ea2eea4d55eec6ce940422a6/other/Pic/tallRed.gif)" width="500"> | 
+
+Both examples demonstrate the robot detecting a red sign and following the same avoidance route despite the difference in sign height.
+
 ---
 
 ## 3. Implementation and information flow
