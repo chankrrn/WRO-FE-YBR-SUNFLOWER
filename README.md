@@ -70,7 +70,7 @@ All team members contribute to the engineering process through collaborative des
 <p align="center">
   <img
     width="700"
-    src="https://raw.githubusercontent.com/chankrrn/WRO-FE-YBR-SUNFLOWER/3c319877e44c8f5ad0b08bd5b7b633f4c2886020/v-photos/GIF/G02.gif"
+    src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/c3e9ee7ff5749792102a03fd4b35f728a893fad8/v-photos/GIF/G02.gif"
     alt="Sunflower robot GIF"
   />
 </p>
