@@ -67,7 +67,13 @@ All team members contribute to the engineering process through collaborative des
 
 ## Our Robot
 
-<img width="600" src="-">
+<p align="center">
+  <img
+    width="700"
+    src="https://raw.githubusercontent.com/chankrrn/WRO-FE-YBR-SUNFLOWER/3c319877e44c8f5ad0b08bd5b7b633f4c2886020/v-photos/GIF/G02.gif"
+    alt="Sunflower robot GIF"
+  />
+</p>
 
 Our robot combines a Raspberry Pi computer, range and vision sensors, a geared drive motor with encoder feedback, and servo-controlled steering. The computer processes observations and coordinates the car's motion through the onboard software and electrical interfaces. Full component specifications, circuit diagrams, pin assignments, mechanical dimensions, tuning parameters, and available validation results are recorded in the engineering journals.
 

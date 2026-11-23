@@ -3,7 +3,10 @@
 **WRO 2026 Future Engineers · Yothinburana School · Thailand**
 
 <p align="center">
-  <img src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/bc7c06c8bca579779e353aa9561bc4aec4f2fe46/v-photos/Ver2_(Current)/photoshoot1.jpg" width="700" >
+  <img
+    width="700"
+    src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/3c319877e44c8f5ad0b08bd5b7b633f4c2886020/v-photos/GIF/G01.gif"
+  />
 </p>
 
 *The second-generation YBR-SUNFLOWER robot. The mechanical journal identifies the development sequence as V2.1–V2.4; “Version 2.0” denotes this robot family.*

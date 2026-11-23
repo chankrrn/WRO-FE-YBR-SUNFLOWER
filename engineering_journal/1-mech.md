@@ -2,6 +2,13 @@
 
 > **Current robot:** V2.4, developed through the V2.1–V2.4 overhaul. V1.1–V1.3 describe the first generation.
 
+<p align="center">
+  <img
+    width="700"
+    src="https://raw.githubusercontent.com/chankrrn/WRO-FE-YBR-SUNFLOWER/3c319877e44c8f5ad0b08bd5b7b633f4c2886020/v-photos/GIF/G02.gif"
+  />
+</p>
+
 ---
 
 [← Project README](../README.md) 
