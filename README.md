@@ -12,6 +12,12 @@
 
 ---
 
+## Summary Video
+
+[![Summary Video](https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/b426dec107f923e87f36bd1be1556bc1951f89f1/other/Pic/Thumbnail.PNG)](https://youtu.be/jpLe8aEb0Hc?si=lhUIN5FycaKAekj2)
+
+---
+
 ## Project at a Glance
 
 YBR-SUNFLOWER is developing a self-driving robotic car for the **World Robot Olympiad (WRO) 2026 Future Engineers** category. The robot is designed to navigate an unfamiliar track autonomously, interpret its surroundings, steer around traffic signs, and perform the required maneuvers using onboard computation and sensors. Our engineering work brings together mechanical design, electrical integration, perception, planning, control, and practical testing.
