@@ -36,7 +36,7 @@ sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_camera 0 2>/dev/null || true
 
 echo "==> 3/6  Device permissions"
-# dialout: /dev/ttyACM0 (Arduino UNO R4) and /dev/ttyUSB0 (RPLidar C1)
+# dialout:  /dev/ttyUSB0 (RPLidar S2L)
 # i2c/gpio/video: expansion board, GPIO, camera
 sudo usermod -aG dialout,i2c,gpio,spi,video,render "$USER"
 
@@ -69,6 +69,6 @@ echo
 echo " After the reboot, check the install with:"
 echo "     cd $(pwd)"
 echo "     i2cdetect -y 1              # expansion board + BNO055 should appear"
-echo "     ls /dev/ttyACM0 /dev/ttyUSB0  # Arduino + lidar"
+echo "     ls /dev/ttyACM0 /dev/ttyUSB0  # lidar"
 echo "     uv run python main.py qualification --dry-run"
 echo "=============================================="
