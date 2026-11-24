@@ -31,7 +31,7 @@ This repository shares the robot's design, source code, calculations, simulation
 | Robot | Four-wheeled autonomous car with controlled steering and driven wheels |
 | Main controller | Raspberry Pi 5 (8 GB) |
 | Perception | LiDAR and fisheye camera |
-| Current stage | International-final robot revision in development; final assembly and validation completed |
+| Current stage | International-final robot completed; final assembly and validation completed |
 | Engineering modeling | Offline MATLAB electrical-system calculations and simulations, with published source code and figures |
 
 ---
@@ -178,7 +178,7 @@ Two representative results are illustrated below. Their full assumptions, calcul
 
 ### Reproducing the analyses
 
-1. Open any `.m` file in [`	engineering_journal/matlab/figures/`](	engineering_journal/matlab/figures/). The scripts specify **base MATLAB R2020a or newer** as their intended execution environment.
+1. Open any `.m` file in [`engineering_journal/matlab/figures/`](	engineering_journal/matlab/figures/). The scripts specify **base MATLAB R2020a or newer** as their intended execution environment.
 2. Review the parameters and source-status comments near the beginning of the script. Separate manufacturer specifications from scenario assumptions before changing a value.
 3. Run the **complete script**. Each script is written as a standalone analysis and exports a PNG to its local `results/` directory; the versions of the figures selected for publication are stored in [`engineering_journal/matlab/visualization/`](engineering_journal/matlab/visualization/).
 4. Compare the output with the figure and the interpretation in the electrical journal. Re-running a script verifies model execution and numerical behavior under its assumptions; it does not establish physical accuracy.
@@ -223,7 +223,7 @@ Our team has used generative AI tools in **documentation and offline engineering
 
 The **onboard competition robot runs Raspberry Pi/Python software** for sensing, navigation, planning, and control. The published MATLAB scripts are **offline calculations and simulations**, not onboard control programs. AI-generated text, analysis, or code does not independently validate hardware performance or constitute a successful competition run.
 
-The introductory segment of our project-explanation video also uses **AI-cloned voice narration prepared by a team member**; this is a presentation element, not part of autonomous robot operation. The project video remains in production.
+The introductory segment of our project-explanation video also uses **AI-cloned voice narration prepared by a team member**; this is a presentation element, not part of autonomous robot operation.
 
 The team retains responsibility for the design decisions, published code, technical claims, testing, and verification. AI-assisted material should be reviewed against source code, component specifications, and physical observations before being relied upon as engineering evidence.
 

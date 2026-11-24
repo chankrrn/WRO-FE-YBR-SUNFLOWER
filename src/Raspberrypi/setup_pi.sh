@@ -7,7 +7,7 @@
 # with git already, so this works on a clean flash; if `git --version` errors,
 # `sudo apt update && sudo apt install -y git` first.
 #
-#     git clone https://github.com/chankrrn/WRO-FE-YBR.git
+#     git clone https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER.git
 #     cd WRO-FE-YBR/src/Raspberrypi
 #     bash setup_pi.sh
 #

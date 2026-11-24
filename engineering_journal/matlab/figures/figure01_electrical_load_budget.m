@@ -206,16 +206,6 @@ save(inputPath, ...
     'power12OutputW', 'powerBatteryApproxW', 'batteryCurrentApproxA');
 fprintf('SAVED INPUTS: %s\n', inputPath);
 
-sourceDir=fileparts(mfilename('fullpath'));
-if isempty(sourceDir), sourceDir=pwd; end
-outDir=fullfile(sourceDir,'results');
-if ~exist(outDir,'dir'), mkdir(outDir); end
-figurePath=fullfile(outDir,'01_assumed_load_budget.png');
-exportgraphics(fig,figurePath,'Resolution',240,'BackgroundColor','white');
-save(fullfile(outDir,'simulation_inputs.mat'),'inputs','items', ...
-    'powerW','power5OutputW','power12OutputW', ...
-    'powerBatteryApproxW','batteryCurrentApproxA');
-
 fprintf('\nYBR-SUNFLOWER | FIGURE 01/08 | ELECTRICAL LOAD BUDGET\n');
 fprintf('Evidence: supplier figures + explicit design assumptions; not measured.\n');
 fprintf('5 V branch including idealized 3.3 V subload: %.3f W\n',power5OutputW);

@@ -12,6 +12,8 @@
 
 [← Build and Reproduction Guide](4-build.md)
 
+[← MATLAB Electrical Modeling Guide](matlab/README.md)
+
 This guide connects the official extra task to the team's implemented perception and planning logic. Configuration values describe software settings; the test procedures describe how to evaluate them. They are not measured success rates.
 
 ---
@@ -64,7 +66,7 @@ A false modified-sign classification can be as consequential as missing the real
 | <img src="https://raw.githubusercontent.com/chankrrn/WRO-FE-YBR-SUNFLOWER/1070e9187c8ab7e5ea2eea4d55eec6ce940422a6/other/Pic/smallRed.gif" width="500"> | <img src="https://raw.githubusercontent.com/chankrrn/WRO-FE-YBR-SUNFLOWER/1070e9187c8ab7e5ea2eea4d55eec6ce940422a6/other/Pic/tallRed.gif" width="500"> |
 
 
-Both examples demonstrate the robot detecting a red sign and following the same avoidance route by passing it on the left, despite the difference in sign height.
+Both examples demonstrate the robot detecting a red sign and following the same avoidance route by passing it on the left, despite the difference in sign height. A modified sign follows its original colour, so a visible red modified sign is passed on the left. Otherwise it reads as if height is ignored.
 
 ---
 

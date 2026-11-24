@@ -24,6 +24,10 @@ This document explains **how to reproduce the final robot**.
 
 [← Software Architecture and Obstacle Strategy](3-software.md)
 
+[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](5-surprise_rule.md)
+
+[← MATLAB Electrical Modeling Guide](matlab/README.md)
+
 ---
 
 # Contents
@@ -406,23 +410,23 @@ PCT-214
 <img src="../other/Pic/Build/03.png" height="660" /> 
 
 
-Soder the XT60H-M to a 14AWG wire and soder the positive wire to the power switch and use a shrinking tube to short circuit.
+Solder the XT60H-M to a 14AWG wire and solder the positive wire to the power switch and use a shrinking tube to short circuit.
 
 
-## 6.3 Soder the Buck converter
+## 6.3 Solder the Buck converter
 
 <img src="../other/Pic/Build/04.png" height="660" />
 
-Soder the 12V buck to a one output to the DC Motor Driver HAT.
+Solder the 12V buck to a one output to the DC Motor Driver HAT.
 
-Soder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR).
+Solder the 5V buck to a USB-C 2P(Pi 5) and Mae JST 2-P(LiDAR).
 
 
 ## 6.4 OLED Voltmeter
 
 <img src="../other/Pic/Build/05.png" height="660" />
 
-Soder the positive wire to the **V** and **V+** and the negative to the **G**.
+Solder the positive wire to the **V** and **V+** and the negative to the **G**.
 
 
 ## 6.5 Ground Distribution
@@ -459,15 +463,15 @@ Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in
    
    <img src="../other/Pic/Motor Port.png" height="300" />
 
-4. Connect Steering Servo
+3. Connect Steering Servo
    
        PWM 3
 
-5. Connect Start Button
+4. Connect Start Button
 
        Digital 16
 
-6. Connect RPLiDAR S2l
+5. Connect RPLiDAR S2L
 
        UART
 
@@ -589,7 +593,7 @@ Sensor-placement reasoning is documented in:
 
 
 
-## 8.1 Assemble Steerng System
+## 8.1 Assemble Steering System
 
    <img src="../other/Pic/Build/07.png" height="660" />
    <img src="../other/Pic/Build/08.png" height="660" />       
@@ -892,7 +896,7 @@ Do not immediately run the full autonomous challenge. Instead, test the system s
 - [ ] no undervoltage / reset behavior during idle operation
 
 
-## 11.3 Stage 2 — Steering Test
+## 11.2 Stage 2 — Steering Test
 
 With drive wheels off the ground:
 
@@ -905,7 +909,7 @@ With drive wheels off the ground:
 After centering, connect / adjust the steering linkage mechanically if required.
 
 
-## 11.4 Stage 3 — Drive Motor Test
+## 11.3 Stage 3 — Drive Motor Test
 
 With wheels lifted:
 
@@ -916,7 +920,7 @@ With wheels lifted:
 - [ ] drivetrain does not bind
 
 
-## 11.5 Stage 4 — Encoder Test
+## 11.4 Stage 4 — Encoder Test
 
 Rotate / drive the drivetrain slowly.
 
@@ -929,7 +933,7 @@ Verify:
 - [ ] count is repeatable over several rotations
 
 
-## 11.6 Stage 5 — IMU Test
+## 11.5 Stage 5 — IMU Test
 
 Run the IMU/software initialization, then rotate the robot by hand.
 
@@ -941,7 +945,7 @@ Verify:
 - [ ] no intermittent connection
 
 
-## 11.7 Stage 6 — LiDAR Test
+## 11.6 Stage 6 — LiDAR Test
 
 Verify that the LiDAR:
 
@@ -954,7 +958,7 @@ Verify that the LiDAR:
 The debug view can be used to verify whether the scan matches the surrounding geometry.
 
 
-# 11.8 Stage 7 — Camera Test
+## 11.7 Stage 7 — Camera Test
 
 Verify:
 
@@ -973,7 +977,7 @@ test_color_picker.py
 if color thresholds require validation.
 
 
-## 11.9 Stage 8 — Start Button
+## 11.8 Stage 8 — Start Button
 
 Verify:
 
@@ -1104,7 +1108,7 @@ Record Result
 ```
 
 
-# 13.2 Software Test Tools
+## 13.2 Software Test Tools
 
 ### Localization
 
