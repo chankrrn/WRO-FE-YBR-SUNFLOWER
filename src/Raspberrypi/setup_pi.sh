@@ -36,7 +36,7 @@ sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_camera 0 2>/dev/null || true
 
 echo "==> 3/6  Device permissions"
-# dialout:  /dev/ttyUSB0 (RPLidar S2L)
+# dialout: /dev/ttyUSB0 (RPLidar S2L)
 # i2c/gpio/video: expansion board, GPIO, camera
 sudo usermod -aG dialout,i2c,gpio,spi,video,render "$USER"
 

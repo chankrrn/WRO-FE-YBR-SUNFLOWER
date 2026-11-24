@@ -21,6 +21,10 @@
 
 [← Build and Reproduction Guide](4-build.md)
 
+[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](5-surprise_rule.md)
+
+[← MATLAB Electrical Modeling Guide](matlab/README.md)
+
 ---
 
 ## Contents

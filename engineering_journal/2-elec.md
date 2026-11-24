@@ -15,6 +15,10 @@
 
 [← Build and Reproduction Guide](4-build.md)
 
+[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](5-surprise_rule.md)
+
+[← MATLAB Electrical Modeling Guide](matlab/README.md)
+
 ---
 
 ## Contents
@@ -279,8 +283,6 @@ P_{\mathrm{battery,model}}=\frac{13.4325}{0.90}+\frac{6.60}{0.90}+0.228
 ```math
 I_{\mathrm{battery,nom\ scenario}}=\frac{22.4863}{15.2}\approx1.48\ \mathrm{A}.
 ```
-
-The user-provided **generic S0017M servo planning envelope** is approximately 0.10–0.20 A no-load and 0.8–1.2 A stall; these are **not verified model-specific specifications or robot measurements**. Substituting **1.20 A** for the modeled **0.15 A** servo normal current increases the 5 V branch by 5.25 W, and increases estimated battery power to approximately **28.32 W** (1.86 A at 15.2 V) if all other assumptions and converter efficiencies remain unchanged. The servo-current upper scenario is not a continuous-duty recommendation.
 
 ### 7.2 Wiring voltage drop and resistive dissipation
 
