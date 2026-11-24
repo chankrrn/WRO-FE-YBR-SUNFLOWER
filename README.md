@@ -22,7 +22,7 @@
 
 YBR-SUNFLOWER is developing a self-driving robotic car for the **World Robot Olympiad (WRO) 2026 Future Engineers** category. The robot is designed to navigate an unfamiliar track autonomously, interpret its surroundings, steer around traffic signs, and perform the required maneuvers using onboard computation and sensors. Our engineering work brings together mechanical design, electrical integration, perception, planning, control, and practical testing.
 
-This repository shares the robot's design, source code, calculations, simulations, engineering decisions, and available verification evidence. The technical material is organized into **five engineering records** in [`engineering_journal/`](engineering_journal/).
+This repository shares the robot's design, source code, calculations, simulations, engineering decisions, and available verification evidence. The technical material is organized into **five engineering records** and one record about the surprise rule in [`engineering_journal/`](engineering_journal/).
 
 | Project detail | Overview |
 |:---|:---|
@@ -38,7 +38,7 @@ This repository shares the robot's design, source code, calculations, simulation
 
 ## Explore Our Engineering Work
 
-The five linked journals cover the project from overall system architecture to fabrication and reproduction. **Read the status and evidence labels within each journal:** a simulation, a supplier specification, a proposed test, and a physical measurement are different kinds of evidence.
+The six linked journals cover the project from overall system architecture to fabrication and reproduction. **Read the status and evidence labels within each journal:** a simulation, a supplier specification, a proposed test, and a physical measurement are different kinds of evidence.
 
 | Engineering record | What it covers |
 |:---|:---|
