@@ -120,7 +120,7 @@ rather than powering the complete robot immediately after wiring.
 | Electrical assembly | This document — Sections 7–8 |
 | Raspberry Pi software | [`src/Raspberrypi/`](../src/Raspberrypi/) |
 | Software architecture | [`3-software.md`](3-software.md) |
-| Testing workflow | Section 14 |
+| Testing workflow | This document — Section 13 |
 | Competition version | GitHub Release / tag |
 
 ---
@@ -358,7 +358,7 @@ Important final components include:
 
 Use both:
 
-- [`schemes/Schematic Diagram.png`](../schemes/schematic_diagram.pdf)
+- [`schemes/schematic_diagram.png`](../schemes/schematic_diagram.pdf)
 - [`schemes/Wiring Diagram.png`](../schemes/wiring_diagram.png)
 
 The schematic explains the **electrical relationship**.
@@ -759,10 +759,6 @@ cd ~
 git clone https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER.git
 cd WRO-FE-YBR-SUNFLOWER/src/Raspberrypi
 ```
-
-For exact competition reproduction, the final tagged release should eventually be used instead of following the changing `main` branch.
-
-See Section 16.
 
 
 ## 9.3 Run Setup Script
@@ -1352,24 +1348,42 @@ uv run python main.py final
 
 # 16. Version Lock and Competition Release
 
-A reproducible robot requires more than the latest `main` branch. The exact competition version should be permanently identifiable.
-
-
 ## 16.1 Reproduce the Exact Competition Version
 
-After cloning:
+After cloning the repository, navigate to the project directory:
 
 ```bash
 cd ~/WRO-FE-YBR-SUNFLOWER
 ```
 
-Verify:
+Check the current working-tree status:
+
+```bash
+git status
+```
+
+Retrieve the full commit SHA:
 
 ```bash
 git rev-parse HEAD
 ```
 
-The returned commit should match the final documented competition SHA.
+The returned commit SHA should match the final competition SHA documented in this repository. The working tree should also be clean to ensure that no uncommitted modifications affect the reproduced software.
+
+For exact competition reproduction, check out the documented competition commit rather than following the changing `main` branch.
+
+### Competition Software Version
+
+The software version used in the WRO 2026 Future Engineers competition is identified by the following Git commit:
+
+- **Repository:** `WRO-FE-YBR-SUNFLOWER`
+- **Competition Commit SHA:** `f52c9f721058b07dee7be6a51014f4d7cef8a086`
+
+To retrieve this exact version:
+
+```bash
+git checkout f52c9f721058b07dee7be6a51014f4d7cef8a086
+```
 
 ---
 
