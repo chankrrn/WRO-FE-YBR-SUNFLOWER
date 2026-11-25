@@ -98,23 +98,7 @@ The two companion guides provide detail within the five-journal structure.
 
 ### 3.1 Information and control
 
-```mermaid
-flowchart TD
-    L["S2L distance scans"] --> N["Field localization"]
-    I["IMU heading"] --> N
-    C["Camera observations"] --> V["Sign interpretation and tracking"]
-    N --> V
-    N --> P["Route and obstacle planning"]
-    V --> P
-    P --> T["Path tracking and speed selection"]
-    T --> A["Drive motor and steering"]
-    A --> M["Robot motion"]
-    M --> L
-    M --> C
-    N --> K["Parking-mode handoff"]
-    L --> K
-    K --> A
-```
+![Figure O-01 Information Flow](../other/Pic/overview_diagram/O01_information_flow.svg)
 
 *Figure O-01. Functional information flow. Parking uses a distinct control mode; the diagram does not imply that the path tracker and parking controller command the actuators simultaneously.*
 
@@ -141,6 +125,10 @@ The [schematic](../schemes/schematic_diagram.pdf), [power diagram](../other/Pic/
 ---
 
 ## 4. Autonomous challenge strategies
+
+![Figure O-02 Challenge Strategies](../other/Pic/overview_diagram/O02_challenge_strategies.svg)
+
+*Figure O-02. The three competition modes side by side. The Obstacle Challenge adds starting-bay departure, sign tracking, GoalPlanner and the LiDAR parking handoff to the Open Challenge pipeline; Surprise mode only adds sign-size interpretation before the same planner.*
 
 ### 4.1 Open Challenge
 
@@ -175,6 +163,10 @@ These constraints explain why body geometry, the bay model and the field setup m
 ---
 
 ## 5. Engineering decisions and iterations
+
+![Figure O-03 Design Evolution](../other/Pic/overview_diagram/O03_design_evolution.svg)
+
+*Figure O-03. Design evolution from V1.1 to the current V2.4, with the external gearing of each revision where it was recorded. The exact V2 revision that first used 18:28 is not recorded; see the [version history](1-mech.md#21-version-history).*
 
 | Problem / constraint | Alternatives and selected approach | Supporting evidence and consequence |
 |---|---|---|
