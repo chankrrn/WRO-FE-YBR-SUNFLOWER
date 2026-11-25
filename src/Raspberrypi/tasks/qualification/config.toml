@@ -3,7 +3,7 @@
 #
 # Only the keys you want to change need to be here; anything missing falls back
 # to DEFAULTS in tasks/path_task.py. Distances are millimeters, angles are
-# degrees, speeds are MotorManager's 0-100 command.
+# degrees, speeds are 0-255 PWM duty.
 #
 # TUNING A WEAVE, in order. Change ONE thing, run, look.
 #
@@ -46,7 +46,11 @@ goal = 3
 # Pulls the finish line back by this many millimetres, so the round can be
 # stopped short of the last bit of track without touching goal itself.
 # 0 = finish at the full laps.goal x path length, as before.
-stop_early_mm = 550.0
+stop_early_mm = 80.0
+# Stop in the MIDDLE of the starting straight (WRO: the whole car must be
+# inside the starting section). stop_early_mm above is now only the distance
+# the car rolls after the motor stops - measure it on the mat.
+stop_in_section_middle = true
 
 [speed]
 # The two that matter. `base` is the straights; `corner` is the sharpest part
@@ -62,7 +66,7 @@ minimum = 150
 # spins the wheels from a standstill. Starts at start_ramp_from and reaches full
 # speed after start_ramp_s seconds. Still spinning: lower start_ramp_from or
 # raise start_ramp_s. 0 = no ramp.
-start_ramp_s = 1.0
+start_ramp_s = 3.5
 start_ramp_from = 120
 
 [path]
@@ -84,12 +88,13 @@ start_ramp_from = 120
 #     160   2/6             61s
 #     180   6/6             54s
 #     200   6/6             31s            worst wall gap +7.4cm
-#     230   6/6             24s            worst wall gap +9.7cm   <- this
+#     230   6/6             24s            worst wall gap +9.7cm
 #     260   6/6             22s
 #
 # 230: comfortably past the cliff, and the straights still run 770mm from the
 # centre block. Push it back toward 200 to hug the wall again, but not below
-# 180. (That table predates this value: 550 is copied from the final round.)
+# 180. (That table predates this value: the round now runs 320, which is
+# wider than any row above.)
 wall_margin_mm = 320.0
 #
 # Corner radius. Leave unset for the biggest that still clears the centre
@@ -107,7 +112,7 @@ corner_radius_mm = 700.0
 resolution_mm = 20.0
 
 [pursuit]
-# Front axle to rear axle (measured). NOT the 165mm track, left to right.
+# Front axle to rear axle (measured). NOT the 120 mm track, left to right.
 wheelbase_mm = 165.0
 
 # Lookahead = base + per_speed * speed, clamped. This is THE tuning knob:

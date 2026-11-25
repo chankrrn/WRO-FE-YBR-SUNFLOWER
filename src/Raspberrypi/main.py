@@ -58,7 +58,7 @@ where the robot actually is. It is started for every round and answers:
         steer_toward(pose.x, pose.y)   # heading in degrees clockwise from +Y
 
 The pose is the middle of the REAR (driving) AXLE, not the lidar. The lidar
-stands on a mast at the front, robot.lidar_ahead_mm (15cm) ahead of the axle,
+stands on a mast at the front, robot.lidar_ahead_mm (65mm) ahead of the axle,
 and the filter casts its rays from there while the particles it localizes are
 axle positions. That is the point the bicycle model, pure pursuit, the
 odometry and the planner's body sweep are all written from; see
@@ -80,7 +80,7 @@ stays there after the camera looks away:
     for block in context.nav.blocks.confirmed():
         print(block.color, block.x, block.y)
 
-The lens is assumed to sit 17cm straight back from the lidar
+The lens is assumed to sit 150mm IN FRONT of the lidar
 (robot_geometry.py's CAMERA_BEHIND_LIDAR_MM), so moving the mast with
 robot.lidar_ahead_mm moves both sensors together. Override
 context.nav.blocks.camera_offset_mm - (forward, right) from the rear axle -

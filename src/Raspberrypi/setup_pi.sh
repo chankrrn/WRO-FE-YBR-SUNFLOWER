@@ -7,8 +7,8 @@
 # with git already, so this works on a clean flash; if `git --version` errors,
 # `sudo apt update && sudo apt install -y git` first.
 #
-#     git clone https://github.com/chankrrn/WRO-FE-YBR.git
-#     cd WRO-FE-YBR/src/Raspberrypi
+#     git clone https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER.git
+#     cd WRO-FE-YBR-SUNFLOWER/src/Raspberrypi
 #     bash setup_pi.sh
 #
 # Then reboot (the script says so at the end) and:
@@ -21,11 +21,13 @@ echo "==> 1/6  System packages"
 sudo apt update
 sudo apt full-upgrade -y
 sudo apt install -y \
-    git curl \
+    git curl build-essential python3-dev \
     python3-venv python3-pip \
     python3-picamera2 python3-libcamera \
     libglib2.0-0t64 libgl1 \
     i2c-tools v4l-utils
+# build-essential + python3-dev: rpi-gpio has no prebuilt wheel for the Pi,
+# so uv sync has to compile it.
 
 # picamera2 lives in the system Python (apt only, no working pip wheel), so the
 # project venv is created with --system-site-packages further down to see it.
@@ -34,9 +36,13 @@ echo "==> 2/6  Enable I2C (BNO055 compass + DFRobot expansion board)"
 sudo raspi-config nonint do_i2c 0
 # Camera is on by default (camera_auto_detect=1); this is a no-op if already set.
 sudo raspi-config nonint do_camera 0 2>/dev/null || true
+# The RPLIDAR S2L is on the GPIO UART (/dev/ttyAMA0 on a Pi 5), which needs
+# uart0 switched on. See classes/lidar_manager.py.
+CONFIG=/boot/firmware/config.txt
+grep -q '^dtparam=uart0=on' "$CONFIG" || echo 'dtparam=uart0=on' | sudo tee -a "$CONFIG"
 
 echo "==> 3/6  Device permissions"
-# dialout: /dev/ttyUSB0 (RPLidar S2L)
+# dialout: /dev/ttyAMA0 (RPLidar S2L on the GPIO UART)
 # i2c/gpio/video: expansion board, GPIO, camera
 sudo usermod -aG dialout,i2c,gpio,spi,video,render "$USER"
 
@@ -62,13 +68,13 @@ mkdir -p ../videos
 echo
 echo "=============================================="
 echo " Done. REBOOT NOW - the group changes and the"
-echo " I2C overlay only take effect after a reboot:"
+echo " I2C/UART overlays only take effect after a reboot:"
 echo
 echo "     sudo reboot"
 echo
 echo " After the reboot, check the install with:"
 echo "     cd $(pwd)"
 echo "     i2cdetect -y 1              # expansion board + BNO055 should appear"
-echo "     ls /dev/ttyACM0 /dev/ttyUSB0  # lidar"
+echo "     ls /dev/ttyAMA0             # lidar UART"
 echo "     uv run python main.py qualification --dry-run"
 echo "=============================================="

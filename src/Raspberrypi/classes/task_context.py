@@ -216,8 +216,14 @@ class TaskContext:
         print(f"  pose: {pose}")
 
     def _init_camera(self):
+        import camera_manager
         from camera_manager import CameraManager
         from classes.object_solver import ObjectSolver
+
+        if camera_manager.Picamera2.__module__ == "utils.fake_picamera2":
+            raise RuntimeError("picamera2 did not load (fake camera in use) - "
+                               "the final round needs the real camera "
+                               "(use --no-camera to test without it)")
 
         try:
             # The recorder's frame rate is the VISION thread's, not the
@@ -229,9 +235,10 @@ class TaskContext:
             self.camera.start_camera()
             self.object_solver = ObjectSolver(debug=self.debug)
         except Exception as e:
-            self.camera = None
-            self.object_solver = None
-            print(f"  WARNING: camera unavailable ({e!r}) - continuing without it")
+            # The final round cannot see pillars without the camera, and a
+            # wrong-side pass ends the attempt. Stop here so we notice.
+            raise RuntimeError(f"camera unavailable ({e!r}) - refusing to run "
+                               f"the final round blind") from e
 
     def _start_vision(self):
         """

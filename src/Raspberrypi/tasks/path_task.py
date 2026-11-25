@@ -283,7 +283,7 @@ DEFAULTS = {
     "parking.detect_min_scans": 3,
     # Scans one blade has to be seen in before a bay is placed from it ALONE.
     # Half the bay is often all there is to see: the far blade is edge-on from
-    # most of the approach and only 10mm thick, and the near one shadows the
+    # most of the approach and only 20mm thick, and the near one shadows the
     # floor behind it. Waiting for two clusters to agree can mean never
     # parking. One is enough because the WIDTH is a rule, not a measurement -
     # but it is held to a higher bar than a pair, because a pillar standing
@@ -470,7 +470,7 @@ DEFAULTS = {
     # aimed at the bay actually in front of the robot rather than a nominal
     # 340mm one. Falls back to turn_after_mm if the second wall is never seen.
     "parking.measure_bay": True,
-    # A bay wall is 10mm thick and the beam's footprint is wider, so at the
+    # A bay wall is 20mm thick and the beam's footprint is wider, so at the
     # crossing it flickers clear-then-blocked within 20mm - which reads as a
     # 20mm bay. The mouth only counts once the beam has been clear for this
     # far, and the far wall only counts beyond bay_min_mm from the near one.
@@ -532,10 +532,6 @@ DEFAULTS = {
     # almost every way the approach fails leaves it out of road, and retrying
     # from exactly there fails again on the same tick.
     "parking.retry_back_mm": 900.0,
-    # How many times a failed park may be retried. An attempt that aborts is
-    # thrown away rather than ending the round - the laps are already scored
-    # and the clock is still running.
-    "parking.retries": 2,
 
     # Final round only - leaving a bay the robot STARTED in. Off by default,
     # because a run that starts on the track and switches this on drives a
@@ -672,6 +668,7 @@ class PathDrivingTask(Task):
         self.aim_progress = 0.0      # progress of the point being chased
         self.lateral = 0.0           # how far off the line we are, + right
         self.distance_driven = 0.0   # along the path, for lap counting
+        self.finish_offset_mm = 0.0  # start -> middle of the starting straight
         self.speed = 0
         self.steer_command = 0.0
         self.target = None
@@ -753,6 +750,22 @@ class PathDrivingTask(Task):
         self.aim_progress = self.progress
         self.distance_driven = 0.0
         self._last_tick_at = time.monotonic()
+
+        if self.setting("laps.stop_in_section_middle"):
+            # WRO: the whole car must stop INSIDE the starting section, and
+            # the last lap only counts once the car has fully left the
+            # corner before it. So aim for the middle of the straight the
+            # robot was placed on, not for the start pose itself.
+            if abs(pose.x) >= abs(pose.y):
+                mid_x, mid_y = pose.x, 0.0
+            else:
+                mid_x, mid_y = 0.0, pose.y
+            mid_progress, _ = self.path.project(mid_x, mid_y, self.direction)
+            half = self.path.length / 2.0
+            self.finish_offset_mm = ((mid_progress - self.progress + half)
+                                     % self.path.length) - half
+            print(f"Finish point: middle of the starting straight, "
+                  f"{self.finish_offset_mm:+.0f}mm from the start pose")
 
         print(f"Placed at {pose} -> running {RacingLine.direction_name(self.direction)}, "
               f"{self.laps_goal} laps of {self.path.length / 1000:.2f}m")
@@ -1397,7 +1410,9 @@ class PathDrivingTask(Task):
             print(f"Stopping: {self._stop_reason}")
             return True
         early = float(self.setting("laps.stop_early_mm") or 0.0)
-        return self.distance_driven >= self.laps_goal * self.path.length - early
+        target = (self.laps_goal * self.path.length + self.finish_offset_mm
+                  - early)
+        return self.distance_driven >= target
 
     def finish(self):
         super().finish()

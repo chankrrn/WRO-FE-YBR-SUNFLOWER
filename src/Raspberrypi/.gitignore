@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 .venv/
+logs/
+fov_check.png
+utils/video/video_counter_ptr.txt

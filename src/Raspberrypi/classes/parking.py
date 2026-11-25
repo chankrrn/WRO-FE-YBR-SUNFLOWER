@@ -2260,9 +2260,13 @@ class ParkingSequence:
             # wall. Say plainly which of them the follow actually got, because
             # missing either is the difference between holding the middle of
             # the road and coasting into the bay - and it used to be silent.
+            if self.corridor_measured:
+                corridor_note = "measured"
+            else:
+                corridor_note = ("ASSUMED - the follow never got a clean "
+                                 "look at both sides")
             print(f"  corridor {self.corridor_mm:.0f}mm "
-                  f"({'measured' if self.corridor_measured else 'ASSUMED - the '
-                     'follow never got a clean look at both sides'}); "
+                  f"({corridor_note}); "
                   f"wall heading "
                   + ("unknown - THE STRAIGHT LEGS WILL NOT HOLD A HEADING"
                      if self.wall_heading is None

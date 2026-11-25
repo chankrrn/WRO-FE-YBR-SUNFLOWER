@@ -1,0 +1,12 @@
+[Unit]
+Description=WRO Future Engineers robot program
+After=local-fs.target
+
+[Service]
+Type=simple
+# Change this path to where the repo is on the Pi (run `pwd` in the repo folder).
+ExecStart=/home/pi/WRO-FE-YBR-SUNFLOWER/src/Raspberrypi/deploy/start_robot.sh
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

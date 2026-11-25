@@ -7,11 +7,11 @@ the rear axle, pure pursuit draws its arc through it, the dead-reckoning
 between lidar scans integrates it, and the planner's body sweep and the
 parking geometry measure their overhangs from it. Making the sensors the
 origin instead - which is what the localizer did when the lidar sat at
-(0, 0) - put a point 15cm ahead of the axle into all of those, so every
+(0, 0) - put a point 65mm ahead of the axle into all of those, so every
 turn dragged the "robot" sideways by the lidar's own swing.
 
-The sensors sit on a mast at the front of the car, nearly over the steering
-wheels, so they are described here as offsets from the axle and the pose is
+The lidar sits 65mm ahead of the rear axle (the front axle is at 165mm)
+and the camera 150mm in front of the lidar, so they are described here as offsets from the axle and the pose is
 transformed to them wherever a beam or a camera ray has to start. Offsets
 are (forward, right) in millimetres in the robot's own frame.
 

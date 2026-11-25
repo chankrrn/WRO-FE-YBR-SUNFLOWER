@@ -26,7 +26,7 @@
 lidar_ahead_mm = 65.0
 
 [laps]
-# ONE LAP, THEN PARK. The round is driven as `uv run python main.py final`
+# THREE LAPS, THEN PARK. The round is driven as `uv run python main.py final`
 # with no flags, so this is the number that decides it - --laps still
 # overrides for a one-off.
 goal = 3
@@ -83,7 +83,7 @@ wall_margin_mm = 550.0
 #     680   87%,                              5-8 runs in 12  <- corner now
 #     760   87%,                              5   runs in 12     cuts too close
 #
-# So 620. Past about 650 the corner itself starts running out of room against
+# So 650. Past about 650 the corner itself starts running out of room against
 # the wall and the block, and what the pass gains the lap loses.
 corner_radius_mm = 650.0
 
@@ -380,7 +380,7 @@ replan_cross_track_mm = 120.0
 min_pose_confidence = 0.35
 lost_timeout_s = 4.0
 # The lidar backstop, independent of the plan. A correctly executed pass now
-# targets clearance_mm (150mm) of real body gap, so these sit comfortably
+# targets clearance_mm (110 mm) of real body gap, so these sit comfortably
 # below it: a good pass never trips them, but a pass that is actually going
 # wrong is still caught before contact.
 front_slow_mm = 350.0
@@ -617,7 +617,7 @@ enabled = true
 # forward_mm is how far to drive on that lock before the racing line takes
 # over.
 reverse_mm = 70.0
-steer_command = 100.0
+steer_command = 90.0    # MotorManager clamps to MAX_STEER_DEG = 90
 forward_mm = 230.0
 # Counter-steer for the reverse leg, a MAGNITUDE pointing AWAY from the exit
 # side. Reversing negates yaw rate, so backing up on the opposite lock turns

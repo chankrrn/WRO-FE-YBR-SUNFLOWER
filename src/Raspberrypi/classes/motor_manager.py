@@ -388,6 +388,11 @@ class MotorManager:
                   f"{speed} (expected ~{RPM_PER_SPEED * abs(speed):.0f}); board holds "
                   f"{held} (orientation, duty%), write failures {self.write_failures}, "
                   f"corrupted {self.write_mismatches} - re-sending")
+        # The main thread may have stopped the motor or changed the speed
+        # while this check was running. Re-send only if the command is still
+        # the same, so a stop is never undone.
+        if not self.drive_enabled or self.current_speed != speed:
+            return
         try:
             self._apply_speed(speed)
         except Exception:
