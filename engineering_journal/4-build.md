@@ -47,9 +47,8 @@ This document explains **how to reproduce the final robot**.
 13. [Testing Workflow](#13-testing-workflow)
 14. [Troubleshooting](#14-troubleshooting)
 15. [Competition Startup Procedure](#15-competition-startup-procedure)
-16. [Version Lock and Competition Release](#16-version-lock-and-competition-release)
-17. [Reproducibility Checklist](#17-reproducibility-checklist)
-18. [Related Documentation](#18-related-documentation)
+16. [Reproducibility Checklist](#17-reproducibility-checklist)
+17. [Related Documentation](#18-related-documentation)
 
 ---
 
@@ -872,7 +871,7 @@ These configuration files contain adjustable values for the robot, including spe
 
 For exact reproduction:
 
-1. use the final tagged repository version
+1. use the latest version of the main branch
 2. use its included configuration files
 3. first reproduce the robot behavior
 4. only then change tuning values if the reproduced mechanical platform differs
@@ -1350,50 +1349,9 @@ uv run python main.py final
 
 ---
 
-# 16. Version Lock and Competition Release
+# 16. Reproducibility Checklist
 
-## 16.1 Reproduce the Exact Competition Version
-
-After cloning the repository, navigate to the project directory:
-
-```bash
-cd ~/WRO-FE-YBR-SUNFLOWER
-```
-
-Check the current working-tree status:
-
-```bash
-git status
-```
-
-Retrieve the full commit SHA:
-
-```bash
-git rev-parse HEAD
-```
-
-The returned commit SHA should match the final competition SHA documented in this repository. The working tree should also be clean to ensure that no uncommitted modifications affect the reproduced software.
-
-For exact competition reproduction, check out the documented competition commit rather than following the changing `main` branch.
-
-### Competition Software Version
-
-The software version used in the WRO 2026 Future Engineers competition is identified by the following Git commit:
-
-- **Repository:** `WRO-FE-YBR-SUNFLOWER`
-- **Competition Commit SHA:** `f52c9f721058b07dee7be6a51014f4d7cef8a086`
-
-To retrieve this exact version:
-
-```bash
-git checkout f52c9f721058b07dee7be6a51014f4d7cef8a086
-```
-
----
-
-# 17. Reproducibility Checklist
-
-## 17.1 Documentation
+## 16.1 Documentation
 
 - [ ] Main README available
 - [ ] Mechanical README available
@@ -1408,7 +1366,7 @@ git checkout f52c9f721058b07dee7be6a51014f4d7cef8a086
 - [ ] CHANGELOG available
 
 
-## 17.2 Mechanical
+## 16.2 Mechanical
 
 - [ ] all required printed parts identified
 - [ ] final V2.0 parts separated from prototypes
@@ -1423,7 +1381,7 @@ git checkout f52c9f721058b07dee7be6a51014f4d7cef8a086
 - [ ] LiDAR / IMU mounted
 
 
-## 17.3 Electrical
+## 16.3 Electrical
 
 - [ ] battery polarity documented
 - [ ] 12V Buck output documented
@@ -1440,17 +1398,16 @@ git checkout f52c9f721058b07dee7be6a51014f4d7cef8a086
 - [ ] wiring matches schematic
 
 
-## 17.4 Software
+## 16.4 Software
 
 - [ ] Raspberry Pi OS version documented
 - [ ] repository cloned
-- [ ] final release checked out
 - [ ] `setup_pi.sh` completed
 - [ ] `uv sync` succeeds
 - [ ] dry run succeeds
 
 
-## 17.5 Subsystem Tests
+## 16.5 Subsystem Tests
 
 - [ ] LiDAR detected
 - [ ] IMU detected
@@ -1464,7 +1421,7 @@ git checkout f52c9f721058b07dee7be6a51014f4d7cef8a086
 - [ ] low-speed drive succeeds
 
 
-## 17.6 Competition Functions
+## 16.6 Competition Functions
 
 - [ ] Open Challenge task starts correctly
 - [ ] robot follows racing line
@@ -1479,7 +1436,7 @@ git checkout f52c9f721058b07dee7be6a51014f4d7cef8a086
 ---
 
 
-# 18. Related Documentation
+# 17. Related Documentation
 
 For design reasoning, use:
 
