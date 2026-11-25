@@ -670,25 +670,6 @@ The LiDAR parking subsystem includes stop-request monitoring, invalid-distance t
 
 The system does **not** fuse every sensor into a single uniform signal. Each source supplies the information it can observe reliably. LiDAR and IMU support the pose estimate; camera observations are transformed into that pose's field frame; and the resulting map supports path planning. Live LiDAR front-range checks remain a separate safety input that can override a theoretically acceptable path.
 
-```mermaid
-flowchart TD
-    L["S2L wall ranges"] --> N["NavigationManager"]
-    I["BNO055 relative heading"] --> N
-    N --> P["Pose and confidence"]
-    C["Camera worker"] --> V["Color, bearing and range"]
-    P --> B["BlockMap"]
-    V --> B
-    B --> M["FinalTask sign memory"]
-    P --> G["Reference or obstacle route"]
-    M --> G
-    G --> U["Pure Pursuit"]
-    U --> A["Speed and safety arbitration"]
-    L -->|Front range| A
-    A --> H["Motor and servo HATs"]
-```
-
-*Figure S-14. Current sensor responsibilities. Geometry, color perception, stored objects and the immediate front-distance guard retain distinct roles. The camera worker and the navigation/control loop need not update at the same instant.*
-
 ## 10.2 Asynchronous information lifetimes
 
 LiDAR stores recent per-degree ranges, the camera worker updates sign detections, `BlockMap` associates individual observations, and the obstacle round maintains additional remembered pillars across laps. Each lifetime is different. Reusing stale observations indiscriminately would make a planner react to objects that are no longer where the software believes them to be.
@@ -850,10 +831,6 @@ A reactive camera strategy directly adjusts steering from visible obstacles or w
 
 The Raspberry Pi communicates directly with the I²C motor and expansion HATs and reads the start input through GPIO. One host coordinates perception, navigation, actuator commands and fault handling. This reduces inter-controller communication while making command timing dependent on Linux scheduling and device-interface latency.
 
-![Conceptual diagram of LiDAR, IMU and camera responsibilities](../other/Pic/software/legacy_sensor_roles.png)
-
-*Figure S-15. Conceptual sensor responsibilities. The diagram labels its LiDAR as C1; the robot uses **RPLIDAR S2L**. The functional roles are geometry, heading and color perception.*
-
 ## 14.3 Pose-goal planning and clearance
 
 A lateral offset is simple to construct, but tight corners and signs near boundaries can leave insufficient room for the robot. `GoalPlanner` formulates legal passing as a **pose-constrained geometric problem**, enumerates curvature-bounded candidates and checks the swept chassis footprint. This requires more computation but provides an explicit compromised-clearance signal when the requested margin is unavailable.
@@ -997,27 +974,7 @@ A comparable test record associates these settings with the source version, fiel
 
 # 17. Architecture summary and references
 
-## 17.1 Full system and competition responsibilities
-
-The software implements a consistent high-level architecture:
-
-```mermaid
-flowchart TD
-    C["Shared hardware context"] --> R{"Selected task"}
-    R -->|Open| O["QualificationTask"]
-    R -->|Obstacle| D["Unpark and relocalize"]
-    D --> F["FinalTask obstacle navigation"]
-    O --> S["Stop driving task"]
-    F --> S
-    S --> P{"Eligible post-round parking?"}
-    P -->|Yes| L["LiDAR parking sequence"]
-    P -->|No| X["Release hardware context"]
-    L --> X
-```
-
-*Figure S-17. Competition responsibilities and hardware lifetime. The parking hook operates after the driving task and before the shared hardware context is released; Open runs do not select that hook.*
-
-## 17.2 Software decisions in one table
+## 17.1 Software decisions in one table
 
 | Design decision | Technical rationale | Primary implementation |
 |---|---|---|
@@ -1031,7 +988,7 @@ flowchart TD
 | Pi + I²C HAT architecture | Centralizes sensing, actuator commands and device ownership | `motor_manager.py`, `board_manager.py` |
 | Dedicated LiDAR parking | Allows scan-based close-range parking after the normal laps | `lidar_park/` |
 
-## 17.3 Primary source references
+## 17.2 Primary source references
 
 - [Repository root](../README.md) and [Build and Reproduction Guide](4-build.md).
 - [Main task dispatcher](../src/Raspberrypi/main.py), [shared task lifecycle](../src/Raspberrypi/tasks/base_task.py) and [CLI](../src/Raspberrypi/tasks/cli.py).
