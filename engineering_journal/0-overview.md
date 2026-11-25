@@ -5,7 +5,7 @@
 <p align="center">
   <img
     width="700"
-    src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/c3e9ee7ff5749792102a03fd4b35f728a893fad8/v-photos/GIF/G01.gif"
+    src="../v-photos/GIF/G01.gif"
   />
 </p>
 
@@ -136,7 +136,7 @@ The battery feeds two regulated branches. The nominal 5 V branch supplies comput
 | Digital 16 → start interface | Start-button state |
 | Motor HAT → propulsion and encoder | Drive output and encoder-derived speed feedback |
 
-The [schematic](../schemes/schematic_diagram.pdf), [power diagram](../schemes/modular_power_architecture.png) and [electrical journal](2-elec.md) provide the connection-level records. The selected motor/encoder channel is an implementation detail defined in `motor_manager.py`; the interface table above describes responsibilities rather than substituting for a terminal-by-terminal wiring check.
+The [schematic](../schemes/schematic_diagram.pdf), [power diagram](../other/Pic/elec_diagram/modular_power_architecture.svg) and [electrical journal](2-elec.md) provide the connection-level records. The selected motor/encoder channel is an implementation detail defined in `motor_manager.py`; the interface table above describes responsibilities rather than substituting for a terminal-by-terminal wiring check.
 
 ---
 

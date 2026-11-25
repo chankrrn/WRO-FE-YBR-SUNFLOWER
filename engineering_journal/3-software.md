@@ -62,27 +62,7 @@ The software is written in Python and runs on a **Raspberry Pi 5**. Propulsion a
 
 ## 1.1 System-level signal flow
 
-```mermaid
-flowchart TD
-    A[WRO field and traffic signs] --> L[RPLIDAR S2L]
-    A --> C[Pi camera]
-    A --> I[BNO055 IMU]
-    L --> N[Monte Carlo localization]
-    I --> N
-    N --> P[Robot pose and confidence]
-    C --> V[HSV object detection]
-    P --> B[Field-coordinate block map]
-    V --> B
-    P --> R[Racing-line generator]
-    R --> G{Competition round}
-    B --> G
-    G -->|Open| T[Reference racing line]
-    G -->|Obstacle| D[Goal poses and Dubins planner]
-    T --> U[Pure Pursuit and speed selection]
-    D --> U
-    U --> M[DFR0592 propulsion and DFR0604 steering]
-    M --> A
-```
+![Figure S-01 System Architecture](../other/Pic/software_diagram/S01_system_architecture.svg)
 
 *Figure S-01. Functional software architecture. The arrows describe information flow and control responsibilities, not direct electrical wiring. Hardware connections are detailed in [Power and Sensor Architecture](2-elec.md).*
 
@@ -227,21 +207,7 @@ The software uses separate [Open Challenge configuration](../src/Raspberrypi/tas
 
 ## 4.1 Task lifecycle
 
-```mermaid
-flowchart TD
-    A[Start command on Raspberry Pi] --> B[Load round config]
-    B --> C[Initialize required hardware]
-    C --> D[Wait for physical start button]
-    D --> E[Capture heading reference and initialize route]
-    E --> F[Scheduled navigation ticks]
-    F --> G{Completion or timeout?}
-    G -->|No| F
-    G -->|Yes| H[Stop propulsion and center steering]
-    H --> I{Final round with post-round parking enabled?}
-    I -->|Yes, eligible| J[LiDAR parking using live hardware context]
-    I -->|No| K[Shutdown context]
-    J --> K
-```
+![Figure S-02 Round Lifecycle](../other/Pic/software_diagram/S02_round_lifecycle.svg)
 
 *Figure S-02. Task execution and the final-round post-processing hook. Parking eligibility is governed by configuration and round outcome.*
 
@@ -257,24 +223,15 @@ This is a *target*, not a measured guarantee. Actual timing depends on computati
 
 `PathDrivingTask` obtains the recent robot pose, updates lap progress, chooses a lookahead target, computes steering and selects a speed subject to the current safety conditions. It estimates travelled distance between observations, advances the steering-lag model and reports motion to the localizer. The task then applies a single drive/steering command through `MotorManager`.
 
-```mermaid
-flowchart TD
-    N["Pose and motion estimate"] --> P["Route progress and lap distance"]
-    P --> R{"Round"}
-    R -->|Open| O["Reference route"]
-    R -->|Obstacle| G["GoalPlanner route"]
-    O --> U["Pure Pursuit and steering limits"]
-    G --> U
-    U --> S["Speed selection and safety checks"]
-    L["Live front LiDAR range"] --> S
-    S --> A["Motor and steering commands"]
-```
+![Figure S-03 Navigation Tick](../other/Pic/software_diagram/S03_navigation_tick.svg)
 
 *Figure S-03. Shared navigation tick. Route selection differs between rounds; both branches use the same steering and command-safety layer.*
 
 The Obstacle Challenge can temporarily hand control to its **unparking controller**, **relocalization walk**, or **parking controller**. These handoffs are explicit, so Pure Pursuit does not issue competing commands during a maneuver.
 
 ## 4.3 Asynchronous camera processing
+
+![Figure S-03B Runtime Threads](../other/Pic/software_diagram/S03B_runtime_threads.svg)
 
 `VisionManager` captures and analyzes frames independently of the main tick loop, with a default minimum frame period of `1/15 s` (nominally up to 15 Hz, subject to actual processing). It publishes the resulting mapped objects to `NavigationManager`/`BlockMap`. The steering loop reads persisted objects rather than waiting for a new camera frame. This arrangement avoids letting image capture time directly extend the 20 ms steering interval.
 
@@ -527,16 +484,7 @@ where `H` is the assumed sign height, `h_px` is its detected pixel height and `s
 
 Conceptually:
 
-```mermaid
-flowchart TD
-    C["HSV detections and image geometry"] --> T["Transform to field coordinates"]
-    P["Reliable rear-axle pose"] --> T
-    O["Calibrated camera offset"] --> T
-    T --> A["Associate repeated observations"]
-    A --> B["BlockMap tracks"]
-    B --> M["Confirmed round-level sign memory"]
-    M --> G["GoalPlanner"]
-```
+![Figure S-10 Sign Mapping Pipeline](../other/Pic/software_diagram/S10_sign_mapping_pipeline.svg)
 
 *Figure S-10. Mapping combines visual observations with pose and sensor geometry before a sign can influence a field-coordinate plan.*
 
@@ -559,21 +507,7 @@ A smooth lateral offset can preserve path continuity while demanding more space 
 
 The international-round planner defines **goal poses** beside each obstacle, including orientation. `GoalPlanner` connects those poses with **Dubins paths** that respect a minimum curvature radius. It checks the robot's swept footprint along candidate routes against walls, the central island, the traffic signs and parking-bay keep-out geometry.
 
-```mermaid
-flowchart TD
-    A[Localized pose + remembered signs] --> B[Select obstacle goals ahead]
-    B --> C[Choose legal passing side]
-    C --> D[Generate curvature-bounded Dubins candidates]
-    D --> E[Sweep robot body along path]
-    E --> F{Clearance feasible?}
-    F -->|Yes| G[Accept plan]
-    F -->|No| H[Try alternative goal position / heading]
-    H --> D
-    F -->|No feasible candidate| I[Report compromised clearance]
-    G --> J[Pure Pursuit target]
-    I --> J
-    J --> K[Speed and safety checks]
-```
+![Figure S-11 Goal Planning](../other/Pic/software_diagram/S11_goal_planning.svg)
 
 *Figure S-11. Traffic-sign goal planning and feasibility screening. A compromised plan is reported to the controller rather than silently presented as a fully clear route.*
 
@@ -621,20 +555,7 @@ A single height-based range estimate cannot distinguish a short nearby object fr
 
 In **veto** mode, missing LiDAR evidence does not by itself block a shape-based vote. This differs from the alternative **confirm** mode, which requires agreement from both cues. `BlockMap` accumulates per-sign evidence, and `FinalTask` applies two additional restrictions: **the first passed sign is never inverted**, and **at most one sign location receives an inverted passing-side interpretation**. A changed height can also require re-estimating the sign's mapped position rather than retaining a range calculated for a 100 mm sign.
 
-```mermaid
-flowchart TD
-    A["Detected sign"] --> B{"Surprise mode enabled?"}
-    B -->|No| N["Normal color rule"]
-    B -->|Yes| C["Shape cue and candidate ranges"]
-    L["LiDAR cue and scan age"] --> D["Apply configured cue policy"]
-    C --> D
-    D --> E["Tracked-sign evidence and height decision"]
-    E --> F{"Eligible modified sign?"}
-    F -->|No| N
-    F -->|Yes| I["Invert passing side for one sign"]
-    N --> G["GoalPlanner"]
-    I --> G
-```
+![Figure S-12 Surprise Decision Flow](../other/Pic/software_diagram/SR01_surprise_decision_flow.svg)
 
 *Figure S-12. Optional Surprise-mode interpretation. Eligibility includes the first-sign exclusion and single-sign restriction. This diagram describes implemented logic, not a measured detection success rate.*
 
@@ -690,19 +611,7 @@ The flag `parking.enabled` refers only to the **in-round `BayPark` route**, not 
 
 The post-round module does not require camera detections or the particle-filter pose. It analyzes a LiDAR scan to infer nearby field structure, outer-wall orientation and the bay blades. It then performs a staged relocation and alignment maneuver using its own TOML settings.
 
-```mermaid
-flowchart TD
-    A[Obstacle task completes] --> B{LiDAR parking enabled and eligible?}
-    B -->|No| Z[End and shutdown]
-    B -->|Yes| C[Stop camera worker]
-    C --> D[Collect and median-filter LiDAR scans]
-    D --> E[Identify outer wall, heading and bay geometry]
-    E --> F[Drive toward calibrated wall/front target]
-    F --> G[Find or approach a bay blade]
-    G --> H[Execute configured finish moves]
-    H --> I[Stop and record parking result]
-    I --> Z
-```
+![Figure S-13 LiDAR Parking](../other/Pic/software_diagram/S13_lidar_parking.svg)
 
 *Figure S-13. Active post-round LiDAR parking sequence selected by `lidar_park.enabled = true`.*
 
@@ -949,7 +858,7 @@ The Raspberry Pi communicates directly with the I²C motor and expansion HATs an
 
 A lateral offset is simple to construct, but tight corners and signs near boundaries can leave insufficient room for the robot. `GoalPlanner` formulates legal passing as a **pose-constrained geometric problem**, enumerates curvature-bounded candidates and checks the swept chassis footprint. This requires more computation but provides an explicit compromised-clearance signal when the requested margin is unavailable.
 
-![Conceptual smooth lateral-offset path illustration](../other/Pic/software/legacy_lateral_offset.png)
+![Figure S-16 Offset vs Goal Pose](../other/Pic/software_diagram/S16_offset_vs_goal_pose.svg)
 
 *Figure S-16. Conceptual lateral-offset geometry with illustrative dimensions. This figure describes path shape; its red-sign placement is not an example of the passing rule in Section 8.4.*
 

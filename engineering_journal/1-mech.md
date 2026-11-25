@@ -5,7 +5,7 @@
 <p align="center">
   <img
     width="700"
-    src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/c3e9ee7ff5749792102a03fd4b35f728a893fad8/v-photos/GIF/G02.gif"
+    src="../v-photos/GIF/G02.gif"
   />
 </p>
 

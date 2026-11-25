@@ -18,8 +18,8 @@
 % the SAME knots and interpolation method.
 %
 % Base MATLAB R2020a+; run entire script. No toolboxes required.
-% Output: results/04_assumed_voltage_vs_soc.png (240 DPI) and
-%         results/simulation_inputs.mat. No CSV and no summary.txt.
+% Results: visualization/04_battery_ocv_soc.png and visualization/04_simulation_inputs.mat
+% No CSV and no summary.txt.
 
 clearvars; close all; clc;
 

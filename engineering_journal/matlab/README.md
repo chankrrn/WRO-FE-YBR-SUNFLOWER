@@ -2,21 +2,19 @@
 
 **YBR-SUNFLOWER · WRO 2026 Future Engineers · MathWorks Modeling Award**
 
-[← Project README](../README.md)
+[← Project README](../../README.md)
 
-[← Engineering Overview](0-overview.md)
+[← Engineering Overview](../0-overview.md)
 
-[← Mobility and Mechanical Design](1-mech.md)
+[← Mobility and Mechanical Design](../1-mech.md)
 
-[← Power and Sensor Architecture](2-elec.md)
+[← Power and Sensor Architecture](../2-elec.md)
 
-[← Software Architecture and Obstacle Strategy](3-software.md)
+[← Software Architecture and Obstacle Strategy](../3-software.md)
 
-[← Build and Reproduction Guide](4-build.md)
+[← Build and Reproduction Guide](../4-build.md)
 
-[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](5-surprise_rule.md)
-
-[← Published Figures](visualization/)
+[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](../5-surprise_rule.md)
 
 This directory contains the documentation, source programs, and published visualizations for **eight standalone MATLAB electrical models**. The `.m` scripts are stored in [`figures/`](figures/), and the published PNGs are stored in [`visualization/`](visualization/). This guide explains their engineering purpose, equations, input assumptions, execution steps, outputs, and connection to the engineering journal.
 

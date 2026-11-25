@@ -14,7 +14,7 @@
 
 ## Summary Video
 
-[![Summary Video](https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/b426dec107f923e87f36bd1be1556bc1951f89f1/other/Pic/Thumbnail.PNG)](https://youtu.be/jpLe8aEb0Hc?si=lhUIN5FycaKAekj2)
+[![Summary Video](other/Pic/Thumbnail.PNG)](https://youtu.be/jpLe8aEb0Hc?si=lhUIN5FycaKAekj2)
 
 ---
 
@@ -76,7 +76,7 @@ All team members contribute to the engineering process through collaborative des
 <p align="center">
   <img
     width="700"
-    src="https://github.com/chankrrn/WRO-FE-YBR-SUNFLOWER/blob/c3e9ee7ff5749792102a03fd4b35f728a893fad8/v-photos/GIF/G02.gif"
+    src="v-photos/GIF/G02.gif"
     alt="Sunflower robot GIF"
   />
 </p>
@@ -178,7 +178,7 @@ Two representative results are illustrated below. Their full assumptions, calcul
 
 ### Reproducing the analyses
 
-1. Open any `.m` file in [`engineering_journal/matlab/figures/`](	engineering_journal/matlab/figures/). The scripts specify **base MATLAB R2020a or newer** as their intended execution environment.
+1. Open any `.m` file in [`engineering_journal/matlab/figures/`](engineering_journal/matlab/figures/). The scripts specify **base MATLAB R2020a or newer** as their intended execution environment.
 2. Review the parameters and source-status comments near the beginning of the script. Separate manufacturer specifications from scenario assumptions before changing a value.
 3. Run the **complete script**. Each script is written as a standalone analysis and exports a PNG to its local `results/` directory; the versions of the figures selected for publication are stored in [`engineering_journal/matlab/visualization/`](engineering_journal/matlab/visualization/).
 4. Compare the output with the figure and the interpretation in the electrical journal. Re-running a script verifies model execution and numerical behavior under its assumptions; it does not establish physical accuracy.

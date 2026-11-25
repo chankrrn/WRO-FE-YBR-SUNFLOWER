@@ -14,8 +14,7 @@
 % converter operation, battery runtime, or a safe-discharge recommendation.
 %
 % Base MATLAB R2020a+; no additional toolboxes.
-% Output: results/05_voltage_vs_time_scenarios.png (240 dpi)
-%         results/simulation_inputs.mat
+% Results: visualization/05_battery_voltage_time.png and visualization/05_simulation_inputs.mat
 % No CSV, no summary.txt. Run the entire script.
 
 clearvars; close all; clc;

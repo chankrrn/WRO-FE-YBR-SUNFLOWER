@@ -21,9 +21,7 @@
 % firmware behavior, actual cable geometry, PD negotiation or servo transients.
 %
 % Requirements: Base MATLAB R2020a+ for exportgraphics. Run entire script.
-% Outputs next to this script:
-%   results/08_transient_timeline.png
-%   results/simulation_inputs.mat
+% Results: visualization/08_5v_wiring_sensitivity.png and visualization/08_simulation_inputs.mat
 % No CSV or summary.txt is created.
 
 clearvars; close all; clc;

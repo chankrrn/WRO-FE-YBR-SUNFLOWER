@@ -117,11 +117,11 @@ rather than powering the complete robot immediately after wiring.
 |---|---|
 | Mechanical design | [`1-mech.md`](1-mech.md) |
 | CAD / STL files | [`models/`](../models/CAD) |
-| Mechanical assembly | This document — Sections 8 |
+| Mechanical assembly | This document — Section 8 |
 | Electrical architecture | [`2-elec.md`](2-elec.md) |
-| Schematic | [`schemes/Schematic Diagram.png`](../schemes/schematic_diagram.pdf) |
-| Physical wiring | [`schemes/Wiring Diagram.png`](../schemes/wiring_diagram.png) |
-| Electrical assembly | This document — Sections 6 |
+| Schematic | [`schemes/schematic_diagram.pdf`](../schemes/schematic_diagram.pdf) |
+| Physical wiring | [`schemes/wiring_diagram.png`](../schemes/wiring_diagram.png) |
+| Electrical assembly | This document — Section 6 |
 | Raspberry Pi software | [`src/Raspberrypi/`](../src/Raspberrypi/) |
 | Software architecture | [`3-software.md`](3-software.md) |
 | Testing workflow | This document — Section 13 |

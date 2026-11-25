@@ -20,8 +20,7 @@
 % DFR1208 output and load behavior are not modeled or established there.
 %
 % Base MATLAB R2020a+; no toolboxes or external MATLAB files.
-% Produces results/06_soc_and_current.png (240 DPI) and
-%          results/simulation_inputs.mat. No CSV or summary.txt.
+% Results: visualization/06_soc_and_current.png and visualization/06_simulation_inputs.mat
 %
 % Run the ENTIRE script.
 

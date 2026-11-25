@@ -15,7 +15,7 @@
 % and is NOT a charging instruction; follow the pack/charger instructions.
 %
 % Run entire script in base MATLAB R2020a or newer (exportgraphics).
-% Results: results/02_input_range_screen.png and simulation_inputs.mat.
+% Results: visualization/02_converter_input_range.png and visualization/02_simulation_inputs.mat
 % No CSV and no summary.txt are produced.
 
 clearvars; close all; clc;

@@ -66,7 +66,7 @@ A false modified-sign classification can be as consequential as missing the real
 | <img src="https://raw.githubusercontent.com/chankrrn/WRO-FE-YBR-SUNFLOWER/1070e9187c8ab7e5ea2eea4d55eec6ce940422a6/other/Pic/smallRed.gif" width="500"> | <img src="https://raw.githubusercontent.com/chankrrn/WRO-FE-YBR-SUNFLOWER/1070e9187c8ab7e5ea2eea4d55eec6ce940422a6/other/Pic/tallRed.gif" width="500"> |
 
 
-Both examples demonstrate the robot detecting a red sign and following the same avoidance route by passing it on the left, despite the difference in sign height. A modified sign follows its original colour, so a visible red modified sign is passed on the left. Otherwise it reads as if height is ignored.
+Both GIFs show the robot passing a modified red sign (5 cm and 15 cm tall) on its left. A modified sign follows its original colour, so a visible red modified sign is passed on the left.
 
 ---
 
@@ -82,22 +82,7 @@ Both examples demonstrate the robot detecting a red sign and following the same 
 | Path construction | [goal_planner.py](../src/Raspberrypi/classes/goal_planner.py) | Passing goals, turning constraints and body clearance |
 | Parameter profile | [final/config.toml](../src/Raspberrypi/tasks/final/config.toml) | Cue policy, thresholds, vote settings and speed request |
 
-```mermaid
-flowchart TD
-    A["Camera sign observation"] --> B["Shape and three height hypotheses"]
-    L["LiDAR ranges and scan ages"] --> C["Configured cue policy"]
-    P["Pose and sensor offsets"] --> B
-    P --> C
-    B --> C
-    C --> V["Per-sign vote accumulation"]
-    V --> E{"Eligible modified track?"}
-    E -->|Yes| I["Opposite passing side"]
-    E -->|No| N["Visible-colour passing side"]
-    I --> G["GoalPlanner and path tracking"]
-    N --> G
-    V --> R["Height-corrected map position"]
-    R --> G
-```
+![Figure SR-01 Surprise Decision Flow](../other/Pic/software_diagram/SR01_surprise_decision_flow.svg)
 
 *Figure SR-01. Implemented decision flow. A height used for position estimation is distinct from authorization to invert a passing side.*
 
@@ -106,6 +91,8 @@ flowchart TD
 ## 4. Geometry and sensor evidence
 
 ### 4.1 Three range hypotheses
+
+![Figure SR-02 Range Hypotheses](../other/Pic/software_diagram/SR02_range_hypotheses.svg)
 
 For image height `h_px`, a pinhole-style approximation relates sign height `H`, effective focal calibration `f_y` and camera-to-face distance `d_H`:
 
@@ -123,6 +110,8 @@ These camera distances cannot be compared directly with LiDAR distances from a d
 The camera's `CAMERA_YAW_DEG = -6.4` and `CAPTURED_HORIZONTAL_FOV_DEG = 230.0` are code calibration parameters. The latter is not the lens seller's advertised 222° specification. Changing camera mounting or image geometry changes the applicability of the calibration.
 
 ### 4.2 Corrected image shape
+
+![Figure SR-03 Shape Vote Bands](../other/Pic/software_diagram/SR03_shape_vote_bands.svg)
 
 A square-based sign appears wider when viewed diagonally. The code uses the field-relative viewing angle to compensate its apparent width. With bounding-box height `h`, width `w`, edge correction `p` and viewing angle `alpha`:
 

@@ -27,8 +27,7 @@
 %   it does not represent usable battery runtime or a safe discharge limit.
 %
 % Requires base MATLAB R2020a+; run the entire script.
-% Produces results/07_12v_input_headroom.png (240 DPI) and
-%          results/simulation_inputs.mat. No CSV or summary.txt.
+% Results: visualization/07_12v_input_headroom.png and visualization/07_simulation_inputs.mat
 
 clearvars; close all; clc;
 

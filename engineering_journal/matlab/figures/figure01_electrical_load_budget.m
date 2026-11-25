@@ -5,7 +5,7 @@
 % This is a PLANNING CALCULATION, not a measured current/power trace.
 % Self-contained. Requires base MATLAB R2020a+ (exportgraphics).
 % Run as a complete script. Do not use Run Section without the inputs above.
-% Outputs: results/01_assumed_load_budget.png, simulation_inputs.mat.
+% Results: visualization/01_electrical_load_budget.png and visualization/01_simulation_inputs.mat
 % No CSV or summary.txt files are created.
 %
 % SOURCE STATUS:

@@ -79,7 +79,7 @@ Component ratings are attributed to published specifications; circuit connection
 
 ### 2.1 Power-flow architecture — Figure E-01
 
-![Figure E-01 — Modular power architecture, 4S LiHV battery, separate 5 V and 12 V converters, and common PCT-214 ground](../schemes/modular_power_architecture.png)
+![Figure E-01 — Modular power architecture, 4S LiHV battery, separate 5 V and 12 V converters, and common PCT-214 ground](../other/Pic/elec_diagram/modular_power_architecture.svg)
 
 *Figure E-01.* Modular power architecture. The 4S LiHV battery positive passes through the main rocker switch to the **D1-3 positive distributor**. Battery negative connects directly to the **PCT-214 common-ground distributor**. The DFR1202 and DFR1208 produce separate nominal 5 V and 12 V supply domains. The team measured **5.1 V** at the 5 V converter output and **12.1 V** at the 12 V converter output. The 12 V domain supplies the DFR0592 motor driver, whose **M1** motor output drives the propulsion motor; **E1** supplies and reads the encoder. The 5 V domain powers the Raspberry Pi via USB-C and the LiDAR through its dedicated power lead. This is a functional power diagram; individual connector contacts are documented in Section 10 and Figure E-03.
 
@@ -87,7 +87,7 @@ The EasyEDA schematic uses `VBAT_RAW` (battery positive before the switch), `VBA
 
 ### 2.2 Controller and signal architecture — Figure E-02
 
-![Figure E-02 — Raspberry Pi, motor HAT M1/E1, I/O HAT and sensor signal interfaces](../schemes/control_sensor_interfaces.png)
+![Figure E-02 — Raspberry Pi, motor HAT M1/E1, I/O HAT and sensor signal interfaces](../other/Pic/elec_diagram/control_sensor_interfaces.svg)
 
 *Figure E-02.* Controller and signal interfaces. The Raspberry Pi 5 exchanges I²C commands with the DFR0592 motor-driver HAT (software-configured address `0x11` on bus 1) and DFR0604 I/O Expansion HAT (`0x10` on bus 1). The DFR0592 **M1/E1** terminals form the propulsion and encoder interface. DFR0604 provides I²C for SEN0253, Digital 16 for the illuminated start button, PWM3 for the steering servo, and UART for the RPLIDAR S2L. The fisheye camera uses the Pi's CSI ribbon interface; the official active cooler uses its dedicated fan header. The drawing illustrates functional connections and power-domain separation rather than assigning custom connector contact numbers.
 
@@ -709,8 +709,8 @@ The architecture is evaluated as a connected system: the power budget relates to
 
 | Resource | GitHub path |
 |---|---|
-| E-01 — Modular power architecture | [`schemes/modular_power_architecture.png`](../schemes/modular_power_architecture.png) |
-| E-02 — Controller and signal interfaces | [`schemes/control_sensor_interfaces.png`](../schemes/control_sensor_interfaces.png) |
+| E-01 — Modular power architecture | [`other/Pic/elec_diagram/modular_power_architecture.svg`](../other/Pic/elec_diagram/modular_power_architecture.svg) |
+| E-02 — Controller and signal interfaces | [`other/Pic/elec_diagram/control_sensor_interfaces.svg`](../other/Pic/elec_diagram/control_sensor_interfaces.svg) |
 | E-03A — Power Distribution | [`schemes/power_distribution.svg`](../schemes/power_distribution.svg) |
 | E-03B — Main Controller and HAT Interfaces | [`schemes/main_controller_hat_interfaces.svg`](../schemes/main_controller_hat_interfaces.svg) |
 | E-03C — Sensors, Motor and Steering | [`schemes/sensors_motor_steering.svg`](../schemes/sensors_motor_steering.svg) |

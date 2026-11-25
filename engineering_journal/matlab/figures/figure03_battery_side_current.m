@@ -7,8 +7,8 @@
 % Manufacturer/supplier values are separated from assumptions below.
 %
 % Requires base MATLAB R2020a+ (exportgraphics).
-% Run the entire script. Output: results/03_estimated_input_current.png
-% and results/simulation_inputs.mat. No CSV or summary.txt.
+% Results: visualization/03_estimated_battery_side_current.png and visualization/03_simulation_inputs.mat
+% No CSV or summary.txt.
 
 clearvars; close all; clc;
 
