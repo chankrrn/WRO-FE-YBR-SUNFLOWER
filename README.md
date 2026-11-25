@@ -31,7 +31,7 @@ This repository shares the robot's design, source code, calculations, simulation
 | Robot | Four-wheeled autonomous car with controlled steering and driven wheels |
 | Main controller | Raspberry Pi 5 (8 GB) |
 | Perception | LiDAR and fisheye camera |
-| Current stage | International-final robot completed; final assembly and validation completed |
+| Current stage | V2.4 International Final robot, tested on the field |
 | Engineering modeling | Offline MATLAB electrical-system calculations and simulations, with published source code and figures |
 
 ---
@@ -83,6 +83,19 @@ All team members contribute to the engineering process through collaborative des
 
 Our robot combines a Raspberry Pi computer, range and vision sensors, a geared drive motor with encoder feedback, and servo-controlled steering. The computer processes observations and coordinates the car's motion through the onboard software and electrical interfaces. Full component specifications, circuit diagrams, pin assignments, mechanical dimensions, tuning parameters, and available validation results are recorded in the engineering journals.
 
+## Software and how to run it
+
+| Code module | Hardware it talks to | Job |
+|---|---|---|
+| `classes/lidar_manager.py` | RPLIDAR S2L (UART, 1 Mbit/s) | Reads 360° scans |
+| `classes/compass_manager.py` | BNO055 (I²C 0x28) | Heading |
+| `camera_manager.py, classes/vision_manager.py, classes/object_solver.py` | OV5647 camera (CSI) | Finds red/green signs and their distance |
+| `classes/navigation_manager.py, classes/field_map.py` | (LiDAR + IMU data) | Particle-filter localization |
+| `classes/racing_line.py, classes/pure_pursuit.py, classes/goal_planner.py, classes/dubins.py` | — | Path and steering decisions |
+| `classes/motor_manager.py` | DFR0592 (I²C 0x11) → CHP-20GP-180 motor; DFR0604 (I²C 0x10) → S0017M servo | Drive and steering output |
+| `classes/start_button.py` | DFR0785-R on GPIO16 | Waits for the start press |
+| `tasks/qualification, tasks/final, lidar_park/` | all of the above | The Open round, the Obstacle round, and parking |
+
 ### Standard Views
 
 | Front | Left | Top |
@@ -105,6 +118,8 @@ Robot photographs: [`v-photos/`](v-photos/).
 | Ver 1.0 | Ver 2.0 |
 |---|---|
 | <img src="v-photos/Ver1/ver1_pic.png" width="500" alt="Version 1 national-final robot"> | <img src="v-photos/Ver2_(Current)/photoshoot1.jpg" width="500" alt="Version 2 robot during international-final development"> |
+
+Note : 1.0 = V1.1–V1.3, 2.0 = V2.1–V2.4 (see 1-mech §2.1)
 
 ### Version 1 — National Final Robot Design
 
@@ -172,7 +187,7 @@ Two representative results are illustrated below. Their full assumptions, calcul
 
 **Other modeled risks.** Figures 01–03 examine the consequences of assumed component loads and conversion efficiency. Figure 08 demonstrates how higher effective resistance in a modeled USB-C supply path can reduce Pi-side voltage during hypothetical changes in current draw. These plots are analytical screening tools, not oscilloscope captures or measured motor/servo transients.
 
-**Available physical evidence.** The [electrical journal, Section 6.4](engineering_journal/2-elec.md#64-multimeter-observations-at-the-converter-outputs) records team-reported **5.1 V** at the DFR1202 output and **12.1 V** at the DFR1208 output, measured with a multimeter. Those two point readings are **not** a measurement of battery discharge, actual dynamic load regulation, or voltage at the Raspberry Pi's USB-C connector or the motor-driver supply terminals. The journal separately discusses the 12.1 V reading relative to the motor driver's stated supply range.
+**Available physical evidence.** The [electrical journal, Section 6.4](engineering_journal/2-elec.md#64-multimeter-observations-at-the-converter-outputs) records measured **5.1 V** at the DFR1202 output and **12.1 V** at the DFR1208 output, measured with a multimeter. Those two point readings are **not** a measurement of battery discharge, actual dynamic load regulation, or voltage at the Raspberry Pi's USB-C connector or the motor-driver supply terminals. The journal separately discusses the 12.1 V reading relative to the motor driver's stated supply range.
 
 **Deployment and validation boundary.** MATLAB models informed electrical risk assessment and proposed verification; the `.m` programs are **not deployed on the robot**. The present published evidence does not establish that the battery models were calibrated against measured discharge data, that all output rails remain within specifications under actuation, or that a particular hardware modification was completed because of these analyses. Additional loaded-voltage checks, transient observations, and run-condition measurements are needed to close those gaps. See the [electrical verification reference](engineering_journal/2-elec.md#182-verification-and-calibration-reference).
 

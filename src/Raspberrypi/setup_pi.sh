@@ -61,6 +61,12 @@ cd "$(dirname "$0")"
 uv venv --system-site-packages
 uv sync --frozen
 
+echo "==> Autostart service"
+REPO=$(cd ../.. && pwd)
+sed "s#/home/pi/WRO-FE-YBR-SUNFLOWER#$REPO#" deploy/wro-robot.service | sudo tee /etc/systemd/system/wro-robot.service >/dev/null
+sudo systemctl daemon-reload
+sudo systemctl enable wro-robot.service
+[ -f /boot/firmware/wro_mode.txt ] || echo off | sudo tee /boot/firmware/wro_mode.txt
 echo "==> 6/6  Runtime directories"
 # camera_manager.py writes debug recordings to src/videos/ (gitignored).
 mkdir -p ../videos

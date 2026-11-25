@@ -95,7 +95,7 @@ WALL_THICKNESS_MM = 10.0
 
 # A blade is in the beam when the side range drops this far below the wall
 # distance being followed. The blades stand 200mm proud, so the step is a
-# big one - well clear of the +/-10mm the C1 wobbles by, and of the 40mm the
+# big one - well clear of the +/-10mm the S2L wobbles by, and of the 40mm the
 # follow itself is allowed to drift.
 BLADE_STEP_MM = 110.0
 

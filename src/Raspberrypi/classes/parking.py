@@ -2476,7 +2476,7 @@ class ParkingSequence:
 
         A LINE FIT, NOT TWO RAYS. Two ranges either side of the perpendicular
         give the angle in one line of trigonometry, and at this range they
-        give it terribly: the C1 is good to about a centimetre, and a
+        give it terribly: the S2L is good to about a centimetre, and a
         centimetre of error across a 20-degree baseline at 250mm is eight
         degrees of yaw. Eight degrees times the gain is a steering command
         that weaves on noise alone. Fitting a line through the whole visible

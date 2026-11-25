@@ -52,7 +52,7 @@
 
 Our robot uses rear-wheel drive and servo-controlled front steering. The design prioritizes controllable motion, a compact chassis, accessible components and a clear LiDAR scan plane.
 
-Dimensions and build details are team-reported. Equations describe ideal behavior under stated assumptions. Supplier ratings are identified separately from robot measurements, and unfinished tests are marked as pending.
+Dimensions and build details are measured. Equations describe ideal behavior under stated assumptions. Supplier ratings are identified separately from robot measurements, and unfinished tests are marked as pending.
 
 ---
 
@@ -109,7 +109,7 @@ Component specifications and quantities are listed in the [build BOM](4-build.md
 
 ### 3.2 Reported robot measurements
 
-| Quantity | Symbol | Team-reported value |
+| Quantity | Symbol | Measured value |
 |---|---|---|
 | Length × width × height | $l_{body},w_{body},h_{body}$ | 248 × 140 × 120 mm |
 | Wheelbase | $L$ | 165 mm |
@@ -183,7 +183,7 @@ The supplier gearbox-output speeds cited in the electrical journal are 780 rpm n
 
 At equal gearbox-output speed, 18:28 gives **12.5% higher carrier speed**. At equal input torque and efficiency, it gives **11.1% less carrier torque**. The 12.5% figure describes the gearing change alone. The larger tires also increase travel per wheel revolution, so both changes must be included in the encoder distance calibration.
 
-We changed to 18:28 to fit the new drivetrain layout. With the larger tires, the team observed noticeably higher speed while retaining low-speed control. This is a qualitative driving observation rather than a measured speed comparison.
+We changed to 18:28 to fit the new drivetrain layout. With the larger tires, the team observed noticeably higher speed while retaining low-speed control. Measured with a tape at speed command 60: 700 mm in 3.0 s with 16:28, and 870 mm in 3.01 s with 18:28 (with the replacement DFR0592). That is 233 → 289 mm/s, +24%. The gearing alone explains +12.5%; the rest comes from the tyres and the new motor board.
 
 ---
 
@@ -405,18 +405,17 @@ Two electrical limits also affect mechanical loading. The electrical journal fla
 
 ## 14. Mechanical verification and calibration
 
-### 14.1 Verification plan
+### 14.1 Test results
 
-The following tests require recorded results.
-
-| Test | What to record |
-|---|---|
-| Geometry | Confirm software dimensions match the reported 248 mm length and 165 mm wheelbase |
-| Steering | Command versus both wheel angles, center, limits and backlash |
-| Turning | Left/right turning radii and outer-body clearance |
-| Encoder calibration | Measured travel per count using the installed tires and gearing |
-| Drivetrain | Gear engagement, axle play, loaded speed and motor current |
-| Sensor mounting | Installed poses, scan height and blocked sectors |
+| Test | Method | Result | What we changed because of it |
+|---|---|---|---|
+| Drive speed, V1.3 (16:28) | Tape, 3.0 s at command 60 | 700 mm → 390 mm/s at command 100 | — |
+| Drive speed, V2.4 (18:28) | `test_steering.py --tape 3 --drive-speed 60` | 870 mm in 3.01 s → 482 mm/s at command 100 (+24%) | `mm_per_s_at_full` 390 → 482 |
+| Static steering lock | Protractor at command 90 | 50° and 45° on the two front wheels (47.5° average) | — |
+| Driven steering lock | `test_circle.py` : 60 cm circle at command ±80, same both ways | 34.5° at command 80 → 38.8° at full lock | Planner uses 38.8°, not 47.5°: tyre scrub and linkage flex make the robot turn less than the static angle |
+| Minimum turning radius | R = 165 / tan 38.8° | ≈ 205 mm (rear axle) | Corner radius kept ≥ 650 mm |
+| Steering response time | `test_steering.py --lag` | 0.35 s to 63% | Steering lag modelled in software (servo_lag_s = 0.35) |
+| Steering step response | `test_step_response.py, speed 105` | 6% overshoot, no weaving | — |
 
 V1 steering and encoder calibrations must be checked again after the servo, chassis and gear changes.
 

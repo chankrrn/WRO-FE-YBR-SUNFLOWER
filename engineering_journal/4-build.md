@@ -47,8 +47,8 @@ This document explains **how to reproduce the final robot**.
 13. [Testing Workflow](#13-testing-workflow)
 14. [Troubleshooting](#14-troubleshooting)
 15. [Competition Startup Procedure](#15-competition-startup-procedure)
-16. [Reproducibility Checklist](#17-reproducibility-checklist)
-17. [Related Documentation](#18-related-documentation)
+16. [Reproducibility Checklist](#16-reproducibility-checklist)
+17. [Related Documentation](#17-related-documentation)
 
 ---
 
@@ -472,7 +472,7 @@ Connect the XH2.54-5P to the Female JST 2-Pin and DuPont Connector 4-Pin like in
 
 5. Connect RPLiDAR S2L
 
-       UART
+       S2L 5 V from the DFR1202, GND, S2L TX → R, S2L RX → T
 
 
 
@@ -846,6 +846,13 @@ Expected behavior:
 - task plan is created
 - software exits without attempting normal hardware-driving behavior
 
+## 9.7 Install autostart
+
+```bash
+sudo tee /etc/systemd/system/wro-robot.service >/dev/null
+sudo systemctl daemon-reload
+sudo systemctl enable wro-robot.service
+```
 
 ---
 
@@ -1316,7 +1323,7 @@ Wait for Pi Initialization
 Confirm Sensors
       |
       v
-Start Correct Competition Task
+Program starts automatically (round set in wro_mode.txt)
       |
       v
 Robot Waits for Start Button
@@ -1331,21 +1338,7 @@ Initial Heading Captured
 Autonomous Run Begins
 ```
 
-
-## 15.1 Open Challenge
-
-```bash
-cd ~/WRO-FE-YBR-SUNFLOWER/src/Raspberrypi
-uv run python main.py qualification
-```
-
-
-## 15.2 Obstacle Challenge
-
-```bash
-cd ~/WRO-FE-YBR-SUNFLOWER/src/Raspberrypi
-uv run python main.py final
-```
+Before the check time, set /boot/firmware/wro_mode.txt to qualification (Open), final (Obstacle) or final --surprise. At the field: power switch ON → wait for the Pi to boot → press the start button. Nothing is typed. Wi-Fi and Bluetooth are switched off by deploy/start_robot.sh.
 
 ---
 

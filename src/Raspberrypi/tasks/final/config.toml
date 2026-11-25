@@ -38,8 +38,7 @@ goal = 3
 stop_early_mm = 320.0
 
 [speed]
-# A speed is the RAW PWM duty the Arduino writes (0-255), not a percentage -
-# the value goes to analogWrite unchanged. These are the figures measured
+# Speed command 0–255, scaled by MotorManager to the DFR0592's 0–100%
 # AFTER the 16:28 reduction was fitted (see startup.mm_per_s_at_full): 60 is
 # about 24% duty and around 234mm/s.
 base = 130

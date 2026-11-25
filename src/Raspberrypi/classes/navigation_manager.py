@@ -91,7 +91,7 @@ SENSOR_SIGMA_MM = 80.0
 # unexplained beams can veto an otherwise perfect pose.
 SENSOR_OUTLIER_WEIGHT = 0.15
 
-# Process noise. There are no wheel encoders, so unless a caller reports
+# Process noise. The filter does not use the encoder; motion comes from the speed calibration, so unless a caller reports
 # motion the filter only knows "the robot may have moved a bit since last
 # time" - this is that "a bit", per second.
 DRIFT_SIGMA_MM_S = 220.0
@@ -126,7 +126,7 @@ RECOVERY_FRACTION = 0.3          # of the cloud, re-scattered per update
 # ============================================================================
 # Wall direction is fitted over a window of bearings rather than between
 # neighbours: at 1m range two beams 1 degree apart are ~17mm apart, which is
-# the same size as the C1's own noise, so a single chord carries no angle
+# the same size as the S2L's own noise, so a single chord carries no angle
 # information at all. Nine degrees of wall is ~150mm and fits cleanly.
 ORIENTATION_WINDOW_DEG = 9
 ORIENTATION_MIN_POINTS = 6          # valid returns needed inside a window
@@ -150,7 +150,7 @@ COLOR_TRUTH = (250, 220, 60)
 # The auto-refresh window for get_pose(). Anything fresher than this is
 # returned as-is instead of burning a raycast per call.
 #
-# The C1 spins at ~10Hz, so a scan-derived pose can never be fresher than
+# The S2L spins at ~10Hz, so a scan-derived pose can never be fresher than
 # 100ms however often this fires; setting it just under that means we consume
 # every rotation and no more. Between rotations get_pose() extrapolates with
 # the odometry rather than handing back the same stale pose - see

@@ -272,7 +272,7 @@ D_{\%}=100\frac{|u|}{255},\qquad 0\le |u|\le255,
 
 where `u` is a signed drive command and `D_%` is the requested PWM duty in percent before hardware dynamics and supply effects. Motor direction is selected separately. Code calibration still distinguishes the geared motor's internal **19:1** reduction from the external drivetrain gearing documented in [Mobility and Mechanical Design](1-mech.md).
 
-The motor-driver library reports encoder-derived rotational **speed**, not raw accumulated quadrature edges. `MotorManager` polls that information in a worker and integrates it into an output-shaft position estimate for finite rotations and distance moves. Its constants include `ENCODER_PPR = 11`, `GEAR_RATIO = 19`, a sign convention and a calibration multiplier. The drive channel is **`DRIVE_MOTOR = MotorBoard.M2`**. This shaft-angle estimate is a software integration and is not equivalent to a separate hardware counter with lossless edge history.
+The motor-driver library reports encoder-derived rotational **speed**, not raw accumulated quadrature edges. `MotorManager` polls that information in a worker and integrates it into an output-shaft position estimate for finite rotations and distance moves. Its constants include `ENCODER_PPR = 11`, `GEAR_RATIO = 19`, a sign convention and a calibration multiplier. The drive channel is **`DRIVE_MOTOR = MotorBoard.M1`**. This shaft-angle estimate is a software integration and is not equivalent to a separate hardware counter with lossless edge history.
 
 ## 5.3 Steering interface
 
@@ -794,7 +794,7 @@ Clearance estimates based on the planner footprint are not equivalent to actual 
 
 ## 13.2 Configuration and calibration values
 
-The software uses a **165 mm wheelbase parameter**, a **0.35 s** steering time constant and a **6.6° camera-yaw correction**. Travel-distance calibration is defined in the competition TOML files. These parameters connect the motion and perception models to the installed steering linkage, drivetrain and sensor mounts.
+The software uses a **165 mm wheelbase parameter**, a **0.35 s** steering time constant and a **−6.4° camera-yaw correction (calibrated 12 Nov 2026 with test_sign_sizer.py --calibrate; it was 6.6° before)**. Travel-distance calibration is defined in the competition TOML files. These parameters connect the motion and perception models to the installed steering linkage, drivetrain and sensor mounts.
 
 ## 13.3 Simulated evidence
 

@@ -14,7 +14,7 @@ MOTOR_I2C_BUS = 1
 # Both DFRobot HATs ship at 0x10; the DFR0604 kept it, this one was moved.
 # A new DFR0592 is moved with set_addr(0x11) and a power cycle.
 MOTOR_BOARD_ADDRESS = 0x11
-DRIVE_MOTOR = MotorBoard.M2   # moved off M1: it ran ~full speed at 21.6% duty
+DRIVE_MOTOR = MotorBoard.M1   # moved off M2: it ran ~full speed at 21.6% duty
 MOTOR_PWM_FREQUENCY_HZ = 1000
 BEGIN_TIMEOUT_S = 10.0
 
@@ -22,7 +22,6 @@ BEGIN_TIMEOUT_S = 10.0
 # to MotorBoard.CCW if a positive speed reverses.
 FORWARD_ORIENTATION = MotorBoard.CW
 
-# A speed is the RAW PWM duty the Arduino wrote (0-255), not a percentage -
 # every tuned speed in config.toml is in these units. The board wants 0-100%.
 SPEED_FULL_SCALE = 255
 
@@ -54,12 +53,12 @@ ENCODER_SIGN = -1
 ENCODER_POLL_S = 0.01
 
 # ============================================================================
-# Rotation control - ported from the Arduino's motor_degree()
+# Rotation control - ported from our V1 Arduino code
 # ============================================================================
 # kp is PWM (0-255) per degree of output-shaft error, kd PWM per deg/s.
 ROTATE_KP = 0.33
 ROTATE_KD = 0.007
-ROTATE_MAX_SPEED = 100        # the Arduino capped the correction at 100/255
+ROTATE_MAX_SPEED = 100
 ROTATE_MIN_SPEED = 60         # below this the motor stalls instead of turning
 ROTATE_MIN_SPEED_ZONE_DEG = 5  # ...so it is forced up to it outside this error
 ROTATE_TOLERANCE_DEG = 2
@@ -77,8 +76,7 @@ ROTATE_TIMEOUT_S = 10.0
 # ============================================================================
 # DFR0604 expansion board - the steering servo
 # ============================================================================
-STEER_SERVO_CHANNEL = 3       # PWM header 0-3; the ultrasonic head is on 0
-# Arduino Servo.h's pulse range: kept, so a steering command lands the wheels
+STEER_SERVO_CHANNEL = 3
 # exactly where it did when the Arduino drove the servo.
 SERVO_MIN_US = 544
 SERVO_MAX_US = 2400
@@ -144,8 +142,7 @@ class MotorManager:
     Rotation: the board reports rpm only, so a thread polls it and integrates
     position_deg. On top of that:
         drive_distance(speed, deg)   drive at a fixed speed until that far
-        rotate(deg) / rotate_to(deg) closed-loop move to a position, PD like
-                                     the Arduino's motor_degree()
+        rotate(deg) / rotate_to(deg) closed-loop move to a position, PD like the Arduino did.
 
     With `drive_enabled=False` every motor write goes out as stop (see
     _apply_speed), which is the one place all of them pass through - steering

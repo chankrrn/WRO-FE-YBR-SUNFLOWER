@@ -60,7 +60,7 @@ The engineering objective is repeatable autonomous navigation: estimate the robo
 
 | Item | Documented configuration |
 |---|---|
-| Body dimensions | 248 × 140 × 120 mm, team-reported length × width × height |
+| Body dimensions | 248 × 140 × 120 mm, measured length × width × height |
 | Wheelbase | 165 mm |
 | Front / rear track | 115 / 120 mm |
 | Ground clearance | 5 mm |
@@ -227,7 +227,7 @@ The recording labels preserve the team's stated test context. A field recording 
 
 | Evidence | Interpretation |
 |---|---|
-| Dimensions and masses | Team-reported physical quantities |
+| Dimensions and masses | Measured physical quantities |
 | Component specifications | Published operating limits or supplier values under their stated conditions |
 | Configuration values | Inputs to the actual software model and controller |
 | MATLAB and Python simulations | Calculated behavior under explicit assumptions |
@@ -250,6 +250,8 @@ uv run python main.py final
 uv run python main.py final --surprise
 ```
 
+For testing and debugging only. In competition the program starts automatically (see 4-build §15).
+
 Select the task and optional mode before the official start procedure. During the attempt, decisions are made onboard. Installation and configuration are preparation operations rather than external driving commands.
 
 | Verification level | Tool / observation | Main question |
@@ -260,7 +262,6 @@ Select the task and optional mode before the official start procedure. During th
 | Planning geometry | `test_goal_planner.py` | Are modeled paths feasible under the test's parameter profile? |
 | Sign-size diagnostics | `test_sign_sizer.py` | Do shape, range hypotheses and votes agree with known sign placements? |
 | Physical driving | Performance videos and controlled field trials | Does the assembled car execute the intended behavior? |
-| Electrical behavior | Defined load-point measurements | Do installed supply paths satisfy their requirements? |
 
 Parameter sweeps and tests must identify which configuration they exercise. A simulation profile is not automatically identical to the active final TOML. Reproduction connects source, dependencies, configuration, CAD and wiring to the same physical robot; a passing syntax check alone does not establish that connection.
 

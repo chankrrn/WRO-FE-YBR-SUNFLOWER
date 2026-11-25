@@ -106,7 +106,7 @@ STEER_GAIN_ERROR = 1.0
 # The sim's own idea of how fast the robot goes, kept separate from the
 # config's mm_per_s_at_full so a wrong calibration there shows up as the error
 # it would really be rather than cancelling itself out.
-TRUE_MM_PER_S_AT_FULL = 390.0    # measured with a tape, 16:28 gearing
+TRUE_MM_PER_S_AT_FULL = 482.0    # measured with a tape, 18:28 gearing, replacement DFR0592
 
 
 def body_corners(x, y, heading_deg, length_mm=ROBOT_LENGTH_MM,

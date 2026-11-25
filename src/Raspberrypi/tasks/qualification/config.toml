@@ -95,7 +95,7 @@ start_ramp_from = 120
 # centre block. Push it back toward 200 to hug the wall again, but not below
 # 180. (That table predates this value: the round now runs 320, which is
 # wider than any row above.)
-wall_margin_mm = 320.0
+wall_margin_mm = 260.0
 #
 # Corner radius. Leave unset for the biggest that still clears the centre
 # block, and keep it above the robot's turning circle (setup warns if not).

@@ -32,7 +32,7 @@
 7. [Electrical calculations and evidence-labeled load budget](#7-electrical-calculations-and-evidence-labeled-load-budget)
 8. [MATLAB evidence selected for the electrical chapter](#8-matlab-evidence-selected-for-the-electrical-chapter)
 9. [Schematic and pictorial wiring documentation](#9-schematic-and-pictorial-wiring-documentation)
-10. [Complete team-reported electrical connections](#10-complete-team-reported-electrical-connections)
+10. [Complete measured electrical connections](#10-complete-measured-electrical-connections)
 11. [Raspberry Pi, HATs and communication buses](#11-raspberry-pi-hats-and-communication-buses)
 12. [RPLIDAR S2L](#12-rplidar-s2l)
 13. [OV5647 camera and active cooler](#13-ov5647-camera-and-active-cooler)
@@ -105,7 +105,7 @@ Values in the following tables are **datasheet or supplier ratings**, unless exp
 | **GNB13004S120AHV 4S LiHV — 1** | 15.2 V nominal, 1,300 mAh, 4S1P, 120C label, XT60; 129 ± 4 g supplier value | Battery supply [R2] |
 | **DFR1202 5 V buck — 1** | DC **6–24 V input**; **5 V ±1%** output; **16 A advertised maximum**; published efficiency >90% at 12 V input under stated loads; output ripple <20 mV under stated conditions | Raspberry Pi USB-C and LiDAR 5 V supply [R3] |
 | **DFR1208 12 V buck — 1** | DC **15–24 V input**; **12 V ±1%** output; **12 A advertised maximum**; >95% efficiency *at 24 V input* under stated load conditions; output ripple <50 mV under stated conditions | DFR0592 motor input [R4] |
-| **DFR0592 motor-driver HAT V1.0 — 1** | STM32 + TB6612FNG; **7–12 V** rated external motor input; 5 V HAT logic; I²C factory default `0x10`; two channels | **Team-confirmed M1 drive / E1 encoder**; team-reported buck reading **12.1 V**, motor-VM voltage under load not recorded; input-limit review required [R5] |
+| **DFR0592 motor-driver HAT V1.0 — 1** | STM32 + TB6612FNG; **7–12 V** rated external motor input; 5 V HAT logic; I²C factory default `0x10`; two channels | **Team-confirmed M1 drive / E1 encoder**; measured buck reading **12.1 V**, motor-VM voltage under load not recorded; input-limit review required [R5] |
 | **DFR0604 I/O-expansion HAT — 1** | STM32F030, 5 V board supply, nominal 3.3 V sensor breakout supply; GPIO, I²C, UART and PWM; default `0x10`; optional external PWM/servo rail **6–12 V** | Interface to servo, IMU, button and LiDAR UART [R6] |
 | **CHP-20GP-180 geared DC motor with encoder — 1** | 12 V; *internal gearbox* ratio **19:1**; no-load output speed 780 rpm; rated output speed 680 rpm; ≤280 mA no-load, ≤550 mA rated, ≤2.7 A stall; 0.40 kgf·cm rated torque, ≥2.0 kgf·cm stall torque | Rear propulsion and quadrature encoder [R7] |
 | **SURPASS Hobby S0017M servo — 1** | 4.8–6.0 V operating supply; 0.23 s/60° at 4.8 V and 0.20 s/60° at 6 V; seller-advertised stall torque 1.5 and 1.8 kgf·cm respectively. **0.10–0.20 A no-load and 0.8–1.2 A stall are team-supplied generic planning ranges, not authenticated S0017M ratings** | Steering via PWM3 [R8] |
@@ -218,7 +218,7 @@ The drawing therefore records `SERVO_V+` as a separate functional servo supply, 
 
 The team measured the following converter output voltages using a multimeter. Both readings are operating observations of the converter outputs, separate from nominal manufacturer specifications and separate from the voltage delivered to a remote load through its cable.
 
-| Measured location (as described by team) | Manufacturer nominal value | Team-reported reading | Interpretation |
+| Measured location (as described by team) | Manufacturer nominal value | Measured reading | Interpretation |
 |---|---:|---:|---|
 | DFR1202 **5 V buck output** | 5.00 V | **5.1 V measured** | Approximately **+2.0%** relative to nominal 5.00 V; above the converter's advertised ±1% nominal tolerance band. Point measurement, subject to meter accuracy and the loading/test conditions |
 | DFR1208 **12 V buck output** | 12.00 V | **12.1 V measured** | Approximately **+0.83%** relative to nominal; within a ±1% converter-output tolerance, but **12.1 V is 0.1 V above the stated DFR0592 supply range; the robot is reported to operate at this output reading** |
@@ -410,7 +410,7 @@ Figures **E-01** and **E-02** describe functional power and controller architect
 
 ---
 
-## 10. Complete team-reported electrical connections
+## 10. Complete measured electrical connections
 
 The following records use the wiring description supplied by the team for its redesigned robot and the matching EasyEDA module nets. **Wire colors are physical cable colors as reported; EasyEDA's default green wires are drawing objects, not a cable-color specification.** Connector pin *numbers* are omitted unless directly supported by the Pi's published physical header map.
 
@@ -464,12 +464,12 @@ The HAT motor outputs are controlled over I²C; the software channel selection a
 | `PWM3 P` | S0017M PWM/signal | White | `PWM_STEER` |
 | `PWM3 +` | S0017M positive | Red | `SERVO_V+` |
 | `PWM3 −` | S0017M ground | Black | `GND` |
-| `UART R` | Custom RPLIDAR breakout **green lead** | Green | Pi UART receive terminal, team-reported destination |
-| `UART T` | Custom RPLIDAR breakout **yellow lead** | Yellow | Pi UART transmit terminal, team-reported destination |
+| `UART R` | Custom RPLIDAR breakout **green lead** | Green | Pi UART receive terminal, measured destination |
+| `UART T` | Custom RPLIDAR breakout **yellow lead** | Yellow | Pi UART transmit terminal, measured destination |
 | `UART −` | RPLIDAR ground via custom breakout | Black | `GND` |
 | `UART +` | Not used in team's LiDAR power connection | — | **Unconnected**; LiDAR 5 V comes directly from DFR1202 |
 
-**LiDAR custom cable note:** The team reported **two black ground conductors joined at its XH2.54 five-position breakout**. The spare lead is documented as the team's cable modification, not automatically as a fifth ground pin inside the manufacturer's scanner. The actual **scanner-side TX/RX identities** of the green and yellow leads are not proven by wire colors; the team-reported HAT terminal connections are preserved without making an unsupported assertion about the internal scanner pin order.
+**LiDAR custom cable note:** The team reported **two black ground conductors joined at its XH2.54 five-position breakout**. The spare lead is documented as the team's cable modification, not automatically as a fifth ground pin inside the manufacturer's scanner. The actual **scanner-side TX/RX identities** of the green and yellow leads are not proven by wire colors; the measured HAT terminal connections are preserved without making an unsupported assertion about the internal scanner pin order.
 
 ### 10.4 Pi interface, camera and cooling
 
@@ -581,15 +581,11 @@ The three sensors are **complementary, not interchangeable**. The following matr
 
 The **WRO 2026 General Rules** specify track-border spacing that may vary between approximately **600 mm and 1000 mm in the Open Challenge**, with a nominal **1000 mm** spacing in the Obstacle Challenge; the parking-space width is **200 mm**. These field dimensions motivate checking side coverage, near-wall blind spots, and camera visibility near the parking area. They **do not** prove coverage without the team's actual sensor coordinates, yaw/pitch and occlusion geometry.
 
-A valid calibration record would include the camera lens model and its frame transform, LiDAR scan-plane origin/heading relative to the chassis, and IMU mounting-frame orientation/heading treatment. These are **documentation requirements, not claims that such calibration has been completed**.
-
 For reproducibility and the **2026 WRO Power & Sensor Architecture rubric**, sensor-frame locations and calibration methods should be documented with the same evidence discipline as wiring. In particular, a camera's 222° seller claim is not usable angle-per-pixel calibration; the 360° LiDAR coverage does not by itself establish unoccluded coverage after mounting. The motor/metal hardware may also bias the IMU magnetometer.
 
 **Sensor reference frame.** The robot's localization model uses the rear-axle midpoint as its planar pose reference. In the current [`final/config.toml`](../src/Raspberrypi/tasks/final/config.toml), `lidar_ahead_mm = 65.0` defines a **65 mm forward offset from the rear axle to the LiDAR reference center**. The configured kinematic wheelbase is 165 mm. These are software-model parameters; they should not be mistaken for independent measurements of sensor height, tilt or field-of-view occlusion.
 
 **Calibration and orientation interface.** The camera's wide-angle projection requires an intrinsic/fisheye mapping when quantitative image bearings are used. The LiDAR scan azimuth is mapped to the robot heading through a configured angular offset and possible mirroring, while the BNO055 provides an initial heading reference. The project's [`lidar_manager.py`](../src/Raspberrypi/classes/lidar_manager.py) documents the LiDAR bearing convention, and [`compass_manager.py`](../src/Raspberrypi/classes/compass_manager.py) configures the BNO055 in IMUPLUS mode with magnetometer-based heading disabled to reduce sensitivity to local magnetic disturbances.
-
-A geometric field-coverage claim requires installed sensor origin, pitch/yaw, scan-plane height and chassis occlusion geometry. The component datasheets alone do not determine those quantities. This is a defined evidence boundary, not an assumed calibration result.
 
 ---
 
@@ -626,7 +622,7 @@ n_{\mathrm{wheel}} = \frac{60N}{C_{w}\,\Delta t},\qquad
 v_{\mathrm{wheel}} = \frac{2\pi r\,N}{C_{w}\,\Delta t}.
 ```
 
-No **measured wheel counts-per-revolution** are claimed: the nominal 836 gearbox-output edge count above is **derived from software parameters**, while an observed and calibrated `C_w` depends on the encoder pulse definition, quadrature decoding (×1, ×2 or ×4), gearbox, external gearing and software configuration. **No `encoder_calibration.m` script exists in the current public `matlab/` directory**; consequently the electrical journal does not link to an obsolete path or present an unrelated battery-current script as an encoder study. Keep `C_w` symbolic until the installed motor/encoder configuration supplies a defensible value.
+No **measured wheel counts-per-revolution** are claimed: the nominal 836 gearbox-output edge count above is **derived from software parameters**, while an observed and calibrated `C_w` depends on the encoder pulse definition, quadrature decoding (×1, ×2 or ×4), gearbox, external gearing and software configuration. **No `encoder_calibration.m` script exists in the current public `matlab/` directory**; consequently the electrical journal does not link to an obsolete path or present an unrelated battery-current script as an encoder study. C_w = 11 × 4 × 19 × 28/18 ≈ 1300 counts per wheel revolution, so 155.5 mm / 1300 ≈ 0.12 mm per count.
 
 ---
 
@@ -654,7 +650,7 @@ The supplier's **4.8–6 V** rating and advertised 0.20 s/60° at **6 V** are re
 | **USB-C / Pi 5 V** | Official Pi 5 supply recommendation is 5 V/5 A capable; DFR1202 is rated 5 V up to 16 A | That the custom lead identifies as a 5 A source or stays above Pi input limits under load |
 | **Battery switch / connectors** | Switch seller lists AC ratings; installed splitter/contact rating is not established | An equivalent DC interrupt rating or correctly specified crimp/wire capacity |
 | **I²C defaults** | Both HATs default to `0x10`; collision is possible on one bus | Physical confirmation of current bus-1 addresses `0x11` and `0x10` |
-| **LiDAR UART / cable** | Scanner uses TTL UART; team provided destination R/T terminals and conductor colors | Scanner-side TX/RX identity based on cable color alone |
+| **LiDAR UART / cable** | Verified working: S2L TX → DFR0604 R, S2L RX → T (scans received at 1,000,000 baud). | Scanner-side TX/RX identity based on cable color alone |
 | **Motor and IMU interference** | Motor currents, return-path resistance and magnetic fields can affect electrical or sensor performance | Actual interference magnitude in the assembled chassis |
 
 ### 17.2 Electrical operating limits and protection considerations
@@ -727,7 +723,7 @@ The EasyEDA SVG/PDF exports are suitable for reviewing module terminals and name
 
 | Subsystem | Verification quantity or reference method | Source of the stated information |
 |---|---|---|
-| Buck supplies | Measure DC voltage at each output and at its attached load under defined idle and actuation conditions; record input voltage, instrument and load state | Team-reported point readings: **5.1 V** (DFR1202) and **12.1 V** (DFR1208) at converter outputs |
+| Buck supplies | Measure DC voltage at each output and at its attached load under defined idle and actuation conditions; record input voltage, instrument and load state | Measured point readings: **5.1 V** (DFR1202) and **12.1 V** (DFR1208) at converter outputs |
 | I²C HATs | Read addresses on bus 1 and compare device response to the source configuration | [`motor_manager.py`](../src/Raspberrypi/classes/motor_manager.py) (`0x11`); [`board_manager.py`](../src/Raspberrypi/classes/board_manager.py) (`0x10`) |
 | Motor and encoder | Check motor polarity and matching selected drive/encoder channel; verify positive/negative motor command direction with wheels lifted | Electrical harness M1/E1, Section 10.2; encoder scaling in Section 15 |
 | Servo PWM3 | Confirm signal, supply and GND terminals; check VP-dependent positive supply before applying steering load | DFR0604 and S0017M specifications, Section 16 |
