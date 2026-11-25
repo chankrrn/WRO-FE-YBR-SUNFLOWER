@@ -96,6 +96,22 @@ Our robot combines a Raspberry Pi computer, range and vision sensors, a geared d
 | `classes/start_button.py` | DFR0785-R on GPIO16 | Waits for the start press |
 | `tasks/qualification, tasks/final, lidar_park/` | all of the above | The Open round, the Obstacle round, and parking |
 
+Run everything on the Raspberry Pi, from the Python project folder:
+
+```bash
+cd src/Raspberrypi
+uv sync          # first time only: installs the exact versions in uv.lock
+```
+
+| Round | Command |
+|---|---|
+| Open Challenge | `uv run python main.py qualification` |
+| Obstacle Challenge | `uv run python main.py final` |
+
+The robot initializes its sensors and then waits for the start button before it moves.
+
+For testing only (not for competition runs): add `--debug` for the live visualization, or use `--dry-run` to check the task without touching hardware.
+
 ### Standard Views
 
 | Front | Left | Top |
