@@ -93,8 +93,9 @@ start_ramp_from = 120
 #
 # 230: comfortably past the cliff, and the straights still run 770mm from the
 # centre block. Push it back toward 200 to hug the wall again, but not below
-# 180. (That table predates this value: the round now runs 320, which is
-# wider than any row above.)
+# 180. (That table is older. The round now runs 260: it was 320, but 320 left
+# only 0.1-1.4 cm to the inner wall with 600 mm corridors in simulation;
+# 260 leaves 8-10 cm and still runs the normal field cleanly.)
 wall_margin_mm = 260.0
 #
 # Corner radius. Leave unset for the biggest that still clears the centre
@@ -204,6 +205,6 @@ localize_timeout_s = 8.0
 # Drive speed 100 in mm/s. Only feeds the filter's motion model, so a rough
 # figure is fine - the lidar does the real work. Measure it by timing a
 # straight run if the robot fights its own odometry.
-# 700 through the original gearing; 390 MEASURED with a tape after the 16:28
-# reduction was fitted - 700mm in 3.0s at command 60.
+# History: 700 (original gearing) -> 390 (16:28, V1.3) -> 482 (18:28 with the
+# replacement DFR0592).
 mm_per_s_at_full = 482.0    # test_steering.py --tape: 870mm in 3.01s at 60, replacement DFR0592

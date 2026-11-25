@@ -23,7 +23,7 @@ PRESSED_LEVEL = 1
 DEBOUNCE_S = 0.05
 POLL_S = 0.01
 
-# Time to take the hand away before the robot moves. Same as the Arduino did.
+# Time to take the hand away from the start button before the robot moves.
 RELEASE_DELAY_S = 0.8
 
 

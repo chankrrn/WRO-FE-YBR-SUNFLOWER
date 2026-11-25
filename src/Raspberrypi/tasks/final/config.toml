@@ -38,9 +38,9 @@ goal = 3
 stop_early_mm = 320.0
 
 [speed]
-# Speed command 0–255, scaled by MotorManager to the DFR0592's 0–100%
-# AFTER the 16:28 reduction was fitted (see startup.mm_per_s_at_full): 60 is
-# about 24% duty and around 234mm/s.
+# Speed command 0-255, scaled by MotorManager to the DFR0592's 0-100%.
+# With 18:28 gearing, 60 is about 24% duty and about 289 mm/s
+# (see startup.mm_per_s_at_full).
 base = 130
 corner = 120
 lost = 105
@@ -178,8 +178,8 @@ localize_timeout_s = 8.0
 # the bay is really in, rotate this by 90 and go again.
 start_heading_deg = 0.0
 
-# 700 through the original gearing; 390 MEASURED with a tape after the 16:28
-# reduction was fitted - 700mm in 3.0s at command 60. Re-measure the same way
+# History: 700 (original gearing) -> 390 (16:28, V1.3) -> 482 (18:28 with the
+# replacement DFR0592: 870mm in 3.01s at command 60). Re-measure the same way
 # if the drivetrain changes: `python test_steering.py --tape 3 --drive-speed 60`.
 # NOT with --calibrate: that derives distance from the pose track, and this
 # number is what feeds the filter's motion model - measuring it through the

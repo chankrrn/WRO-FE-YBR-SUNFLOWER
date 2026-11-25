@@ -848,10 +848,11 @@ Expected behavior:
 
 ## 9.7 Install autostart
 
+The autostart service is installed by `setup_pi.sh` (run in Section 9). To check it:
+
 ```bash
-sudo tee /etc/systemd/system/wro-robot.service >/dev/null
-sudo systemctl daemon-reload
-sudo systemctl enable wro-robot.service
+systemctl is-enabled wro-robot.service     # must print: enabled
+cat /boot/firmware/wro_mode.txt            # qualification / final / final --surprise / off
 ```
 
 ---
@@ -1355,8 +1356,6 @@ Before the check time, set /boot/firmware/wro_mode.txt to qualification (Open), 
 - [ ] Wiring diagram available
 - [ ] CAD / STL files available
 - [ ] Source code available
-- [ ] Final release / tag documented
-- [ ] CHANGELOG available
 
 
 ## 16.2 Mechanical

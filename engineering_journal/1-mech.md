@@ -417,8 +417,6 @@ Two electrical limits also affect mechanical loading. The electrical journal fla
 | Steering response time | `test_steering.py --lag` | 0.35 s to 63% | Steering lag modelled in software (servo_lag_s = 0.35) |
 | Steering step response | `test_step_response.py, speed 105` | 6% overshoot, no weaving | — |
 
-V1 steering and encoder calibrations must be checked again after the servo, chassis and gear changes.
-
 ---
 
 ## 15. Reproducibility and evidence map

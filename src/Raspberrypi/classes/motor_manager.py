@@ -14,7 +14,7 @@ MOTOR_I2C_BUS = 1
 # Both DFRobot HATs ship at 0x10; the DFR0604 kept it, this one was moved.
 # A new DFR0592 is moved with set_addr(0x11) and a power cycle.
 MOTOR_BOARD_ADDRESS = 0x11
-DRIVE_MOTOR = MotorBoard.M1   # moved off M2: it ran ~full speed at 21.6% duty
+DRIVE_MOTOR = MotorBoard.M1   # motor on M1+/M1-, encoder on E1 (checked on the board, Nov 2026)
 MOTOR_PWM_FREQUENCY_HZ = 1000
 BEGIN_TIMEOUT_S = 10.0
 
@@ -22,7 +22,8 @@ BEGIN_TIMEOUT_S = 10.0
 # to MotorBoard.CCW if a positive speed reverses.
 FORWARD_ORIENTATION = MotorBoard.CW
 
-# every tuned speed in config.toml is in these units. The board wants 0-100%.
+# A speed command is -255..255 (sign = direction). Every tuned speed in
+# config.toml uses this scale; _apply_speed() converts it to the DFR0592's 0-100%.
 SPEED_FULL_SCALE = 255
 
 # ============================================================================
@@ -77,7 +78,8 @@ ROTATE_TIMEOUT_S = 10.0
 # DFR0604 expansion board - the steering servo
 # ============================================================================
 STEER_SERVO_CHANNEL = 3
-# exactly where it did when the Arduino drove the servo.
+# Servo pulse range 544-2400 us (0-180 deg), kept from our V1 robot so the
+# steering calibration stayed the same.
 SERVO_MIN_US = 544
 SERVO_MAX_US = 2400
 
@@ -121,7 +123,7 @@ DONE_REPLY = "t"          # what drive_distance returns on success, as it always
 
 
 def steer_to_servo_deg(angle):
-    """A steering command (- left / + right) to a 0-180 servo angle - the Arduino's cal_head()."""
+    """A steering command (- left / + right) to a 0-180 servo angle - same formula as our V1 robot."""
     return (angle + 180) / 2
 
 
@@ -134,7 +136,7 @@ class MotorManager:
     Drive motor + steering. The motor and its encoder are on the DFR0592 HAT,
     the steering servo on the DFR0604 expansion board (via BoardManager).
 
-    Units are the ones the Arduino used, so nothing above this class changes:
+        Units (kept from our V1 robot, so the task code did not need to change):
         angle     steering in degrees, - left / + right
         speed     PWM -255..255, sign = direction
         distance  degrees of rotation of the gearbox OUTPUT shaft
@@ -142,7 +144,7 @@ class MotorManager:
     Rotation: the board reports rpm only, so a thread polls it and integrates
     position_deg. On top of that:
         drive_distance(speed, deg)   drive at a fixed speed until that far
-        rotate(deg) / rotate_to(deg) closed-loop move to a position, PD like the Arduino did.
+        rotate(deg) / rotate_to(deg) closed-loop move to a position (PD control)
 
     With `drive_enabled=False` every motor write goes out as stop (see
     _apply_speed), which is the one place all of them pass through - steering
@@ -476,7 +478,7 @@ class MotorManager:
         """
         Blocking: drives at `speed` until the output shaft has turned
         `distance` degrees (either way - the direction comes from the sign of
-        `speed`, like it did on the Arduino), then stops.
+        `speed`), then stops.
 
         Open loop on speed, so it coasts past the target by however far the
         robot rolls after the motor is cut. Use rotate() to land on it.
@@ -521,7 +523,7 @@ class MotorManager:
         Blocking: drives the output shaft to `target_deg` on position_deg's
         scale and stops there, correcting back if it overshoots.
 
-        The Arduino's motor_degree() loop: PD on the error, capped at
+        PD control on the position error, capped at
         max_speed, pushed up to min_speed while still more than
         ROTATE_MIN_SPEED_ZONE_DEG out so it does not stall short. Inside that
         zone it counts as arrived once the shaft stops.

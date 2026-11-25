@@ -32,7 +32,7 @@
 7. [Electrical calculations and evidence-labeled load budget](#7-electrical-calculations-and-evidence-labeled-load-budget)
 8. [MATLAB evidence selected for the electrical chapter](#8-matlab-evidence-selected-for-the-electrical-chapter)
 9. [Schematic and pictorial wiring documentation](#9-schematic-and-pictorial-wiring-documentation)
-10. [Complete measured electrical connections](#10-complete-measured-electrical-connections)
+10. [Complete electrical connections](#10-complete-electrical-connections)
 11. [Raspberry Pi, HATs and communication buses](#11-raspberry-pi-hats-and-communication-buses)
 12. [RPLIDAR S2L](#12-rplidar-s2l)
 13. [OV5647 camera and active cooler](#13-ov5647-camera-and-active-cooler)
@@ -410,7 +410,7 @@ Figures **E-01** and **E-02** describe functional power and controller architect
 
 ---
 
-## 10. Complete measured electrical connections
+## 10. Complete electrical connections
 
 The following records use the wiring description supplied by the team for its redesigned robot and the matching EasyEDA module nets. **Wire colors are physical cable colors as reported; EasyEDA's default green wires are drawing objects, not a cable-color specification.** Connector pin *numbers* are omitted unless directly supported by the Pi's published physical header map.
 
@@ -464,12 +464,12 @@ The HAT motor outputs are controlled over I²C; the software channel selection a
 | `PWM3 P` | S0017M PWM/signal | White | `PWM_STEER` |
 | `PWM3 +` | S0017M positive | Red | `SERVO_V+` |
 | `PWM3 −` | S0017M ground | Black | `GND` |
-| `UART R` | Custom RPLIDAR breakout **green lead** | Green | Pi UART receive terminal, measured destination |
-| `UART T` | Custom RPLIDAR breakout **yellow lead** | Yellow | Pi UART transmit terminal, measured destination |
+| `UART R` | Custom RPLIDAR breakout **green lead** | Green | Pi UART receive terminal, checked on the robot |
+| `UART T` | Custom RPLIDAR breakout **yellow lead** | Yellow | Pi UART transmit terminal, checked on the robot |
 | `UART −` | RPLIDAR ground via custom breakout | Black | `GND` |
 | `UART +` | Not used in team's LiDAR power connection | — | **Unconnected**; LiDAR 5 V comes directly from DFR1202 |
 
-**LiDAR custom cable note:** The team reported **two black ground conductors joined at its XH2.54 five-position breakout**. The spare lead is documented as the team's cable modification, not automatically as a fifth ground pin inside the manufacturer's scanner. The actual **scanner-side TX/RX identities** of the green and yellow leads are not proven by wire colors; the measured HAT terminal connections are preserved without making an unsupported assertion about the internal scanner pin order.
+**LiDAR custom cable note:** The team reported **two black ground conductors joined at its XH2.54 five-position breakout**. The spare lead is documented as the team's cable modification, not automatically as a fifth ground pin inside the manufacturer's scanner. The actual **scanner-side TX/RX identities** of the green and yellow leads are not proven by wire colors; the LiDAR works with this wiring, so the connection is confirmed.
 
 ### 10.4 Pi interface, camera and cooling
 
@@ -650,7 +650,7 @@ The supplier's **4.8–6 V** rating and advertised 0.20 s/60° at **6 V** are re
 | **USB-C / Pi 5 V** | Official Pi 5 supply recommendation is 5 V/5 A capable; DFR1202 is rated 5 V up to 16 A | That the custom lead identifies as a 5 A source or stays above Pi input limits under load |
 | **Battery switch / connectors** | Switch seller lists AC ratings; installed splitter/contact rating is not established | An equivalent DC interrupt rating or correctly specified crimp/wire capacity |
 | **I²C defaults** | Both HATs default to `0x10`; collision is possible on one bus | Physical confirmation of current bus-1 addresses `0x11` and `0x10` |
-| **LiDAR UART / cable** | Verified working: S2L TX → DFR0604 R, S2L RX → T (scans received at 1,000,000 baud). | Scanner-side TX/RX identity based on cable color alone |
+| **LiDAR UART / cable** | Verified working: S2L TX → DFR0604 R, S2L RX → T (scans received at 1,000,000 baud). | — (confirmed by working scans) |
 | **Motor and IMU interference** | Motor currents, return-path resistance and magnetic fields can affect electrical or sensor performance | Actual interference magnitude in the assembled chassis |
 
 ### 17.2 Electrical operating limits and protection considerations

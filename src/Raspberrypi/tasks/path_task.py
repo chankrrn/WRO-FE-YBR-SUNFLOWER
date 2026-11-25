@@ -187,8 +187,8 @@ DEFAULTS = {
     #     mm/s = speed / 100 * mm_per_s_at_full
     #
     # Read that "100" carefully, because the name does not describe it. The
-    # speed command is a raw PWM duty on a 0-255 scale (what the Arduino's
-    # analogWrite took; MotorManager now scales it onto the DFR0592's 0-100%,
+    # speed command is on a 0-255 scale (kept from our V1 robot; MotorManager
+    # scales it onto the DFR0592's 0-100%,
     # see SPEED_FULL_SCALE) - so a speed command is NOT a percentage,
     # and the two rounds bear that out: qualification asks for 255 and the
     # final round for 60. The divisor here is therefore an arbitrary constant
@@ -197,10 +197,10 @@ DEFAULTS = {
     # linear and self-consistent - but it means this number is meaningless
     # unless it was MEASURED against this same formula.
     #
-    # 700 was right through the original gearing. 390 is MEASURED with a tape
-    # after the 16:28 reduction was fitted (700mm in 3.0s at command 60),
-    # within 3% of the 400 the ratio predicts. Re-measure it the same way if
-    # the drivetrain changes again:
+    # 700 was right through the original gearing, 390 after the 16:28
+    # reduction. Now 482, MEASURED with a tape with 18:28 gearing and the
+    # replacement DFR0592 (870mm in 3.01s at command 60). Re-measure it the
+    # same way if the drivetrain changes again:
     #     python test_steering.py --tape 3 --drive-speed 60
     # Not with --calibrate: that derives distance from the pose track, and
     # this number is what makes the pose track trustworthy in the first place.

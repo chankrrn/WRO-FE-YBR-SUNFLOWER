@@ -252,7 +252,7 @@ uv run python main.py final --surprise
 
 For testing and debugging only. In competition the program starts automatically (see 4-build §15).
 
-Select the task and optional mode before the official start procedure. During the attempt, decisions are made onboard. Installation and configuration are preparation operations rather than external driving commands.
+During the attempt, decisions are made onboard. Installation and configuration are preparation operations rather than external driving commands.
 
 | Verification level | Tool / observation | Main question |
 |---|---|---|
