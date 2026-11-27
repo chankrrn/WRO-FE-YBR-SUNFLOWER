@@ -18,7 +18,7 @@ The central design decision is to treat navigation as a **pose–plan–control*
 
 [← Build and Reproduction Guide](4-build.md)
 
-[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](5-surprise_rule.md)
+[← EXTRA TASK: Sign Interpretation and Obstacle Strategy](5-extra_task.md)
 
 [← MATLAB Electrical Modeling Guide](matlab/README.md)
 
@@ -151,7 +151,7 @@ src/Raspberrypi/
 │   ├── racing_line.py             # Rounded-square reference route
 │   ├── pure_pursuit.py            # Geometric steering controller
 │   ├── object_solver.py           # Red/green and parking-color detection
-│   ├── sign_sizer.py              # Optional Surprise-rule size classification
+│   ├── sign_sizer.py              # Optional Extra Task size classification
 │   ├── vision_manager.py          # Asynchronous camera mapping
 │   ├── block_map.py               # Tracked sign observations
 │   ├── goal_planner.py            # Goal-based clearance-aware planner
@@ -168,7 +168,7 @@ src/Raspberrypi/
 ├── test_goal_planner.py          # Planner experiments
 ├── test_plan_view.py             # Route visualization
 ├── test_object_solver.py         # Camera geometry and object-ranging tests
-├── test_sign_sizer.py             # Surprise-rule perception diagnostics
+├── test_sign_sizer.py             # Extra Task perception diagnostics
 ├── test_steering.py              # Travel-distance and steering tests
 ├── test_step_response.py         # Steering dynamics
 ├── test_motor_rotation.py        # Encoder and finite-rotation tests
@@ -537,7 +537,7 @@ These settings are **requests and limits**, not measured clearances achieved by 
 
 The implementation separates several hazards: insufficient localization confidence, a sign mapped inside an impossible wall region, a sign track disappearing before passage, a physically unreachable passing gate, a nearby parking-wall exclusion, a lidar-observed obstruction without a corresponding color observation, and a candidate path requiring more steering curvature than the robot model permits. The control loop may slow or replan; it cannot guarantee a safe solution for every randomized arrangement.
 
-## 8.9 Optional Surprise-rule sign interpretation
+## 8.9 Optional Extra Task sign interpretation
 
 The source includes [`SignSizer`](../src/Raspberrypi/classes/sign_sizer.py) and round-level logic for the altered-height, altered-color sign scenario implemented by the team. The default configuration has **`surprise.enabled = false`**. Running `main.py final --surprise` enables the feature for that invocation; standard obstacle mode retains the normal color-to-passing-side mapping.
 
@@ -555,11 +555,11 @@ A single height-based range estimate cannot distinguish a short nearby object fr
 
 In **veto** mode, missing LiDAR evidence does not by itself block a shape-based vote. This differs from the alternative **confirm** mode, which requires agreement from both cues. `BlockMap` accumulates per-sign evidence, and `FinalTask` applies two additional restrictions: **the first passed sign is never inverted**, and **at most one sign location receives an inverted passing-side interpretation**. A changed height can also require re-estimating the sign's mapped position rather than retaining a range calculated for a 100 mm sign.
 
-![Figure S-12 Surprise Decision Flow](../other/Pic/software_diagram/SR01_surprise_decision_flow.svg)
+![Figure S-12 Extra Task Decision Flow](../other/Pic/software_diagram/SR01_extra_task_decision_flow.svg)
 
-*Figure S-12. Optional Surprise-mode interpretation. Eligibility includes the first-sign exclusion and single-sign restriction. This diagram describes implemented logic, not a measured detection success rate.*
+*Figure S-12. Optional Extra Task mode interpretation. Eligibility includes the first-sign exclusion and single-sign restriction. This diagram describes implemented logic, not a measured detection success rate.*
 
-The source provides [`test_sign_sizer.py`](../src/Raspberrypi/test_sign_sizer.py) for examining the cues. The [team's Surprise-mode field recording](https://youtu.be/SZ7-qe57g4k) is physical evidence for a particular test; it does not establish accuracy across all lighting, sign positions or camera perspectives.
+The source provides [`test_sign_sizer.py`](../src/Raspberrypi/test_sign_sizer.py) for examining the cues. The [team's Extra Task mode field recording](https://youtu.be/SZ7-qe57g4k) is physical evidence for a particular test; it does not establish accuracy across all lighting, sign positions or camera perspectives.
 
 ---
 
@@ -802,14 +802,14 @@ Examples recorded in the source include configuration sweeps of wall margin and 
 
 ## 13.4 Physical run recordings
 
-The recordings below show Open and Obstacle Challenge driving, parking and the Surprise-rule scenario. Robot configuration and test purpose are identified for each recording.
+The recordings below show Open and Obstacle Challenge driving, parking and the Extra Task scenario. Robot configuration and test purpose are identified for each recording.
 
 | Recording | Hardware/test context | Evidence role |
 |---|---|---|
 | [Open Challenge performance](https://youtu.be/SlxmnO9ZnVM) | Current robot; standard Open run | Physical route following and stopping behavior |
 | [Open speed test](https://youtu.be/CYVkDdoaMsE) | Latest robot; speed test | Additional physical driving example, separate from the performance run |
 | [Obstacle Challenge performance](https://youtu.be/5n_M14UXSpM) | Current robot; standard obstacle run | Physical sign navigation and parking sequence |
-| [Obstacle Challenge with Surprise rule](https://youtu.be/SZ7-qe57g4k) | Current robot; altered-sign test | Physical example of the team's Surprise-mode scenario |
+| [Obstacle Challenge with Extra Task](https://youtu.be/SZ7-qe57g4k) | Current robot; altered-sign test | Physical example of the team's Extra Task mode scenario |
 | [Obstacle speed test, clockwise](https://youtu.be/MPv1s5uWH2Q) | Robot without cover or parking | Obstacle-driving speed test |
 | [Obstacle speed test, counterclockwise](https://youtu.be/YH1zq7tGzv8) | Robot without cover or parking | Obstacle-driving speed test in the other direction |
 
@@ -869,7 +869,7 @@ The map's rotational symmetry creates a real heading ambiguity. A wrong start-he
 
 ## 15.3 Vision and traffic-sign limits
 
-HSV thresholding depends on illumination and color reproduction. Standard ranging assumes a 100 mm sign. Optional Surprise mode adds shape and LiDAR cues, evidence accumulation and a restricted passing-side inversion, as described in Section 8.9. The configured veto policy can accept shape evidence without a confirming LiDAR cue, so repeated segmentation or perspective errors remain important failure modes. The feature addresses the implemented altered-sign scenario; it does not establish a general solution to all possible object modifications.
+HSV thresholding depends on illumination and color reproduction. Standard ranging assumes a 100 mm sign. Optional Extra Task mode adds shape and LiDAR cues, evidence accumulation and a restricted passing-side inversion, as described in Section 8.9. The configured veto policy can accept shape evidence without a confirming LiDAR cue, so repeated segmentation or perspective errors remain important failure modes. The feature addresses the implemented altered-sign scenario; it does not establish a general solution to all possible object modifications.
 
 ## 15.4 Robot-model limits
 
@@ -923,7 +923,7 @@ uv run python main.py final
 
 The task is configured in [`tasks/final/config.toml`](../src/Raspberrypi/tasks/final/config.toml). Its default path includes the enabled bay-departure configuration, goal-based traffic-sign avoidance and eligible post-round LiDAR parking. A successful program return and a successful official competition score are different observations.
 
-For the implemented Surprise-rule scenario, enable the additional sign-size logic explicitly:
+For the implemented Extra Task scenario, enable the additional sign-size logic explicitly:
 
 ```bash
 uv run python main.py final --surprise
@@ -995,7 +995,7 @@ A comparable test record associates these settings with the source version, fiel
 - [Open Challenge](../src/Raspberrypi/tasks/qualification/task.py) and its [configuration](../src/Raspberrypi/tasks/qualification/config.toml).
 - [Obstacle Challenge](../src/Raspberrypi/tasks/final/task.py) and its [configuration](../src/Raspberrypi/tasks/final/config.toml).
 - [Navigation](../src/Raspberrypi/classes/navigation_manager.py), [field model](../src/Raspberrypi/classes/field_map.py), [racing line](../src/Raspberrypi/classes/racing_line.py) and [Pure Pursuit](../src/Raspberrypi/classes/pure_pursuit.py).
-- [Vision worker](../src/Raspberrypi/classes/vision_manager.py), [object solver](../src/Raspberrypi/classes/object_solver.py), [Surprise sign sizer](../src/Raspberrypi/classes/sign_sizer.py), [block map](../src/Raspberrypi/classes/block_map.py), [goal planner](../src/Raspberrypi/classes/goal_planner.py) and [Dubins primitive](../src/Raspberrypi/classes/dubins.py).
+- [Vision worker](../src/Raspberrypi/classes/vision_manager.py), [object solver](../src/Raspberrypi/classes/object_solver.py), [Extra Task sign sizer](../src/Raspberrypi/classes/sign_sizer.py), [block map](../src/Raspberrypi/classes/block_map.py), [goal planner](../src/Raspberrypi/classes/goal_planner.py) and [Dubins primitive](../src/Raspberrypi/classes/dubins.py).
 - [Unparking controller](../src/Raspberrypi/classes/parking.py), [LiDAR parking module](../src/Raspberrypi/lidar_park/run.py) and [LiDAR parking configuration](../src/Raspberrypi/lidar_park/config.toml).
 - [Motor/HAT control](../src/Raspberrypi/classes/motor_manager.py), [expansion HAT](../src/Raspberrypi/classes/board_manager.py), [LiDAR driver](../src/Raspberrypi/classes/lidar_manager.py), and [start button](../src/Raspberrypi/classes/start_button.py).
 - [Simulation/testing code](../src/Raspberrypi/test_driving.py), [steering tests](../src/Raspberrypi/test_steering.py), [vision tests](../src/Raspberrypi/test_object_solver.py) and [parking tests](../src/Raspberrypi/test_parking.py).

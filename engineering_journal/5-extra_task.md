@@ -1,4 +1,4 @@
-# Surprise Rule — Sign Interpretation and Obstacle Strategy
+# Extra Task — Sign Interpretation and Obstacle Strategy
 
 [← Project README](../README.md)
 
@@ -82,7 +82,7 @@ Both GIFs show the robot passing a modified red sign (5 cm and 15 cm tall) on it
 | Path construction | [goal_planner.py](../src/Raspberrypi/classes/goal_planner.py) | Passing goals, turning constraints and body clearance |
 | Parameter profile | [final/config.toml](../src/Raspberrypi/tasks/final/config.toml) | Cue policy, thresholds, vote settings and speed request |
 
-![Figure SR-01 Surprise Decision Flow](../other/Pic/software_diagram/SR01_surprise_decision_flow.svg)
+![Figure SR-01 Extra Task Decision Flow](../other/Pic/software_diagram/SR01_extra_task_decision_flow.svg)
 
 *Figure SR-01. Implemented decision flow. A height used for position estimation is distinct from authorization to invert a passing side.*
 
@@ -209,14 +209,14 @@ The configured diagnostic path is `logs/surprise_sizer.csv`, relative to `src/Ra
 ## 7. Operating procedure
 
 1. Prepare the robot and field using the [build guide](4-build.md). Confirm the selected configuration, camera alignment, scan-plane model and physical start control.
-2. Select standard or Surprise mode during preparation. For an official attempt, follow the declaration and start procedure in the rules.
+2. Select standard or Extra Task mode during preparation. For an official attempt, follow the declaration and start procedure in the rules.
 3. From `src/Raspberrypi/`, launch the corresponding task:
 
 ```bash
 # Standard obstacle mode with the published surprise.enabled = false setting
 uv run python main.py final
 
-# Surprise mode for this invocation
+# Extra Task mode for this invocation
 uv run python main.py final --surprise
 ```
 
@@ -290,7 +290,7 @@ Useful metrics are modified-sign detection rate, normal-sign false-inversion rat
 
 ## 9. Evidence and engineering interpretation
 
-The [team's Surprise-mode field recording](https://youtu.be/SZ7-qe57g4k) provides physical footage for the team's stated altered-sign scenario. The [standard obstacle recording](https://youtu.be/5n_M14UXSpM) provides complementary context. Neither link is an official scoring record.
+The [team's Extra Task mode field recording](https://youtu.be/SZ7-qe57g4k) provides physical footage for the team's stated altered-sign scenario. The [standard obstacle recording](https://youtu.be/5n_M14UXSpM) provides complementary context. Neither link is an official scoring record.
 
 The source establishes that the mode, height hypotheses, cue policy, tracking, guards and planner integration are implemented. The configuration establishes the selected thresholds. The bench and simulation tools make the hypotheses inspectable. These evidence types answer different questions and should be interpreted together.
 

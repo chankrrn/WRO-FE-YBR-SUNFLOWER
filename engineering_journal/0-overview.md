@@ -23,7 +23,7 @@
 
 [← Build and Reproduction Guide](4-build.md)
 
-[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](5-surprise_rule.md)
+[← EXTRA TASK: Sign Interpretation and Obstacle Strategy](5-extra_task.md)
 
 [← MATLAB Electrical Modeling Guide](matlab/README.md)
 
@@ -87,7 +87,7 @@ Dimensions and masses come from the [mechanical measurement table](1-mech.md#32-
 | [2 — Electrical](2-elec.md) | How are power, sensing and interfaces connected, and what limits matter? |
 | [3 — Software](3-software.md) | How do observations become localization, paths, steering and parking actions? |
 | [4 — Build](4-build.md) | Which parts, files, setup steps and checks reproduce the system? |
-| [5 — Surprise Rule companion](5-surprise_rule.md) | How does altered sign height change classification and passing-side selection? |
+| [5 — Extra Task companion](5-extra_task.md) | How does altered sign height change classification and passing-side selection? |
 | [MATLAB guide](matlab/README.md) | Which electrical models are published, how are they reproduced, and what do they establish? |
 
 The two companion guides provide detail within the five-journal structure.
@@ -128,7 +128,7 @@ The [schematic](../schemes/schematic_diagram.pdf), [power diagram](../other/Pic/
 
 ![Figure O-02 Challenge Strategies](../other/Pic/overview_diagram/O02_challenge_strategies.svg)
 
-*Figure O-02. The three competition modes side by side. The Obstacle Challenge adds starting-bay departure, sign tracking, GoalPlanner and the LiDAR parking handoff to the Open Challenge pipeline; Surprise mode only adds sign-size interpretation before the same planner.*
+*Figure O-02. The three competition modes side by side. The Obstacle Challenge adds starting-bay departure, sign tracking, GoalPlanner and the LiDAR parking handoff to the Open Challenge pipeline; Extra Task mode only adds sign-size interpretation before the same planner.*
 
 ### 4.1 Open Challenge
 
@@ -148,9 +148,9 @@ The configured final sequence includes starting-bay departure, lap driving and t
 
 Implementation: [final task](../src/Raspberrypi/tasks/final/task.py), [final configuration](../src/Raspberrypi/tasks/final/config.toml), [unparking controller](../src/Raspberrypi/classes/parking.py), [LiDAR parking](../src/Raspberrypi/lidar_park/run.py).
 
-### 4.3 Surprise-mode extension
+### 4.3 Extra Task mode extension
 
-Surprise mode adds sign-size interpretation before the existing passing-side planner. It is selected with `--surprise`; standard obstacle mode uses the ordinary interpretation. The [5 — Surprise Rule companion](5-surprise_rule.md) explains the official conditions, sensor geometry, current thresholds, decision logic and verification procedure.
+Extra Task mode adds sign-size interpretation before the existing passing-side planner. It is selected with `--surprise`; standard obstacle mode uses the ordinary interpretation. The [5 — Extra Task companion](5-extra_task.md) explains the official conditions, sensor geometry, current thresholds, decision logic and verification procedure.
 
 This division keeps three questions separate: what colour is visible, what size the observations support, and which passing side the planner should follow. Changing the semantic interpretation of one sign does not require replacing the localization or path-tracking architecture.
 
@@ -217,7 +217,7 @@ The electrical journal reports multimeter readings of 5.1 V and 12.1 V at the co
 |---|---|
 | [Open performance](https://youtu.be/SlxmnO9ZnVM) | Current-robot Open Challenge recording |
 | [Obstacle performance](https://youtu.be/5n_M14UXSpM) | Current-robot obstacle/parking recording |
-| [Surprise-mode field test](https://youtu.be/SZ7-qe57g4k) | Altered-sign scenario identified by the team |
+| [Extra Task mode field test](https://youtu.be/SZ7-qe57g4k) | Altered-sign scenario identified by the team |
 | [Open speed test](https://youtu.be/CYVkDdoaMsE) | Speed-focused test of the latest robot |
 | [Earlier clockwise test](https://youtu.be/MPv1s5uWH2Q) / [counterclockwise test](https://youtu.be/YH1zq7tGzv8) | Earlier robot without cover or parking implementation |
 
@@ -275,7 +275,7 @@ The [official documentation rubric](https://wro-association.org/wp-content/uploa
 |---|---|
 | Mobility and mechanical design | [Mechanical journal](1-mech.md): gearing, steering equations, bearing support, packaging and revision sequence; [CAD](../models/CAD/) |
 | Power and sensor architecture | [Electrical journal](2-elec.md): circuits, load reasoning, mounting, interfaces and calibration methods; [MATLAB guide](matlab/README.md) |
-| Software and obstacle strategy | [Software journal](3-software.md): modules, control flow, algorithms, edge cases and test tools; [Surprise companion](5-surprise_rule.md) |
+| Software and obstacle strategy | [Software journal](3-software.md): modules, control flow, algorithms, edge cases and test tools; [Extra Task companion](5-extra_task.md) |
 | Systems thinking and decisions | Sections 5–7 here connect design changes, subsystem dependencies, risks, and evidence types. Related information is also integrated into the relevant chapters, organized according to the engineering area it concerns. |
 | Reproducibility and repository quality | [Build guide](4-build.md), source/configuration links, [video index](../video/final.md), [history](../history/history_README.md) and [license](../LICENSE.md) |
 
@@ -285,7 +285,7 @@ The [official documentation rubric](https://wro-association.org/wp-content/uploa
 
 - [WRO 2026 season resources](https://wro-association.org/competition/2026-season/)
 - [2026 Future Engineers general rules](https://wro-association.org/wp-content/uploads/WRO-2026-Future-Engineers-Self-Driving-Cars-General-Rules.pdf)
-- [Official Surprise Rule](https://wro-association.org/wp-content/uploads/WRO-2026-Future-Engineers-Extra-Task.pdf)
+- [Official Extra Task](https://wro-association.org/wp-content/uploads/WRO-2026-Future-Engineers-Extra-Task.pdf)
 - [Official Q&A](https://wro-association.org/competition/questions-answers/)
 - [Documentation rubric](https://wro-association.org/wp-content/uploads/WRO-2026-Future-Engineers-Documentation-Rubric.pdf)
 

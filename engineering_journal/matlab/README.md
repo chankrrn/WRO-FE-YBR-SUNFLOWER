@@ -14,7 +14,7 @@
 
 [← Build and Reproduction Guide](../4-build.md)
 
-[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](../5-surprise_rule.md)
+[← EXTRA TASK: Sign Interpretation and Obstacle Strategy](../5-extra_task.md)
 
 This directory contains the documentation, source programs, and published visualizations for **eight standalone MATLAB electrical models**. The `.m` scripts are stored in [`figures/`](figures/), and the published PNGs are stored in [`visualization/`](visualization/). This guide explains their engineering purpose, equations, input assumptions, execution steps, outputs, and connection to the engineering journal.
 

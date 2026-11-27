@@ -22,7 +22,7 @@
 
 YBR-SUNFLOWER is developing a self-driving robotic car for the **World Robot Olympiad (WRO) 2026 Future Engineers** category. The robot is designed to navigate an unfamiliar track autonomously, interpret its surroundings, steer around traffic signs, and perform the required maneuvers using onboard computation and sensors. Our engineering work brings together mechanical design, electrical integration, perception, planning, control, and practical testing.
 
-This repository shares the robot's design, source code, calculations, simulations, engineering decisions, and available verification evidence. The technical material is organized into **five engineering records** and one record about the surprise rule in [`engineering_journal/`](engineering_journal/).
+This repository shares the robot's design, source code, calculations, simulations, engineering decisions, and available verification evidence. The technical material is organized into **five engineering records** and one record about the extra task in [`engineering_journal/`](engineering_journal/).
 
 | Project detail | Overview |
 |:---|:---|
@@ -47,7 +47,7 @@ The six linked journals cover the project from overall system architecture to fa
 | **[2 Power and Sensor Architecture](engineering_journal/2-elec.md)** | Power distribution, schematics, wiring, component selection, electronic interfaces, sensor considerations, electrical measurements, and MATLAB modeling. |
 | **[3 Software Architecture and Obstacle Strategy](engineering_journal/3-software.md)** | Onboard Python architecture, perception, localization, motion planning, obstacle handling, control, parking, and simulation/testing interfaces. |
 | **[4 Build and Reproduction Guide](engineering_journal/4-build.md)** | Bill of materials, printed parts, physical assembly, electrical checks, software setup, configuration, startup procedures, and verification checklists. |
-| **[5 Surprise Rule companion](engineering_journal/5-surprise_rule.md)** | Analysis of the altered sign-height scenario, including sign classification, passing-side selection, software adaptations, and supporting tests. |
+| **[5 Extra Task companion](engineering_journal/5-extra_task.md)** | Analysis of the altered sign-height scenario, including sign classification, passing-side selection, software adaptations, and supporting tests. |
 
 For direct access to implementation and assets, see [Raspberry Pi source](src/Raspberrypi/), [3D-printable CAD models](models/CAD/), [schematics](schemes/), and the [MATLAB source scripts](engineering_journal/matlab/figures/).
 

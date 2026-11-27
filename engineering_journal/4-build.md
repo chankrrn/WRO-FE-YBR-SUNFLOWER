@@ -24,7 +24,7 @@ This document explains **how to reproduce the final robot**.
 
 [← Software Architecture and Obstacle Strategy](3-software.md)
 
-[← SURPRISE RULE: Sign Interpretation and Obstacle Strategy](5-surprise_rule.md)
+[← EXTRA TASK: Sign Interpretation and Obstacle Strategy](5-extra_task.md)
 
 [← MATLAB Electrical Modeling Guide](matlab/README.md)
 
